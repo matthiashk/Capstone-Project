@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 
 /**
  * Created by matthiasko on 3/24/16.
@@ -27,9 +26,10 @@ public class MainListFragment extends ListFragment {
         super.onActivityCreated(savedInstanceState);
 
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, FRUITS);
+        //ArrayAdapter<String> adapter = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_list_item_1, FRUITS);
 
-        setListAdapter(adapter);
+        //setListAdapter(adapter);
+
 
 
 

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_marginLeft="10dp">
+
+    <TextView
+        android:id="@+id/postTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Post Title" />
+
+    <TextView
+        android:id="@+id/postSubreddit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/postTitle"
+        android:text="subreddit name" />
+
+    <TextView
+        android:id="@+id/postUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/postTitle"
+        android:layout_toRightOf="@+id/postSubreddit"
+        android:layout_marginLeft="10dp"
+        android:text="username" />
+
+    <TextView
+        android:id="@+id/postSource"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/postTitle"
+        android:layout_toRightOf="@+id/postUsername"
+        android:layout_marginLeft="10dp"
+        android:text="Source" />
+
+    <TextView
+        android:id="@+id/postPoints"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/postSource"
+        android:text="1 points" />
+
+    <TextView
+        android:id="@+id/postNumberOfComments"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/postSource"
+        android:layout_toRightOf="@+id/postPoints"
+        android:layout_marginLeft="10dp"
+        android:text="1 comments" />
+
+</RelativeLayout>

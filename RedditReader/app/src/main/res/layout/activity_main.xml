@@ -9,10 +9,19 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.matthiasko.redditreader.MainActivity">
 
+    <ListView
+        android:id="@+id/listview_posts"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </ListView>
+
+
+    <!--
     <fragment
         android:id="@+id/fragment1"
         android:name="com.matthiasko.redditreader.MainListFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
+        -->
 
 </LinearLayout>
