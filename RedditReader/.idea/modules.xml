@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/JRAWAndroidLibrary/JRAWAndroidLibrary.iml" filepath="$PROJECT_DIR$/JRAWAndroidLibrary/JRAWAndroidLibrary.iml" />
       <module fileurl="file://$PROJECT_DIR$/RedditReader.iml" filepath="$PROJECT_DIR$/RedditReader.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
