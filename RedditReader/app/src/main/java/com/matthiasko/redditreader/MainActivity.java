@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
 
     private PostsAdapter adapter;
 
+    private ArrayList<Post> arrayOfPosts;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -83,9 +85,9 @@ public class MainActivity extends AppCompatActivity {
                 break;
         }
 
-        ArrayList<Post> arrayOfUsers = new ArrayList<Post>();
+        arrayOfPosts = new ArrayList<>();
         // Create the adapter to convert the array to views
-        adapter = new PostsAdapter(MainActivity.this, arrayOfUsers);
+        adapter = new PostsAdapter(MainActivity.this, arrayOfPosts);
 
         ListView listView = (ListView) findViewById(R.id.listview_posts);
         listView.setAdapter(adapter);
@@ -95,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
         here we use RefreshTokenAsync to authenticate with our token in the background
         and update our UI in onPostExecute
     */
-    private class RefreshTokenAsync extends AsyncTask <String, Void, String> {
+    private class RefreshTokenAsync extends AsyncTask <String, Void, Void> {
 
         final RedditClient redditClient = new AndroidRedditClient(MainActivity.this);
 
@@ -104,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
         final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
 
         @Override
-        protected String doInBackground(String... params) {
+        protected Void doInBackground(String... params) {
 
             String refreshToken = params[0];
 
@@ -122,18 +124,40 @@ public class MainActivity extends AppCompatActivity {
 
             SubredditPaginator paginator = new SubredditPaginator(redditClient);
             Listing<Submission> submissions = paginator.next();
-            final Submission first = submissions.get(0);
 
-            String title = first.getTitle();
-            //System.out.println("title = " + title);
-            return title;
+            for (Submission submission : submissions) {
+
+                String title = submission.getTitle();
+                //System.out.println("title = " + title);
+
+                String subreddit = submission.getSubredditName();
+
+                String username = submission.getAuthor();
+
+                String source = submission.getUrl();
+
+                int points = submission.getScore();
+
+                int numberOfComments = submission.getCommentCount();
+
+                String thumbnail = submission.getThumbnail();
+
+                Post post = new Post(title, subreddit, username, source, thumbnail, points,
+                        numberOfComments);
+
+                // add each post to our arraylist for the postadapter
+                arrayOfPosts.add(post);
+            }
+
+            return null;
         }
 
         @Override
-        protected void onPostExecute(String s) {
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
 
-            Post post = new Post(s);
-            adapter.add(post);
+            // we need this to update the adapter on the main thread
+            adapter.notifyDataSetChanged();
         }
     }
 
@@ -152,8 +176,6 @@ public class MainActivity extends AppCompatActivity {
         non text items
         thumbnail preview
         up/down vote button
-
-        TODO: make a model?
 
      */
 }

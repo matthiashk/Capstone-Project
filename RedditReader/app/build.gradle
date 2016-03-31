@@ -33,4 +33,5 @@ dependencies {
     compile 'com.android.support:appcompat-v7:23.1.1'
     compile "net.dean.jraw:JRAW:0.8.0"
     compile project(':JRAWAndroidLibrary')
+    compile 'com.squareup.picasso:picasso:2.5.2'
 }

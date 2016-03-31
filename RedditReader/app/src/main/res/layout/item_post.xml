@@ -6,34 +6,41 @@
     android:layout_height="match_parent"
     android:layout_marginLeft="10dp">
 
+    <ImageView
+        android:id="@+id/thumbnail"
+        android:layout_width="70dp"
+        android:layout_height="70dp" />
+
     <TextView
         android:id="@+id/postTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Post Title" />
+        android:text="Post Title"
+        android:layout_toRightOf="@+id/thumbnail"/>
 
     <TextView
         android:id="@+id/postSubreddit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/postTitle"
+        android:layout_toRightOf="@+id/thumbnail"
         android:text="subreddit name" />
 
     <TextView
-        android:id="@+id/postUsername"
+        android:id="@+id/postAuthor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/postTitle"
         android:layout_toRightOf="@+id/postSubreddit"
         android:layout_marginLeft="10dp"
-        android:text="username" />
+        android:text="author" />
 
     <TextView
         android:id="@+id/postSource"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/postTitle"
-        android:layout_toRightOf="@+id/postUsername"
+        android:layout_toRightOf="@+id/postAuthor"
         android:layout_marginLeft="10dp"
         android:text="Source" />
 
@@ -42,6 +49,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/postSource"
+        android:layout_toRightOf="@+id/thumbnail"
         android:text="1 points" />
 
     <TextView
