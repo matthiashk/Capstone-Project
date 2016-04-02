@@ -13,6 +13,10 @@ public class Post {
     public int postPoints;
     public int postNumberOfComments;
 
+    public String getPostTitle() {
+        return postTitle;
+    }
+
     public Post(String postTitle, String postSubreddit, String postAuthor, String postSource,
                 String postThumbnail, int postPoints, int postNumberOfComments) {
 

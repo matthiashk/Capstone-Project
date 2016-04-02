@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.matthiasko.scrollforreddit">
 
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -27,6 +29,19 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.matthiasko.scrollforreddit.PostListActivity" />
         </activity>
+
+        <activity
+            android:name="com.matthiasko.scrollforreddit.LoginWebViewActivity"
+            android:label="LoginWebViewActivity"
+            android:parentActivityName="com.matthiasko.scrollforreddit.PostListActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.matthiasko.scrollforreddit.PostListActivity" />
+        </activity>
+
+        <!-- change value below to reddit username,
+             TODO: get from system prefs -->
+        <meta-data android:name="net.dean.jraw.REDDIT_USERNAME" android:value="(strafeon)" />
     </application>
 
 </manifest>
