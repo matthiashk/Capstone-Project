@@ -40,7 +40,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
     }
 
     @Override
-    public void onBindViewHolder(final ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
 
 
         holder.mItem = mValues.get(position);
@@ -57,13 +57,45 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+
+                String postId = mValues.get(position).postId;
+
+                //System.out.println("postId = " + postId);
+
+                //CommentNode commentNode = mValues.get(position).postCommentNode;
+
+                //System.out.println("commentNode.getTotalSize() = " + commentNode.getTotalSize());
+
+
+                //String testTitle = mValues.get(position).postTitle;
+
+                //System.out.println("testTitle = " + testTitle);
+
+
+                /*
+                String commentAuthor = commentNode.getComment().getAuthor();
+                int commentPoints = commentNode.getComment().getScore();
+                Date commentTime = commentNode.getComment().getCreated();
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat(commentTime.toString(), Locale.US);
+                String commentText = commentNode.getComment().getBody();
+                */
+
                 if (mTwoPane) {
                     Bundle arguments = new Bundle();
 
-                    // change ARG_ITEM_ID, they need to be unique
+                    // TODO: change ARG_ITEM_ID, they need to be unique
 
-                    arguments.putString(PostDetailFragment.ARG_ITEM_ID, holder.mItem.postTitle);
-                    arguments.putString(PostDetailFragment.ARG_ITEM_ID, holder.mItem.postSubreddit);
+                    arguments.putString("POST_TITLE", holder.mItem.postTitle);
+                    arguments.putString("SUBREDDIT", holder.mItem.postSubreddit);
+                    arguments.putString("POST_ID", postId);
+
+                    //arguments.putString("COMMENT_AUTHOR", commentAuthor);
+
+                    // send as parcelable???
+
+
+
                     PostDetailFragment fragment = new PostDetailFragment();
                     fragment.setArguments(arguments);
                     /*
@@ -72,10 +104,16 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                             .commit();
                             */
                 } else {
+
+                    //System.out.println("postId = " + postId);
+
                     Context context = v.getContext();
                     Intent intent = new Intent(context, PostDetailActivity.class);
-                    intent.putExtra(PostDetailFragment.ARG_ITEM_ID, holder.mItem.postTitle);
-                    intent.putExtra(PostDetailFragment.ARG_ITEM_ID, holder.mItem.postSubreddit);
+                    intent.putExtra("POST_TITLE", holder.mItem.postTitle);
+                    intent.putExtra("SUBREDDIT", holder.mItem.postSubreddit);
+                    intent.putExtra("POST_ID", postId);
+                    //intent.putExtra("COMMENT_AUTHOR", commentAuthor);
+
                     context.startActivity(intent);
                 }
             }
@@ -103,6 +141,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         TextView points;
         TextView numberOfComments;
         ImageView thumbnail;
+        //CommentNode commentNode;
 
         public ViewHolder(View view) {
             super(view);

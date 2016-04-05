@@ -269,8 +269,42 @@ public class PostListActivity extends AppCompatActivity {
 
                 String thumbnail = submission.getThumbnail();
 
+                // TODO: we need to add this to the post item data so we can retrieve the commentnode in details view
+
+                String postId = submission.getId();
+
+                //System.out.println("postId = " + postId);
+
+                // TODO: we should process comments in the adapter?
+                // TODO: loading them here takes too long, hangs the UI
+
+                //CommentNode commentNode = submission.getComments();
+
+                //System.out.println("commentNode.getTotalSize() = " + commentNode.getTotalSize());
+
+
+
+                //Submission fullSubmissionData = redditClient.getSubmission(submission.getId());
+                //System.out.println(fullSubmissionData.getTitle());
+                //System.out.println(fullSubmissionData.getComments());
+
+
+                //CommentNode commentNode = fullSubmissionData.getComments();
+
+
+
+
+                /*
+                String commentAuthor = commentNode.getComment().getAuthor();
+                int commentPoints = commentNode.getComment().getScore();
+                Date commentTime = commentNode.getComment().getCreated();
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat(commentTime.toString(), Locale.US);
+                String commentText = commentNode.getComment().getBody();
+                */
+
+
                 Post post = new Post(title, subreddit, username, source, thumbnail, points,
-                        numberOfComments);
+                        numberOfComments, postId);
 
                 // add each post to our arraylist for the postadapter
                 arrayOfPosts.add(post);
