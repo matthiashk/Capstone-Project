@@ -3,6 +3,8 @@ package com.matthiasko.scrollforreddit;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,10 +19,13 @@ import net.dean.jraw.http.oauth.Credentials;
 import net.dean.jraw.http.oauth.OAuthData;
 import net.dean.jraw.http.oauth.OAuthException;
 import net.dean.jraw.http.oauth.OAuthHelper;
+import net.dean.jraw.models.Comment;
 import net.dean.jraw.models.CommentNode;
 import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
 import net.dean.jraw.paginators.SubredditPaginator;
+
+import java.util.ArrayList;
 
 /**
  * A fragment representing a single Post detail screen.
@@ -51,6 +56,10 @@ public class PostDetailFragment extends Fragment {
     private static final String REDIRECT_URL = "http://scroll-for-reddit.com/oauthresponse";
 
     private TextView commentTextView;
+
+    private CommentsAdapter adapter;
+
+    private ArrayList<ScrollComment> arrayOfComments;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -118,22 +127,46 @@ public class PostDetailFragment extends Fragment {
 
 
 
-        
+
         View rootView = inflater.inflate(R.layout.post_detail, container, false);
 
+        RecyclerView commentsRecyclerView = (RecyclerView) rootView.findViewById(R.id.commentsList);
 
-        ((TextView) rootView.findViewById(R.id.post_detail)).setText(postTitle);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
+        layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+        commentsRecyclerView.setLayoutManager(layoutManager);
+
+        //LinearLayoutManager llm = new LinearLayoutManager(getActivity());
+        //llm.setOrientation(LinearLayoutManager.VERTICAL);
+        //commentsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+
+        arrayOfComments = new ArrayList<>();
+        // Create the adapter to convert the array to views
+        adapter = new CommentsAdapter(getContext(), arrayOfComments);
+
+        //View commentsRecyclerView = rootView.findViewById(R.id.commentsList);
+
+        //commentsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
+
+
+        //assert commentsRecyclerView != null;
+        //setupRecyclerView((RecyclerView) commentsRecyclerView);
+
+        commentsRecyclerView.setAdapter(adapter);
+
+
+        //((TextView) rootView.findViewById(R.id.post_detail)).setText(postTitle);
 
         // setup our textview so we can set it in onpostexecute after getting comments
 
-        commentTextView = (TextView) rootView.findViewById(R.id.comment_author);
+        //commentTextView = (TextView) rootView.findViewById(R.id.comment_author);
 
         //((TextView) rootView.findViewById(R.id.comment_author)).setText(commentAuthor);
 
         return rootView;
     }
 
-    private class RetrieveComments extends AsyncTask<String, Void, String> {
+    private class RetrieveComments extends AsyncTask<String, Void, Void> {
 
         final RedditClient redditClient = new AndroidRedditClient(getContext());
 
@@ -144,7 +177,7 @@ public class PostDetailFragment extends Fragment {
         String commentText;
 
         @Override
-        protected String doInBackground(String... params) {
+        protected Void doInBackground(String... params) {
 
             String refreshToken = params[0];
 
@@ -172,22 +205,60 @@ public class PostDetailFragment extends Fragment {
 
                 if (submission.getId().equals(postId)) {
 
+
                     Submission fullSubmissionData = redditClient.getSubmission(submission.getId());
                     //System.out.println(fullSubmissionData.getTitle());
                     //System.out.println(fullSubmissionData.getComments());
 
                     CommentNode commentNode = fullSubmissionData.getComments();
 
-                    commentText = commentNode.get(0).getComment().getBody();
 
-                    // TODO: load 10 comments and show their child comments?
+                    Iterable<CommentNode> iterable = commentNode.walkTree();
+
+                    for (CommentNode node : iterable) {
+
+                        Comment comment = node.getComment();
+
+                        ScrollComment scrollComment = new ScrollComment(comment.getBody(),
+                                comment.getAuthor(), comment.getScore(), node.getDepth());
+
+
+
+
+                        //System.out.println("comment.getBody() = " + comment.getBody());
+
+                        arrayOfComments.add(scrollComment);
+
+
+                    }
+
+
+
+                    //commentText = commentNode.get(0).getComment().getBody();
+
+                    // load 10 comments and show their child comments?
 
                     // TODO: we need a loading graphic here...
 
+                    // load 10 comments into the array
+
+                    /*
+                    for (int i = 0; i < 10; i++) {
+
+                        Comment comment = commentNode.get(i).getComment();
+
+                        ScrollComment scrollComment = new ScrollComment(comment.getBody(),
+                                comment.getAuthor(), comment.getScore(), commentNode.getDepth());
 
 
 
 
+                        //System.out.println("comment.getBody() = " + comment.getBody());
+
+                        arrayOfComments.add(scrollComment);
+
+                    }
+                    */
                 }
 
 
@@ -202,16 +273,20 @@ public class PostDetailFragment extends Fragment {
             }
 
 
-            return commentText;
+            return null;
         }
 
         @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
 
-            System.out.println("string = " + s);
+            //System.out.println("arrayOfComments.size() = " + arrayOfComments.size());
 
-            commentTextView.setText(s);
+            //System.out.println("string = " + s);
+
+            //commentTextView.setText(s);
+
+            adapter.notifyDataSetChanged();
 
         }
     }
