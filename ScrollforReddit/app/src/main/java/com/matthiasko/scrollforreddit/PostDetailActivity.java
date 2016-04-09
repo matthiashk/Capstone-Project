@@ -6,6 +6,10 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.TextView;
+
+import com.squareup.picasso.Picasso;
 
 /**
  * An activity representing a single Post detail screen. This
@@ -35,11 +39,11 @@ public class PostDetailActivity extends AppCompatActivity {
 
         // Show the Up button in the action bar.
         ActionBar actionBar = getSupportActionBar();
+
         if (actionBar != null) {
+
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setTitle(getIntent().getStringExtra("SUBREDDIT"));
-
-
         }
 
         // savedInstanceState is non-null when there is fragment state
@@ -58,13 +62,6 @@ public class PostDetailActivity extends AppCompatActivity {
             arguments.putString("POST_TITLE", getIntent().getStringExtra("POST_TITLE"));
             arguments.putString("POST_ID", getIntent().getStringExtra("POST_ID"));
 
-
-            // TODO: load other strings here
-
-
-
-
-
             PostDetailFragment fragment = new PostDetailFragment();
             fragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
@@ -72,7 +69,65 @@ public class PostDetailActivity extends AppCompatActivity {
                     .commit();
         }
 
+        // populate the applayoutbar header for the detail view here
+        ((TextView) findViewById(R.id.header_textview)).setText(getIntent().getStringExtra("POST_TITLE"));
 
+        ((TextView) findViewById(R.id.subreddit_textview)).setText(getIntent().getStringExtra("SUBREDDIT"));
+
+        ((TextView) findViewById(R.id.author_textview)).setText(getIntent().getStringExtra("AUTHOR"));
+
+        ((TextView) findViewById(R.id.source_textview)).setText(getIntent().getStringExtra("DOMAIN"));
+
+        // image loading logic here for detail view
+        // if the source is an image load it with picasso
+        // otherwise load a placeholder
+
+        // extension code will detect .com
+        // imgur files may not have an extension -> detect hostname
+        // animated gifs on imgur have extension .gifv?
+        // youtube
+        // twitter
+
+        String sourceUrl = getIntent().getStringExtra("SOURCE");
+
+        String extension = "";
+
+        int i = sourceUrl.lastIndexOf('.');
+
+        if (i > 0) {
+
+            extension = sourceUrl.substring(i + 1);
+        }
+
+        //System.out.println("PostDetailActivity - extension = " + extension);
+
+        if (extension.equals("jpg")) {
+
+            Picasso.with(getBaseContext())
+                    .load(sourceUrl)
+                    .resize(400, 200)
+                    .centerCrop()
+                    .into((ImageView) findViewById(R.id.header_imageview));
+
+        } else if (sourceUrl.contains("imgur.com")) {
+
+            // we need to add .jpg to the url to load it properly
+            String modifiedUrl = sourceUrl.concat(".jpg");
+
+            Picasso.with(getBaseContext())
+                    .load(modifiedUrl)
+                    .resize(400, 200)
+                    .centerCrop()
+                    .into((ImageView) findViewById(R.id.header_imageview));
+
+        } else {
+
+            Picasso.with(getBaseContext())
+                    .load(getIntent().getStringExtra("THUMBNAIL"))
+                    .resize(400, 200)
+                    .centerCrop()
+                    .into((ImageView) findViewById(R.id.header_imageview));
+        }
     }
 
     @Override

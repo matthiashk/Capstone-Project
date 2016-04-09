@@ -49,6 +49,9 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
         if (commentDepth > 1) {
 
+            // set new indentation by multiplying comment depth
+            int indentedMarginSize = commentDepth * 10;
+
             //System.out.println("commentDepth = " + commentDepth);
 
             //int bodyCharCount = mValues.get(position).getBody().length();
@@ -61,19 +64,19 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
             holder.commentBody.setText(mValues.get(position).getBody());
 
-            /*
-            ViewGroup.MarginLayoutParams mlp = (ViewGroup.MarginLayoutParams) holder.commentBody
+
+            // setting margins dynamically here depending on the comment level
+            // margins are set in pixels, might have to convert to dp...
+            ViewGroup.MarginLayoutParams commentMargins = (ViewGroup.MarginLayoutParams) holder.commentBody
                     .getLayoutParams();
 
-            mlp.setMargins(commentDepth, 0, 0, 0);
-
-
+            commentMargins.setMargins(indentedMarginSize, 0, 0, 0);
 
             ViewGroup.MarginLayoutParams authorMargin = (ViewGroup.MarginLayoutParams) holder.commentAuthor
                     .getLayoutParams();
 
-            authorMargin.setMargins(commentDepth, 0, 0, 0);
-            */
+            authorMargin.setMargins(indentedMarginSize, 0, 0, 0);
+
 
             //System.out.println("indentedComment = " + indentedComment);
 

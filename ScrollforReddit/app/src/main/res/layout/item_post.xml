@@ -31,7 +31,7 @@
         android:id="@+id/postSubreddit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/postTitle"
+        android:layout_below="@+id/postSource"
         android:layout_toRightOf="@+id/thumbnail"
         android:text="subreddit name" />
 
@@ -39,7 +39,7 @@
         android:id="@+id/postAuthor"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/postTitle"
+        android:layout_below="@+id/postSource"
         android:layout_toRightOf="@+id/postSubreddit"
         android:layout_marginLeft="10dp"
         android:text="author" />
@@ -49,15 +49,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@+id/postTitle"
-        android:layout_toRightOf="@+id/postAuthor"
-        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/thumbnail"
         android:text="Source" />
 
     <TextView
         android:id="@+id/postPoints"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/postSource"
+        android:layout_below="@+id/postSubreddit"
         android:layout_toRightOf="@+id/thumbnail"
         android:text="1 points" />
 
@@ -65,7 +64,7 @@
         android:id="@+id/postNumberOfComments"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/postSource"
+        android:layout_below="@+id/postSubreddit"
         android:layout_toRightOf="@+id/postPoints"
         android:layout_marginLeft="10dp"
         android:text="1 comments" />

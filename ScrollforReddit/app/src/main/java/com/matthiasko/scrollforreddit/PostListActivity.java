@@ -4,8 +4,6 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -27,6 +25,8 @@ import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
 import net.dean.jraw.paginators.SubredditPaginator;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 /**
@@ -66,6 +66,7 @@ public class PostListActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
+        /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,6 +75,7 @@ public class PostListActivity extends AppCompatActivity {
                         .setAction("Action", null).show();
             }
         });
+        */
 
 
         final RedditClient redditClient = new AndroidRedditClient(this);
@@ -140,85 +142,9 @@ public class PostListActivity extends AppCompatActivity {
         }
     }
 
-
-
-
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
         recyclerView.setAdapter(adapter);
     }
-
-    /*
-    public class SimpleItemRecyclerViewAdapter
-            extends RecyclerView.Adapter<SimpleItemRecyclerViewAdapter.ViewHolder> {
-
-        private final List<DummyContent.DummyItem> mValues;
-
-        public SimpleItemRecyclerViewAdapter(List<DummyContent.DummyItem> items) {
-            mValues = items;
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.post_list_content, parent, false);
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(final ViewHolder holder, int position) {
-            holder.mItem = mValues.get(position);
-            holder.mIdView.setText(mValues.get(position).id);
-            holder.mContentView.setText(mValues.get(position).content);
-
-            holder.mView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (mTwoPane) {
-                        Bundle arguments = new Bundle();
-                        arguments.putString(PostDetailFragment.ARG_ITEM_ID, holder.mItem.id);
-                        PostDetailFragment fragment = new PostDetailFragment();
-                        fragment.setArguments(arguments);
-                        getSupportFragmentManager().beginTransaction()
-                                .replace(R.id.post_detail_container, fragment)
-                                .commit();
-                    } else {
-                        Context context = v.getContext();
-                        Intent intent = new Intent(context, PostDetailActivity.class);
-                        intent.putExtra(PostDetailFragment.ARG_ITEM_ID, holder.mItem.id);
-
-                        context.startActivity(intent);
-                    }
-                }
-            });
-        }
-
-        @Override
-        public int getItemCount() {
-            return mValues.size();
-        }
-
-        public class ViewHolder extends RecyclerView.ViewHolder {
-            public final View mView;
-            public final TextView mIdView;
-            public final TextView mContentView;
-            public DummyContent.DummyItem mItem;
-
-            public ViewHolder(View view) {
-                super(view);
-                mView = view;
-                mIdView = (TextView) view.findViewById(R.id.id);
-                mContentView = (TextView) view.findViewById(R.id.content);
-            }
-
-            @Override
-            public String toString() {
-                return super.toString() + " '" + mContentView.getText() + "'";
-            }
-        }
-    }
-
-
-    */
 
     /*
         here we use RefreshTokenAsync to authenticate with our token in the background
@@ -263,36 +189,53 @@ public class PostListActivity extends AppCompatActivity {
 
                 String source = submission.getUrl();
 
+                // shorten source url by extracting domain name and send as string
+
+                String domain = "";
+
+                try {
+
+                    URI uri = new URI(source);
+                    domain = uri.getHost();
+
+                } catch (URISyntaxException e) {
+
+                    e.printStackTrace();
+                }
+
+                /*
+                if (!domain.isEmpty()) {
+
+                    //System.out.println("domain = " + domain);
+                }
+                */
+
+
+
                 int points = submission.getScore();
 
                 int numberOfComments = submission.getCommentCount();
 
                 String thumbnail = submission.getThumbnail();
 
-                // TODO: we need to add this to the post item data so we can retrieve the commentnode in details view
+                // we need to add this to the post item data so we can retrieve the commentnode in details view
 
                 String postId = submission.getId();
 
                 //System.out.println("postId = " + postId);
 
-                // TODO: we should process comments in the adapter?
-                // TODO: loading them here takes too long, hangs the UI
+                // we should process comments in the adapter?
+                // loading them here takes too long, hangs the UI
 
                 //CommentNode commentNode = submission.getComments();
 
                 //System.out.println("commentNode.getTotalSize() = " + commentNode.getTotalSize());
 
-
-
                 //Submission fullSubmissionData = redditClient.getSubmission(submission.getId());
                 //System.out.println(fullSubmissionData.getTitle());
                 //System.out.println(fullSubmissionData.getComments());
 
-
                 //CommentNode commentNode = fullSubmissionData.getComments();
-
-
-
 
                 /*
                 String commentAuthor = commentNode.getComment().getAuthor();
@@ -302,9 +245,8 @@ public class PostListActivity extends AppCompatActivity {
                 String commentText = commentNode.getComment().getBody();
                 */
 
-
                 Post post = new Post(title, subreddit, username, source, thumbnail, points,
-                        numberOfComments, postId);
+                        numberOfComments, postId, domain);
 
                 // add each post to our arraylist for the postadapter
                 arrayOfPosts.add(post);
@@ -323,5 +265,4 @@ public class PostListActivity extends AppCompatActivity {
             adapter.notifyDataSetChanged();
         }
     }
-
 }

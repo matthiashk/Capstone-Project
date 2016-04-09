@@ -84,17 +84,9 @@ public class PostDetailFragment extends Fragment {
             Log.e(LOG_TAG, e.getMessage());
         }
 
-
-
-        String title = getArguments().getString("POST_TITLE");
+        //String title = getArguments().getString("POST_TITLE");
 
         if (getArguments().containsKey("POST_TITLE")) {
-
-
-            // TODO: maybe we need the post id to get the specific commentnode
-
-
-
 
             // Load the dummy content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
@@ -111,10 +103,7 @@ public class PostDetailFragment extends Fragment {
 
             //commentAuthor = getArguments().getString("COMMENT_AUTHOR");
 
-
             //System.out.println("postTitle = " + postTitle);
-
-
         }
 
     }
@@ -122,11 +111,6 @@ public class PostDetailFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-
-
-
-
 
         View rootView = inflater.inflate(R.layout.post_detail, container, false);
 

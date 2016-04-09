@@ -153,7 +153,7 @@ public class LoginWebViewActivity extends Activity{
                 redditClient.authenticate(oAuthData);
                 Log.v(LOG_TAG, "Reddit client authentication: " + redditClient.isAuthenticated());
                 //mTextView.setText("Logged in");
-                //TODO: Save refresh token:
+
                 //String refreshToken = mRedditClient.getOAuthData().getRefreshToken();
                 //Log.v(LOG_TAG, "Refresh Token: " + refreshToken);
             } else {

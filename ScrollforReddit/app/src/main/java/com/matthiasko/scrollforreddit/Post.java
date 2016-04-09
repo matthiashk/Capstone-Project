@@ -14,10 +14,12 @@ public class Post {
     public int postNumberOfComments;
     //public CommentNode postCommentNode;
     public String postId;
+    public String postDomain;
 
 
     public Post(String postTitle, String postSubreddit, String postAuthor, String postSource,
-                String postThumbnail, int postPoints, int postNumberOfComments, String postId) {
+                String postThumbnail, int postPoints, int postNumberOfComments, String postId,
+                String postDomain) {
 
         this.postTitle = postTitle;
         this.postSubreddit = "r/" + postSubreddit;
@@ -28,6 +30,7 @@ public class Post {
         this.postNumberOfComments = postNumberOfComments;
         //this.postCommentNode = postCommentNode;
         this.postId = postId;
+        this.postDomain = postDomain;
 
     }
 
@@ -39,7 +42,6 @@ public class Post {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-
 
     }
 
@@ -54,7 +56,6 @@ public class Post {
     };
 
     public Post (Parcel source) {
-
 
     }
     */

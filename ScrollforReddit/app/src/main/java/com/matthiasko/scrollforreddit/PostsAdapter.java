@@ -31,7 +31,6 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         mValues = items;
     }
 
-
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
@@ -42,12 +41,13 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
 
+        // using domain as 'source' text, save source for later
 
         holder.mItem = mValues.get(position);
         holder.postTitle.setText(mValues.get(position).postTitle);
         holder.subreddit.setText(mValues.get(position).postSubreddit);
         holder.author.setText(mValues.get(position).postAuthor);
-        holder.source.setText(mValues.get(position).postSource);
+        holder.source.setText(mValues.get(position).postDomain);
         holder.points.setText(String.valueOf(mValues.get(position).postPoints));
         holder.numberOfComments.setText(String.valueOf(mValues.get(position).postNumberOfComments));
         //holder.mIdView.setText(mValues.get(position).id);
@@ -58,7 +58,6 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
             @Override
             public void onClick(View v) {
 
-
                 String postId = mValues.get(position).postId;
 
                 //System.out.println("postId = " + postId);
@@ -67,11 +66,9 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
 
                 //System.out.println("commentNode.getTotalSize() = " + commentNode.getTotalSize());
 
-
                 //String testTitle = mValues.get(position).postTitle;
 
                 //System.out.println("testTitle = " + testTitle);
-
 
                 /*
                 String commentAuthor = commentNode.getComment().getAuthor();
@@ -81,20 +78,20 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                 String commentText = commentNode.getComment().getBody();
                 */
 
-                if (mTwoPane) {
+                if (mTwoPane) { // this is for tablet mode
                     Bundle arguments = new Bundle();
-
-                    // TODO: change ARG_ITEM_ID, they need to be unique
 
                     arguments.putString("POST_TITLE", holder.mItem.postTitle);
                     arguments.putString("SUBREDDIT", holder.mItem.postSubreddit);
                     arguments.putString("POST_ID", postId);
+                    arguments.putString("AUTHOR", holder.mItem.postAuthor);
+                    arguments.putString("SOURCE", holder.mItem.postSource);
+                    arguments.putString("THUMBNAIL", holder.mItem.postThumbnail);
+                    arguments.putInt("POINTS", holder.mItem.postPoints);
+                    arguments.putInt("NUMBER_OF_COMMENTS", holder.mItem.postNumberOfComments);
+                    arguments.putString("DOMAIN", holder.mItem.postDomain);
 
                     //arguments.putString("COMMENT_AUTHOR", commentAuthor);
-
-                    // send as parcelable???
-
-
 
                     PostDetailFragment fragment = new PostDetailFragment();
                     fragment.setArguments(arguments);
@@ -103,7 +100,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                             .replace(R.id.post_detail_container, fragment)
                             .commit();
                             */
-                } else {
+                } else { // this is for phone mode
 
                     //System.out.println("postId = " + postId);
 
@@ -112,6 +109,13 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                     intent.putExtra("POST_TITLE", holder.mItem.postTitle);
                     intent.putExtra("SUBREDDIT", holder.mItem.postSubreddit);
                     intent.putExtra("POST_ID", postId);
+                    intent.putExtra("AUTHOR", holder.mItem.postAuthor);
+                    intent.putExtra("SOURCE", holder.mItem.postSource);
+                    intent.putExtra("THUMBNAIL", holder.mItem.postThumbnail);
+                    intent.putExtra("POINTS", holder.mItem.postPoints);
+                    intent.putExtra("NUMBER_OF_COMMENTS", holder.mItem.postNumberOfComments);
+                    intent.putExtra("DOMAIN", holder.mItem.postDomain);
+
                     //intent.putExtra("COMMENT_AUTHOR", commentAuthor);
 
                     context.startActivity(intent);
@@ -120,8 +124,6 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         });
 
     }
-
-
 
     @Override
     public int getItemCount() {
@@ -156,61 +158,6 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
             points = (TextView) view.findViewById(R.id.postPoints);
             numberOfComments = (TextView) view.findViewById(R.id.postNumberOfComments);
             thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
-
         }
-
     }
-
-
-    /*
-    public PostsAdapter(Context context, ArrayList<Post> post) {
-
-        super(context, R.layout.item_post, post);
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-
-        Post post = getItem(position);
-
-        ViewHolder viewHolder;
-
-        if (convertView == null) {
-
-            viewHolder = new ViewHolder();
-            LayoutInflater inflater = LayoutInflater.from(getContext());
-            convertView = inflater.inflate(R.layout.item_post, parent, false);
-            viewHolder.postTitle = (TextView) convertView.findViewById(R.id.postTitle);
-            viewHolder.subreddit = (TextView) convertView.findViewById(R.id.postSubreddit);
-            viewHolder.author = (TextView) convertView.findViewById(R.id.postAuthor);
-            viewHolder.source = (TextView) convertView.findViewById(R.id.postSource);
-            viewHolder.points = (TextView) convertView.findViewById(R.id.postPoints);
-            viewHolder.numberOfComments = (TextView) convertView.findViewById(R.id.postNumberOfComments);
-            viewHolder.thumbnail = (ImageView) convertView.findViewById(R.id.thumbnail);
-
-
-            convertView.setTag(viewHolder);
-
-        } else {
-
-            viewHolder = (ViewHolder) convertView.getTag();
-        }
-
-
-
-        viewHolder.postTitle.setText(post.postTitle);
-        viewHolder.subreddit.setText(post.postSubreddit);
-        viewHolder.author.setText(post.postAuthor);
-        viewHolder.source.setText(post.postSource);
-        viewHolder.points.setText(String.valueOf(post.postPoints));
-        viewHolder.numberOfComments.setText(String.valueOf(post.postNumberOfComments));
-
-        Picasso.with(getContext()).load(post.postThumbnail).into(viewHolder.thumbnail);
-
-
-
-        return convertView;
-
-    }
-    */
 }
