@@ -40,9 +40,6 @@ public class PostDetailFragment extends Fragment {
      */
     public static final String ARG_ITEM_ID = "item_id";
 
-    /**
-     * The dummy content this fragment is presenting.
-     */
     private Post mItem;
 
     private String postTitle;
@@ -272,7 +269,22 @@ public class PostDetailFragment extends Fragment {
 
             adapter.notifyDataSetChanged();
 
+            try {
+
+                ((PostDetailActivity) getActivity()).postDetailSpinner();
+
+            } catch (ClassCastException cce) {
+
+                cce.printStackTrace();
+            }
+
+
         }
+    }
+
+    public interface OnCommentsLoadedListener{
+
+        public void postDetailSpinner();
     }
 
 }

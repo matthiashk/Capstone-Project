@@ -23,10 +23,29 @@
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
             />
 
+
+
         <RelativeLayout
             android:background="@android:color/white"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content">
+
+            <!-- TODO: we may need to change the marginTop value to adjust to tablet mode??
+            -->
+            <RelativeLayout
+                android:id="@+id/loadingPanel"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:layout_marginTop="200dp"
+                >
+
+                <ProgressBar
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:indeterminate="true" />
+
+            </RelativeLayout>
 
             <TextView
                 android:id="@+id/header_textview"

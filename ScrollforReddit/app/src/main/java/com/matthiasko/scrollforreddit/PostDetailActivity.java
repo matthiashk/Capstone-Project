@@ -6,6 +6,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -17,7 +18,7 @@ import com.squareup.picasso.Picasso;
  * item details are presented side-by-side with a list of items
  * in a {@link PostListActivity}.
  */
-public class PostDetailActivity extends AppCompatActivity {
+public class PostDetailActivity extends AppCompatActivity implements PostDetailFragment.OnCommentsLoadedListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,5 +150,15 @@ public class PostDetailActivity extends AppCompatActivity {
             return false;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+
+    // we need to load the spinner here
+    // then in postdetailfragment in the onpostexecute, stop the spinner by calling a method in the activity
+
+    public void postDetailSpinner() {
+
+        // hide spinner, called from postdetailfragment / onpostexecute
+        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
     }
 }

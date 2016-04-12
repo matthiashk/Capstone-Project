@@ -39,6 +39,15 @@
                 android:value="com.matthiasko.scrollforreddit.PostListActivity" />
         </activity>
 
+        <activity
+            android:name="com.matthiasko.scrollforreddit.WebViewActivity"
+            android:label="WebViewActivity"
+            android:parentActivityName="com.matthiasko.scrollforreddit.PostListActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.matthiasko.scrollforreddit.PostListActivity" />
+        </activity>
+
         <!-- change value below to reddit username,
              TODO: get from system prefs -->
         <meta-data android:name="net.dean.jraw.REDDIT_USERNAME" android:value="(strafeon)" />
