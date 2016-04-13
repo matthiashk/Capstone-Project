@@ -52,25 +52,42 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         holder.numberOfComments.setText(String.valueOf(mValues.get(position).postNumberOfComments));
         //holder.mIdView.setText(mValues.get(position).id);
         //holder.mContentView.setText(mValues.get(position).content);
-        Picasso.with(mContext).load(mValues.get(position).postThumbnail).into(holder.thumbnail);
-
-        holder.thumbnail.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-
-                // TODO: load 'source' into the webview, send source as string to webview
-                Intent intent = new Intent(mContext, WebViewActivity.class);
-                intent.putExtra("SOURCE", holder.mItem.postSource);
-
-                mContext.startActivity(intent);
 
 
+        //System.out.println("mValues.get(position).postThumbnail = " + mValues.get(position).postThumbnail);
 
 
-                //System.out.println("CLICKED ON THUMBNAIL");
-            }
-        });
+        // check if there is a thumbnail
+
+        if (mValues.get(position).postThumbnail == null) {
+
+            holder.thumbnail.setVisibility(View.GONE);
+
+
+        } else {
+
+            Picasso.with(mContext)
+                    .load(mValues.get(position).postThumbnail)
+                    .into(holder.thumbnail);
+
+            holder.thumbnail.setOnClickListener(new View.OnClickListener() {
+
+                @Override
+                public void onClick(View v) {
+
+                    // TODO: load 'source' into the webview, send source as string to webview
+                    Intent intent = new Intent(mContext, WebViewActivity.class);
+                    intent.putExtra("SOURCE", holder.mItem.postSource);
+
+                    mContext.startActivity(intent);
+
+
+
+
+                    //System.out.println("CLICKED ON THUMBNAIL");
+                }
+            });
+        }
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
