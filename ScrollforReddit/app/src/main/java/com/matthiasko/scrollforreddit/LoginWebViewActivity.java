@@ -1,6 +1,7 @@
 package com.matthiasko.scrollforreddit;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -86,7 +87,8 @@ public class LoginWebViewActivity extends Activity{
                     new UserChallengeTask(oAuthHelper, credentials).execute(url);
 
                     // exit back to mainactivity once authenticated
-                    finish();
+
+
                 }
             }
         });
@@ -147,6 +149,16 @@ public class LoginWebViewActivity extends Activity{
             store.writeToken("EXAMPLE_KEY", refreshToken);
 
             Log.v(LOG_TAG, "Refresh Token: " + refreshToken);
+
+
+
+            // send the onactivityresult intent, since we are done with this activity here
+            Intent i = getIntent();
+
+            //i.putExtra("MY_KEY", "this is my value"); // not used, remove
+            setResult(RESULT_OK, i);
+
+            finish();
 
             /*
             if (oAuthData != null) {

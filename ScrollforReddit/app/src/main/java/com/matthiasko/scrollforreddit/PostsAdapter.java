@@ -50,11 +50,20 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         holder.source.setText(mValues.get(position).postDomain);
         holder.points.setText(String.valueOf(mValues.get(position).postPoints));
         holder.numberOfComments.setText(String.valueOf(mValues.get(position).postNumberOfComments));
+
+        final String postFullName = mValues.get(position).postFullName;
+
+        //System.out.println("onBindViewHolder - postFullName = " + postFullName);
+
         //holder.mIdView.setText(mValues.get(position).id);
         //holder.mContentView.setText(mValues.get(position).content);
 
 
         //System.out.println("mValues.get(position).postThumbnail = " + mValues.get(position).postThumbnail);
+
+
+        //System.out.println("mValues.get(position).postTitle = " + mValues.get(position).postTitle);
+
 
 
         // check if there is a thumbnail
@@ -125,6 +134,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                     arguments.putInt("POINTS", holder.mItem.postPoints);
                     arguments.putInt("NUMBER_OF_COMMENTS", holder.mItem.postNumberOfComments);
                     arguments.putString("DOMAIN", holder.mItem.postDomain);
+                    arguments.putString("FULLNAME", postFullName);
 
                     //arguments.putString("COMMENT_AUTHOR", commentAuthor);
 
@@ -150,6 +160,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                     intent.putExtra("POINTS", holder.mItem.postPoints);
                     intent.putExtra("NUMBER_OF_COMMENTS", holder.mItem.postNumberOfComments);
                     intent.putExtra("DOMAIN", holder.mItem.postDomain);
+                    intent.putExtra("FULLNAME", postFullName);
 
                     //intent.putExtra("COMMENT_AUTHOR", commentAuthor);
 

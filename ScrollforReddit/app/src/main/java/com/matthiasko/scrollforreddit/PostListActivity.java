@@ -56,11 +56,16 @@ public class PostListActivity extends AppCompatActivity {
 
     private ArrayList<Post> arrayOfPosts;
 
+    DBHandler handler;
+
+    static final int LOGIN_REQUEST = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_list);
+
+        handler = new DBHandler(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -94,7 +99,8 @@ public class PostListActivity extends AppCompatActivity {
 
                 // load webview activity to login and authenticate user
                 Intent intent = new Intent(this, LoginWebViewActivity.class);
-                startActivity(intent);
+                //startActivity(intent);
+                startActivityForResult(intent, LOGIN_REQUEST);
 
                 break;
 
@@ -140,6 +146,42 @@ public class PostListActivity extends AppCompatActivity {
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == LOGIN_REQUEST) {
+
+            if (resultCode == RESULT_OK) {
+
+                //String value = data.getStringExtra("MY_KEY");
+
+                //System.out.println("value = " + value);
+
+                // coming from loginwebviewactivity after logging in
+                // fetch posts
+
+                AndroidTokenStore store = new AndroidTokenStore(this);
+
+                try {
+
+                    String refreshToken = store.readToken("EXAMPLE_KEY");
+                    new RefreshTokenAsync().execute(refreshToken);
+
+                } catch (NoSuchTokenException e) {
+
+                    Log.e(LOG_TAG, e.getMessage());
+                }
+
+            }
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
@@ -175,33 +217,41 @@ public class PostListActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-            SubredditPaginator paginator = new SubredditPaginator(redditClient);
-            Listing<Submission> submissions = paginator.next();
+            // TODO: check here if database exists, if yes we need to add to existing database
+            if (handler.getPostCount() == 0) {
 
-            for (Submission submission : submissions) {
 
-                String title = submission.getTitle();
-                //System.out.println("title = " + title);
+                SubredditPaginator paginator = new SubredditPaginator(redditClient);
+                Listing<Submission> submissions = paginator.next();
 
-                String subreddit = submission.getSubredditName();
+                for (Submission submission : submissions) {
 
-                String username = submission.getAuthor();
+                    String title = submission.getTitle();
+                    //System.out.println("title = " + title);
 
-                String source = submission.getUrl();
+                    // TODO: store fullname so we can get the specific post later...
 
-                // shorten source url by extracting domain name and send as string
+                    //System.out.println("submission.getFullName() = " + submission.getFullName());
 
-                String domain = "";
+                    String subreddit = submission.getSubredditName();
 
-                try {
+                    String username = submission.getAuthor();
 
-                    URI uri = new URI(source);
-                    domain = uri.getHost();
+                    String source = submission.getUrl();
 
-                } catch (URISyntaxException e) {
+                    // shorten source url by extracting domain name and send as string
 
-                    e.printStackTrace();
-                }
+                    String domain = "";
+
+                    try {
+
+                        URI uri = new URI(source);
+                        domain = uri.getHost();
+
+                    } catch (URISyntaxException e) {
+
+                        e.printStackTrace();
+                    }
 
                 /*
                 if (!domain.isEmpty()) {
@@ -212,30 +262,32 @@ public class PostListActivity extends AppCompatActivity {
 
 
 
-                int points = submission.getScore();
+                    int points = submission.getScore();
 
-                int numberOfComments = submission.getCommentCount();
+                    int numberOfComments = submission.getCommentCount();
 
-                String thumbnail = submission.getThumbnail();
+                    String thumbnail = submission.getThumbnail();
 
-                // we need to add this to the post item data so we can retrieve the commentnode in details view
+                    // we need to add this to the post item data so we can retrieve the commentnode in details view
 
-                String postId = submission.getId();
+                    String postId = submission.getId();
 
-                //System.out.println("postId = " + postId);
+                    String fullName = submission.getFullName();
 
-                // we should process comments in the adapter?
-                // loading them here takes too long, hangs the UI
+                    //System.out.println("postId = " + postId);
 
-                //CommentNode commentNode = submission.getComments();
+                    // we should process comments in the adapter?
+                    // loading them here takes too long, hangs the UI
 
-                //System.out.println("commentNode.getTotalSize() = " + commentNode.getTotalSize());
+                    //CommentNode commentNode = submission.getComments();
 
-                //Submission fullSubmissionData = redditClient.getSubmission(submission.getId());
-                //System.out.println(fullSubmissionData.getTitle());
-                //System.out.println(fullSubmissionData.getComments());
+                    //System.out.println("commentNode.getTotalSize() = " + commentNode.getTotalSize());
 
-                //CommentNode commentNode = fullSubmissionData.getComments();
+                    //Submission fullSubmissionData = redditClient.getSubmission(submission.getId());
+                    //System.out.println(fullSubmissionData.getTitle());
+                    //System.out.println(fullSubmissionData.getComments());
+
+                    //CommentNode commentNode = fullSubmissionData.getComments();
 
                 /*
                 String commentAuthor = commentNode.getComment().getAuthor();
@@ -245,12 +297,33 @@ public class PostListActivity extends AppCompatActivity {
                 String commentText = commentNode.getComment().getBody();
                 */
 
-                Post post = new Post(title, subreddit, username, source, thumbnail, points,
-                        numberOfComments, postId, domain);
+                    Post post = new Post(title, subreddit, username, source, thumbnail, points,
+                            numberOfComments, postId, domain, fullName);
 
-                // add each post to our arraylist for the postadapter
-                arrayOfPosts.add(post);
+                    // add the post to the database
+                    handler.addPost(post);
+
+                    // add each post to our arraylist for the postadapter
+                    arrayOfPosts.add(post);
+                }
+
+
+
+
+            } else {
+
+                // TODO: we need to check for updated frontpage...
+
+                //System.out.println("PostListActivity - getting posts from database");
+
+                arrayOfPosts.addAll(handler.getAllPosts());
+
+                //System.out.println("arrayOfPosts.size() = " + arrayOfPosts.size());
+
             }
+
+
+
 
             //System.out.println("arrayOfPosts.size() = " + arrayOfPosts.size());
 

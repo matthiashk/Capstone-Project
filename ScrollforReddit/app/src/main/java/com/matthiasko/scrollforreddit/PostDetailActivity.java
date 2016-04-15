@@ -62,6 +62,7 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
             Bundle arguments = new Bundle();
             arguments.putString("POST_TITLE", getIntent().getStringExtra("POST_TITLE"));
             arguments.putString("POST_ID", getIntent().getStringExtra("POST_ID"));
+            arguments.putString("FULLNAME", getIntent().getStringExtra("FULLNAME"));
 
             PostDetailFragment fragment = new PostDetailFragment();
             fragment.setArguments(arguments);

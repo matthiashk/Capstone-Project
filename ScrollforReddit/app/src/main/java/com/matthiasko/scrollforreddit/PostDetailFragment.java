@@ -45,6 +45,7 @@ public class PostDetailFragment extends Fragment {
     private String postTitle;
     private String commentAuthor;
     private String postId;
+    private String postFullName;
 
     private static final String LOG_TAG = "MainActivity";
 
@@ -57,6 +58,8 @@ public class PostDetailFragment extends Fragment {
     private CommentsAdapter adapter;
 
     private ArrayList<ScrollComment> arrayOfComments;
+
+
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -95,6 +98,10 @@ public class PostDetailFragment extends Fragment {
             postTitle = getArguments().getString("POST_TITLE");
 
             postId = getArguments().getString("POST_ID");
+
+            postFullName = getArguments().getString("FULLNAME");
+
+            //System.out.println("postFullName = " + postFullName);
 
             //System.out.println("postId = " + postId);
 
@@ -174,8 +181,24 @@ public class PostDetailFragment extends Fragment {
                 e.printStackTrace();
             }
 
+            // TODO: we need to get a specific post using its ID, but the paginator only
+            // TODO: use the fullname and a specificpaginator to access the post
+
+            // seems to get frontpage posts
+            // therefore we have to query the post more directly...
+
+            //SpecificPaginator specificPaginator = new SpecificPaginator(redditClient);
+
+            //specificPaginator.getSubmissions()
+
+
+
+
             SubredditPaginator paginator = new SubredditPaginator(redditClient);
+
             Listing<Submission> submissions = paginator.next();
+
+            System.out.println("submissions.size() = " + submissions.size());
 
             for (Submission submission : submissions) {
 
@@ -219,8 +242,6 @@ public class PostDetailFragment extends Fragment {
 
                     // load 10 comments and show their child comments?
 
-                    // TODO: we need a loading graphic here...
-
                     // load 10 comments into the array
 
                     /*
@@ -261,7 +282,7 @@ public class PostDetailFragment extends Fragment {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
 
-            //System.out.println("arrayOfComments.size() = " + arrayOfComments.size());
+            System.out.println("arrayOfComments.size() = " + arrayOfComments.size());
 
             //System.out.println("string = " + s);
 
