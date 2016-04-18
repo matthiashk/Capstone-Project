@@ -8,6 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 
 import net.dean.jraw.RedditClient;
@@ -59,6 +61,8 @@ public class PostListActivity extends AppCompatActivity {
     DBHandler handler;
 
     static final int LOGIN_REQUEST = 1;
+
+    private static final String DATABASE_NAME = "posts.db";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -150,6 +154,28 @@ public class PostListActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_post_list, menu);
+        return true;
+
+
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+        int id = item.getItemId();
+
+        if (id == R.id.action_refresh) {
+
+            refreshPosts();
+
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         if (requestCode == LOGIN_REQUEST) {
@@ -183,6 +209,51 @@ public class PostListActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
     }
+
+
+
+
+
+    private void refreshPosts() {
+
+        // do we need to check for access here?
+
+        // we need to remove posts from the database
+
+
+        arrayOfPosts.clear();
+
+        adapter.notifyDataSetChanged();
+
+
+
+        // show loader
+        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
+
+        getApplicationContext().deleteDatabase(DATABASE_NAME);
+
+
+
+
+        // get updated list
+        AndroidTokenStore store = new AndroidTokenStore(this);
+
+        try {
+
+            String refreshToken = store.readToken("EXAMPLE_KEY");
+            new RefreshTokenAsync().execute(refreshToken);
+
+        } catch (NoSuchTokenException e) {
+
+            Log.e(LOG_TAG, e.getMessage());
+        }
+
+
+
+    }
+
+
+
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
         recyclerView.setAdapter(adapter);
@@ -220,7 +291,6 @@ public class PostListActivity extends AppCompatActivity {
             // TODO: check here if database exists, if yes we need to add to existing database
             if (handler.getPostCount() == 0) {
 
-
                 SubredditPaginator paginator = new SubredditPaginator(redditClient);
                 Listing<Submission> submissions = paginator.next();
 
@@ -229,7 +299,7 @@ public class PostListActivity extends AppCompatActivity {
                     String title = submission.getTitle();
                     //System.out.println("title = " + title);
 
-                    // TODO: store fullname so we can get the specific post later...
+                    // store fullname so we can get the specific post later...
 
                     //System.out.println("submission.getFullName() = " + submission.getFullName());
 
@@ -252,15 +322,6 @@ public class PostListActivity extends AppCompatActivity {
 
                         e.printStackTrace();
                     }
-
-                /*
-                if (!domain.isEmpty()) {
-
-                    //System.out.println("domain = " + domain);
-                }
-                */
-
-
 
                     int points = submission.getScore();
 
@@ -289,13 +350,13 @@ public class PostListActivity extends AppCompatActivity {
 
                     //CommentNode commentNode = fullSubmissionData.getComments();
 
-                /*
-                String commentAuthor = commentNode.getComment().getAuthor();
-                int commentPoints = commentNode.getComment().getScore();
-                Date commentTime = commentNode.getComment().getCreated();
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat(commentTime.toString(), Locale.US);
-                String commentText = commentNode.getComment().getBody();
-                */
+                    /*
+                    String commentAuthor = commentNode.getComment().getAuthor();
+                    int commentPoints = commentNode.getComment().getScore();
+                    Date commentTime = commentNode.getComment().getCreated();
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(commentTime.toString(), Locale.US);
+                    String commentText = commentNode.getComment().getBody();
+                    */
 
                     Post post = new Post(title, subreddit, username, source, thumbnail, points,
                             numberOfComments, postId, domain, fullName);
@@ -311,10 +372,6 @@ public class PostListActivity extends AppCompatActivity {
 
 
             } else {
-
-                // TODO: we need to check for updated frontpage...
-
-                //System.out.println("PostListActivity - getting posts from database");
 
                 arrayOfPosts.addAll(handler.getAllPosts());
 
@@ -336,6 +393,9 @@ public class PostListActivity extends AppCompatActivity {
 
             // we need this to update the adapter on the main thread
             adapter.notifyDataSetChanged();
+
+            // hide the loading animation
+            findViewById(R.id.loadingPanel).setVisibility(View.GONE);
         }
     }
 }

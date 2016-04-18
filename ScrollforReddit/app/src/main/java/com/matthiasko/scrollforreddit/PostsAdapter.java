@@ -68,6 +68,8 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
 
         // check if there is a thumbnail
 
+        holder.thumbnail.setVisibility(View.VISIBLE);
+
         if (mValues.get(position).postThumbnail == null) {
 
             holder.thumbnail.setVisibility(View.GONE);

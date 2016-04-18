@@ -24,8 +24,8 @@ public class DBHandler extends SQLiteOpenHelper {
     public static final String COLUMN_POST_ID = "post_id";
     public static final String COLUMN_SOURCE_DOMAIN = "source_domain";
     public static final String COLUMN_FULLNAME = "fullname";
-
-    // TODO: points and number of comments can change often, how should we handle these?
+    public static final String COLUMN_SCORE = "score";
+    public static final String COLUMN_NUMBER_OF_COMMENTS = "number_of_comments";
 
     private static final String DATABASE_NAME = "posts.db";
     private static final int DATABASE_VERSION = 1;
@@ -41,7 +41,9 @@ public class DBHandler extends SQLiteOpenHelper {
             COLUMN_THUMBNAIL + " text," +
             COLUMN_POST_ID + " text not null," +
             COLUMN_SOURCE_DOMAIN + " text not null," +
-            COLUMN_FULLNAME + " text not null" +
+            COLUMN_FULLNAME + " text not null," +
+            COLUMN_SCORE + " integer," +
+            COLUMN_NUMBER_OF_COMMENTS + " integer" +
             ");";
 
     public DBHandler(Context context) {
@@ -72,7 +74,8 @@ public class DBHandler extends SQLiteOpenHelper {
             values.put(COLUMN_POST_ID, post.getPostId());
             values.put(COLUMN_SOURCE_DOMAIN, post.getPostDomain());
             values.put(COLUMN_FULLNAME, post.getPostFullName());
-
+            values.put(COLUMN_SCORE, post.getPostPoints());
+            values.put(COLUMN_NUMBER_OF_COMMENTS, post.getPostNumberOfComments());
             db.insert(TABLE_POSTS, null, values);
             db.close();
         }catch (Exception e){
@@ -102,6 +105,8 @@ public class DBHandler extends SQLiteOpenHelper {
                     post.setPostId(cursor.getString(6));
                     post.setPostDomain(cursor.getString(7));
                     post.setPostFullName(cursor.getString(8));
+                    post.setPostPoints(cursor.getInt(9));
+                    post.setPostNumberOfComments(cursor.getInt(10));
                     postsArrayList.add(post);
                 }
             }
