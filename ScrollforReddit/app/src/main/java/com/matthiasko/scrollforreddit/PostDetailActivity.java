@@ -160,6 +160,12 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
     public void postDetailSpinner() {
 
         // hide spinner, called from postdetailfragment / onpostexecute
-        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+
+        if (findViewById(R.id.loadingPanel) != null) {
+
+            findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+        }
+
+
     }
 }

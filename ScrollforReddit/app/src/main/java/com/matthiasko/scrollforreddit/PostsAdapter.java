@@ -7,6 +7,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -64,7 +65,28 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
 
         //System.out.println("mValues.get(position).postTitle = " + mValues.get(position).postTitle);
 
+        holder.upButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+                //System.out.println("OVERRIDE UP");
+
+                ((PostListActivity) mContext).onVote(mValues.get(position).getPostFullName());
+
+
+
+
+
+            }
+        });
+
+        holder.downButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                //System.out.println("OVERRIDE DOWN");
+            }
+        });
 
         // check if there is a thumbnail
 
@@ -103,6 +125,8 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
+
 
                 String postId = mValues.get(position).postId;
 
@@ -179,10 +203,11 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
+
         public final View mView;
-        //public final TextView mIdView;
-        //public final TextView mContentView;
         public Post mItem;
+
+
 
         TextView postTitle;
         TextView subreddit;
@@ -191,7 +216,9 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         TextView points;
         TextView numberOfComments;
         ImageView thumbnail;
-        //CommentNode commentNode;
+
+        Button upButton;
+        Button downButton;
 
         public ViewHolder(View view) {
             super(view);
@@ -206,6 +233,9 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
             points = (TextView) view.findViewById(R.id.postPoints);
             numberOfComments = (TextView) view.findViewById(R.id.postNumberOfComments);
             thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
+
+            upButton = (Button) view.findViewById(R.id.upButton);
+            downButton = (Button) view.findViewById(R.id.downButton);
         }
     }
 }

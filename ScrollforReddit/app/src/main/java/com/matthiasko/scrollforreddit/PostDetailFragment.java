@@ -189,7 +189,7 @@ public class PostDetailFragment extends Fragment {
 
             //SpecificPaginator specificPaginator = new SpecificPaginator(redditClient);
 
-            //specificPaginator.getSubmissions()
+            //specificPaginator.getSubmissions();
 
 
 
@@ -208,7 +208,6 @@ public class PostDetailFragment extends Fragment {
                 //System.out.println("postId = " + postId);
 
                 if (submission.getId().equals(postId)) {
-
 
                     Submission fullSubmissionData = redditClient.getSubmission(submission.getId());
                     //System.out.println(fullSubmissionData.getTitle());
@@ -291,6 +290,8 @@ public class PostDetailFragment extends Fragment {
             adapter.notifyDataSetChanged();
 
             try {
+
+
 
                 ((PostDetailActivity) getActivity()).postDetailSpinner();
 

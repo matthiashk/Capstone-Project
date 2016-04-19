@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import net.dean.jraw.ApiException;
 import net.dean.jraw.RedditClient;
 import net.dean.jraw.android.AndroidRedditClient;
 import net.dean.jraw.android.AndroidTokenStore;
@@ -23,8 +24,10 @@ import net.dean.jraw.http.oauth.Credentials;
 import net.dean.jraw.http.oauth.OAuthData;
 import net.dean.jraw.http.oauth.OAuthException;
 import net.dean.jraw.http.oauth.OAuthHelper;
+import net.dean.jraw.managers.AccountManager;
 import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
+import net.dean.jraw.models.VoteDirection;
 import net.dean.jraw.paginators.SubredditPaginator;
 
 import java.net.URI;
@@ -46,7 +49,6 @@ public class PostListActivity extends AppCompatActivity {
      * device.
      */
     private boolean mTwoPane;
-
 
     private static final String LOG_TAG = "MainActivity";
 
@@ -153,6 +155,16 @@ public class PostListActivity extends AppCompatActivity {
 
     }
 
+
+    public void onVote (String fullName) {
+
+        //System.out.println("VOTE UP");
+
+        new VoteAsyncTask().execute(fullName);
+
+
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_post_list, menu);
@@ -210,30 +222,19 @@ public class PostListActivity extends AppCompatActivity {
         super.onResume();
     }
 
-
-
-
-
     private void refreshPosts() {
 
-        // do we need to check for access here?
-
         // we need to remove posts from the database
-
-
+        // first, clear the array for the recyclerview
         arrayOfPosts.clear();
 
         adapter.notifyDataSetChanged();
 
-
-
         // show loader
         findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
 
+        //delete database
         getApplicationContext().deleteDatabase(DATABASE_NAME);
-
-
-
 
         // get updated list
         AndroidTokenStore store = new AndroidTokenStore(this);
@@ -247,13 +248,7 @@ public class PostListActivity extends AppCompatActivity {
 
             Log.e(LOG_TAG, e.getMessage());
         }
-
-
-
     }
-
-
-
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
         recyclerView.setAdapter(adapter);
@@ -398,4 +393,160 @@ public class PostListActivity extends AppCompatActivity {
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
         }
     }
+
+
+
+    private class VoteAsyncTask extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected Void doInBackground(String... params) {
+
+            // we need to check authentication to get submission info and vote
+
+            final RedditClient redditClient = new AndroidRedditClient(PostListActivity.this);
+
+            final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
+
+            final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
+
+            RefreshTokenHandler handler = new RefreshTokenHandler(new AndroidTokenStore(PostListActivity.this), redditClient);
+
+            AuthenticationManager.get().init(redditClient, handler);
+
+            // check the authentication state of user
+            AuthenticationState authState =  AuthenticationManager.get().checkAuthState();
+
+            System.out.println("authState = " + authState.toString());
+
+            AndroidTokenStore store = new AndroidTokenStore(PostListActivity.this);
+
+            try {
+
+                String refreshToken = store.readToken("EXAMPLE_KEY");
+                //new RefreshTokenAsync().execute(refreshToken);
+
+                oAuthHelper.setRefreshToken(refreshToken);
+
+                try {
+
+                    OAuthData finalData = oAuthHelper.refreshToken(credentials);
+
+                    redditClient.authenticate(finalData);
+
+                    if (redditClient.isAuthenticated()) {
+
+                        Log.v(LOG_TAG, "Authenticated");
+                    }
+
+
+                    String fullName = params[0];
+
+                    //System.out.println("fullName = " + fullName);
+
+                    // we crop the prefix from fullName, since we only need id
+                    StringBuilder cropped = new StringBuilder(fullName);
+
+                    cropped.delete(0, 3);
+
+                    System.out.println("cropped.toString() = " + cropped.toString());
+
+                    AccountManager accountManager = new AccountManager(redditClient);
+
+                    //SpecificPaginator specificPaginator = new SpecificPaginator(redditClient, fullName);
+
+                    Submission submission = redditClient.getSubmission(cropped.toString());
+
+
+
+
+
+
+                    int score = submission.getScore();
+
+                    System.out.println("score = " + score);
+
+
+                    try {
+                        accountManager.vote(submission, VoteDirection.UPVOTE);
+
+
+                    }
+                    catch (ApiException e) {
+                        e.printStackTrace();
+                    }
+
+                    //TODO: increment post score
+                    //TODO: update post in database?
+                    //TODO: disable future upvotes for this post
+
+                    // update specific post in db
+                    // notifydatasetchanged / repopulate backing array?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                } catch (OAuthException e) {
+
+                    e.printStackTrace();
+                }
+
+            } catch (NoSuchTokenException e) {
+
+                Log.e(LOG_TAG, e.getMessage());
+            }
+
+
+
+            /*
+
+            String fullName = params[0];
+
+            RedditClient redditClient = new AndroidRedditClient(PostListActivity.this);
+
+            AccountManager accountManager = new AccountManager(redditClient);
+
+            //SpecificPaginator specificPaginator = new SpecificPaginator(redditClient, fullName);
+
+            Submission submission = redditClient.getSubmission(fullName);
+
+            int score = submission.getScore();
+
+            System.out.println("score = " + score);
+
+
+            try {
+                accountManager.vote(submission, VoteDirection.UPVOTE);
+            }
+            catch (ApiException e) {
+
+                e.printStackTrace();
+            }
+
+            int newScore = submission.getScore();
+
+            System.out.println("newScore = " + newScore);
+
+            // update vote score...
+
+            */
+
+
+            return null;
+        }
+    }
+
+
+
 }
