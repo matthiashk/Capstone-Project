@@ -71,7 +71,13 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
 
                 //System.out.println("OVERRIDE UP");
 
-                ((PostListActivity) mContext).onVote(mValues.get(position).getPostFullName());
+                ((PostListActivity) mContext).onVote(mValues.get(position).getPostId(),
+                        mValues.get(position).getId());
+
+
+
+                // test
+                //notifyItemChanged(position);
 
 
 
@@ -84,18 +90,15 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
             @Override
             public void onClick(View v) {
 
-                //System.out.println("OVERRIDE DOWN");
             }
         });
 
         // check if there is a thumbnail
-
         holder.thumbnail.setVisibility(View.VISIBLE);
 
         if (mValues.get(position).postThumbnail == null) {
 
             holder.thumbnail.setVisibility(View.GONE);
-
 
         } else {
 
@@ -113,11 +116,6 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                     intent.putExtra("SOURCE", holder.mItem.postSource);
 
                     mContext.startActivity(intent);
-
-
-
-
-                    //System.out.println("CLICKED ON THUMBNAIL");
                 }
             });
         }
@@ -125,8 +123,6 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
 
                 String postId = mValues.get(position).postId;
 
@@ -206,8 +202,6 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
 
         public final View mView;
         public Post mItem;
-
-
 
         TextView postTitle;
         TextView subreddit;

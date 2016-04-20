@@ -51,6 +51,15 @@
         <!-- change value below to reddit username,
              TODO: get from system prefs -->
         <meta-data android:name="net.dean.jraw.REDDIT_USERNAME" android:value="(strafeon)" />
+
+        <provider
+
+            android:authorities="com.matthiasko.scrollforreddit.PostProvider"
+
+            android:name=".PostProvider" >
+
+        </provider>
+
     </application>
 
 </manifest>

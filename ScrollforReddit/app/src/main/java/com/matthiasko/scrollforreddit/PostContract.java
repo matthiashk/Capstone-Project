@@ -10,7 +10,7 @@ import android.provider.BaseColumns;
  */
 public class PostContract {
 
-    public static final String CONTENT_AUTHORITY = "com.matthiasko.scrollforreddit";
+    public static final String CONTENT_AUTHORITY = "com.matthiasko.scrollforreddit.PostProvider";
 
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
 
@@ -23,12 +23,12 @@ public class PostContract {
 
         public static final String CONTENT_TYPE =
                 ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_POST;
+
         public static final String CONTENT_ITEM_TYPE =
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_POST;
 
         public static final String TABLE_NAME = "posts";
 
-        // Column with the foreign key into the location table.
         public static final String COLUMN_TITLE = "title";
 
         public static final String COLUMN_SUBREDDIT = "subreddit";

@@ -1,5 +1,6 @@
 package com.matthiasko.scrollforreddit;
 
+import android.content.ContentValues;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -156,11 +157,11 @@ public class PostListActivity extends AppCompatActivity {
     }
 
 
-    public void onVote (String fullName) {
+    public void onVote (String postId, long id) {
 
         //System.out.println("VOTE UP");
 
-        new VoteAsyncTask().execute(fullName);
+        new VoteAsyncTask().execute(postId, String.valueOf(id));
 
 
     }
@@ -433,67 +434,45 @@ public class PostListActivity extends AppCompatActivity {
 
                     redditClient.authenticate(finalData);
 
-                    if (redditClient.isAuthenticated()) {
-
-                        Log.v(LOG_TAG, "Authenticated");
-                    }
-
-
-                    String fullName = params[0];
+                    String postId = params[0];
 
                     //System.out.println("fullName = " + fullName);
-
                     // we crop the prefix from fullName, since we only need id
-                    StringBuilder cropped = new StringBuilder(fullName);
-
-                    cropped.delete(0, 3);
-
-                    System.out.println("cropped.toString() = " + cropped.toString());
+                    //StringBuilder cropped = new StringBuilder(fullName);
+                    //cropped.delete(0, 3);
+                    //System.out.println("cropped.toString() = " + cropped.toString());
 
                     AccountManager accountManager = new AccountManager(redditClient);
 
-                    //SpecificPaginator specificPaginator = new SpecificPaginator(redditClient, fullName);
-
-                    Submission submission = redditClient.getSubmission(cropped.toString());
-
-
-
-
-
+                    Submission submission = redditClient.getSubmission(postId);
 
                     int score = submission.getScore();
 
                     System.out.println("score = " + score);
 
-
                     try {
                         accountManager.vote(submission, VoteDirection.UPVOTE);
-
-
                     }
                     catch (ApiException e) {
                         e.printStackTrace();
                     }
 
-                    //TODO: increment post score
-                    //TODO: update post in database?
+                    // update post in database
+
+                    long id = Long.valueOf(params[1]);
+
+                    ContentValues values = new ContentValues();
+                    values.put(PostContract.PostEntry.COLUMN_SCORE, score + 1);
+
+                    //System.out.println("PostContract.PostEntry.CONTENT_URI.toString() = " + PostContract.PostEntry.CONTENT_URI.toString());
+
+                    getContentResolver().update(PostContract.PostEntry.CONTENT_URI, values,
+                            PostContract.PostEntry._ID + "=?", new String[]{String.valueOf(id)});
+
+                    //TODO: update UI to show new post score
+
+
                     //TODO: disable future upvotes for this post
-
-                    // update specific post in db
-                    // notifydatasetchanged / repopulate backing array?
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -506,44 +485,14 @@ public class PostListActivity extends AppCompatActivity {
 
                 Log.e(LOG_TAG, e.getMessage());
             }
-
-
-
-            /*
-
-            String fullName = params[0];
-
-            RedditClient redditClient = new AndroidRedditClient(PostListActivity.this);
-
-            AccountManager accountManager = new AccountManager(redditClient);
-
-            //SpecificPaginator specificPaginator = new SpecificPaginator(redditClient, fullName);
-
-            Submission submission = redditClient.getSubmission(fullName);
-
-            int score = submission.getScore();
-
-            System.out.println("score = " + score);
-
-
-            try {
-                accountManager.vote(submission, VoteDirection.UPVOTE);
-            }
-            catch (ApiException e) {
-
-                e.printStackTrace();
-            }
-
-            int newScore = submission.getScore();
-
-            System.out.println("newScore = " + newScore);
-
-            // update vote score...
-
-            */
-
-
             return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            adapter.notifyDataSetChanged();
         }
     }
 

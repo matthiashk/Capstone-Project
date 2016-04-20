@@ -19,10 +19,14 @@ public class PostProvider extends ContentProvider {
 
     static final int POST = 100;
 
+
+
     static UriMatcher buildUriMatcher() {
 
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = PostContract.CONTENT_AUTHORITY;
+
+        //System.out.println("buildUriMatcher - authority = " + authority);
 
         // For each type of URI you want to add, create a corresponding code.
         matcher.addURI(authority, PostContract.PATH_POST, POST);
@@ -56,6 +60,9 @@ public class PostProvider extends ContentProvider {
                         String sortOrder) {
         // Here's the switch statement that, given a URI, will determine what kind of request it is,
         // and query the database accordingly.
+
+        //System.out.println("query - uri.toString() = " + uri.toString());
+
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
 
@@ -129,9 +136,14 @@ public class PostProvider extends ContentProvider {
     @Override
     public int update(
             Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+
+        //System.out.println("uri.toString() = " + uri.toString());
+
         final SQLiteDatabase db = handler.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
         int rowsUpdated;
+
+
 
         switch (match) {
             case POST:
