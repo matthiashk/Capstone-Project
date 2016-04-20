@@ -7,6 +7,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
+import com.matthiasko.scrollforreddit.PostContract.PostEntry;
+
 import java.util.ArrayList;
 
 /**
@@ -14,36 +16,23 @@ import java.util.ArrayList;
  */
 public class DBHandler extends SQLiteOpenHelper {
 
-    public static final String TABLE_POSTS = "posts";
-    public static final String COLUMN_ID = "_id";
-    public static final String COLUMN_TITLE = "title";
-    public static final String COLUMN_SUBREDDIT = "subreddit";
-    public static final String COLUMN_AUTHOR = "author";
-    public static final String COLUMN_SOURCE = "source";
-    public static final String COLUMN_THUMBNAIL = "thumbnail";
-    public static final String COLUMN_POST_ID = "post_id";
-    public static final String COLUMN_SOURCE_DOMAIN = "source_domain";
-    public static final String COLUMN_FULLNAME = "fullname";
-    public static final String COLUMN_SCORE = "score";
-    public static final String COLUMN_NUMBER_OF_COMMENTS = "number_of_comments";
-
     private static final String DATABASE_NAME = "posts.db";
     private static final int DATABASE_VERSION = 1;
 
     // Database creation sql statement
     private static final String DATABASE_CREATE = "create table "
-            + TABLE_POSTS + "(" +
-            COLUMN_ID + " integer primary key autoincrement, " +
-            COLUMN_TITLE + " text not null," +
-            COLUMN_SUBREDDIT + " text not null," +
-            COLUMN_AUTHOR + " text not null," +
-            COLUMN_SOURCE + " text not null," +
-            COLUMN_THUMBNAIL + " text," +
-            COLUMN_POST_ID + " text not null," +
-            COLUMN_SOURCE_DOMAIN + " text not null," +
-            COLUMN_FULLNAME + " text not null," +
-            COLUMN_SCORE + " integer," +
-            COLUMN_NUMBER_OF_COMMENTS + " integer" +
+            + PostEntry.TABLE_NAME + "(" +
+            PostEntry._ID + " integer primary key autoincrement, " +
+            PostEntry.COLUMN_TITLE + " text not null," +
+            PostEntry.COLUMN_SUBREDDIT + " text not null," +
+            PostEntry.COLUMN_AUTHOR + " text not null," +
+            PostEntry.COLUMN_SOURCE + " text not null," +
+            PostEntry.COLUMN_THUMBNAIL + " text," +
+            PostEntry.COLUMN_POST_ID + " text not null," +
+            PostEntry.COLUMN_SOURCE_DOMAIN + " text not null," +
+            PostEntry.COLUMN_FULLNAME + " text not null," +
+            PostEntry.COLUMN_SCORE + " integer," +
+            PostEntry.COLUMN_NUMBER_OF_COMMENTS + " integer" +
             ");";
 
     public DBHandler(Context context) {
@@ -57,7 +46,7 @@ public class DBHandler extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_POSTS);
+        db.execSQL("DROP TABLE IF EXISTS " + PostEntry.TABLE_NAME);
         onCreate(db);
     }
 
@@ -66,17 +55,17 @@ public class DBHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         try{
             ContentValues values = new ContentValues();
-            values.put(COLUMN_TITLE, post.getPostTitle());
-            values.put(COLUMN_SUBREDDIT, post.getPostSubreddit());
-            values.put(COLUMN_AUTHOR, post.getPostAuthor());
-            values.put(COLUMN_SOURCE, post.getPostSource());
-            values.put(COLUMN_THUMBNAIL, post.getPostThumbnail());
-            values.put(COLUMN_POST_ID, post.getPostId());
-            values.put(COLUMN_SOURCE_DOMAIN, post.getPostDomain());
-            values.put(COLUMN_FULLNAME, post.getPostFullName());
-            values.put(COLUMN_SCORE, post.getPostPoints());
-            values.put(COLUMN_NUMBER_OF_COMMENTS, post.getPostNumberOfComments());
-            db.insert(TABLE_POSTS, null, values);
+            values.put(PostEntry.COLUMN_TITLE, post.getPostTitle());
+            values.put(PostEntry.COLUMN_SUBREDDIT, post.getPostSubreddit());
+            values.put(PostEntry.COLUMN_AUTHOR, post.getPostAuthor());
+            values.put(PostEntry.COLUMN_SOURCE, post.getPostSource());
+            values.put(PostEntry.COLUMN_THUMBNAIL, post.getPostThumbnail());
+            values.put(PostEntry.COLUMN_POST_ID, post.getPostId());
+            values.put(PostEntry.COLUMN_SOURCE_DOMAIN, post.getPostDomain());
+            values.put(PostEntry.COLUMN_FULLNAME, post.getPostFullName());
+            values.put(PostEntry.COLUMN_SCORE, post.getPostPoints());
+            values.put(PostEntry.COLUMN_NUMBER_OF_COMMENTS, post.getPostNumberOfComments());
+            db.insert(PostEntry.TABLE_NAME, null, values);
             db.close();
         }catch (Exception e){
             Log.e("problem", e + "");
@@ -89,7 +78,7 @@ public class DBHandler extends SQLiteOpenHelper {
         ArrayList<Post> postsArrayList = null;
         try{
             postsArrayList = new ArrayList<Post>();
-            String QUERY = "SELECT * FROM "+ TABLE_POSTS;
+            String QUERY = "SELECT * FROM "+ PostEntry.TABLE_NAME;
             Cursor cursor = db.rawQuery(QUERY, null);
             if(!cursor.isLast())
             {
@@ -122,7 +111,7 @@ public class DBHandler extends SQLiteOpenHelper {
         int num = 0;
         SQLiteDatabase db = this.getReadableDatabase();
         try{
-            String QUERY = "SELECT * FROM "+ TABLE_POSTS;
+            String QUERY = "SELECT * FROM "+ PostEntry.TABLE_NAME;
             Cursor cursor = db.rawQuery(QUERY, null);
             num = cursor.getCount();
             db.close();
