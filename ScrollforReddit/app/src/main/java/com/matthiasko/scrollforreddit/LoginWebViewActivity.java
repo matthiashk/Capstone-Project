@@ -64,7 +64,7 @@ public class LoginWebViewActivity extends Activity{
 
         authorizationUrl = authorizationUrl.replace("www.", "i.");
 
-        System.out.println("authorizationUrl = " + authorizationUrl);
+        //System.out.println("authorizationUrl = " + authorizationUrl);
 
         // clear cookies to remove login errors
         CookieManager cookieManager = CookieManager.getInstance();
@@ -79,10 +79,10 @@ public class LoginWebViewActivity extends Activity{
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
 
-                Log.v(LOG_TAG, "onPageStarted - WebView URL: " + url);
+                //Log.v(LOG_TAG, "onPageStarted - WebView URL: " + url);
 
                 if (url.contains("code=")) {
-                    Log.v(LOG_TAG, "onPageStarted - REDIRECT URL: " + url);
+                    //Log.v(LOG_TAG, "onPageStarted - REDIRECT URL: " + url);
                     // We've detected the redirect URL
                     new UserChallengeTask(oAuthHelper, credentials).execute(url);
 
@@ -104,7 +104,7 @@ public class LoginWebViewActivity extends Activity{
 
         public UserChallengeTask(OAuthHelper oAuthHelper, Credentials credentials) {
 
-            Log.v(LOG_TAG, "UserChallengeTask()");
+            //Log.v(LOG_TAG, "UserChallengeTask()");
             mOAuthHelper = oAuthHelper;
             mCredentials = credentials;
         }
@@ -112,8 +112,8 @@ public class LoginWebViewActivity extends Activity{
         @Override
         protected OAuthData doInBackground(String... params) {
 
-            Log.v(LOG_TAG, "doInBackground()");
-            Log.v(LOG_TAG, "params[0]: " + params[0]);
+            //Log.v(LOG_TAG, "doInBackground()");
+            //Log.v(LOG_TAG, "params[0]: " + params[0]);
 
             try {
 
@@ -121,7 +121,7 @@ public class LoginWebViewActivity extends Activity{
 
                 redditClient.authenticate(mOAuthData);
 
-                Log.v(LOG_TAG, "Reddit client authentication: " + redditClient.isAuthenticated());
+                //Log.v(LOG_TAG, "Reddit client authentication: " + redditClient.isAuthenticated());
 
                 //return mOAuthHelper.onUserChallenge(params[0], mCredentials);
             } catch (IllegalStateException | NetworkException | OAuthException e) {
@@ -140,7 +140,7 @@ public class LoginWebViewActivity extends Activity{
         @Override
         protected void onPostExecute(OAuthData oAuthData) {
 
-            Log.v(LOG_TAG, "onPostExecute()");
+            //Log.v(LOG_TAG, "onPostExecute()");
 
             String refreshToken = redditClient.getOAuthData().getRefreshToken();
 
@@ -148,7 +148,7 @@ public class LoginWebViewActivity extends Activity{
 
             store.writeToken("EXAMPLE_KEY", refreshToken);
 
-            Log.v(LOG_TAG, "Refresh Token: " + refreshToken);
+            //Log.v(LOG_TAG, "Refresh Token: " + refreshToken);
 
 
 

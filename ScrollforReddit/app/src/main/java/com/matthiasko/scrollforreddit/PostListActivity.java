@@ -1,7 +1,11 @@
 package com.matthiasko.scrollforreddit;
 
+import android.app.LoaderManager;
 import android.content.ContentValues;
+import android.content.CursorLoader;
 import android.content.Intent;
+import android.content.Loader;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -12,6 +16,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+
+import com.matthiasko.scrollforreddit.PostContract.PostEntry;
 
 import net.dean.jraw.ApiException;
 import net.dean.jraw.RedditClient;
@@ -33,7 +39,6 @@ import net.dean.jraw.paginators.SubredditPaginator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
 
 /**
  * An activity representing a list of Posts. This activity
@@ -43,7 +48,7 @@ import java.util.ArrayList;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class PostListActivity extends AppCompatActivity {
+public class PostListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -59,13 +64,19 @@ public class PostListActivity extends AppCompatActivity {
 
     private PostsAdapter adapter;
 
-    private ArrayList<Post> arrayOfPosts;
+    //private ArrayList<Post> arrayOfPosts;
 
     DBHandler handler;
 
     static final int LOGIN_REQUEST = 1;
 
     private static final String DATABASE_NAME = "posts.db";
+
+
+    private static final int CURSOR_LOADER_ID = 0;
+
+    private Cursor cursor;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,9 +146,13 @@ public class PostListActivity extends AppCompatActivity {
                 break;
         }
 
-        arrayOfPosts = new ArrayList<>();
-        // Create the adapter to convert the array to views
-        adapter = new PostsAdapter(this, arrayOfPosts);
+        //arrayOfPosts = new ArrayList<>();
+
+
+        getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
+
+        adapter = new PostsAdapter(this, null);
+
 
         View recyclerView = findViewById(R.id.post_list);
         assert recyclerView != null;
@@ -221,13 +236,14 @@ public class PostListActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
     }
 
     private void refreshPosts() {
 
         // we need to remove posts from the database
         // first, clear the array for the recyclerview
-        arrayOfPosts.clear();
+        //arrayOfPosts.clear();
 
         adapter.notifyDataSetChanged();
 
@@ -286,6 +302,8 @@ public class PostListActivity extends AppCompatActivity {
 
             // TODO: check here if database exists, if yes we need to add to existing database
             if (handler.getPostCount() == 0) {
+
+                System.out.println("POST COUNT IS 0");
 
                 SubredditPaginator paginator = new SubredditPaginator(redditClient);
                 Listing<Submission> submissions = paginator.next();
@@ -354,14 +372,31 @@ public class PostListActivity extends AppCompatActivity {
                     String commentText = commentNode.getComment().getBody();
                     */
 
-                    Post post = new Post(title, subreddit, username, source, thumbnail, points,
-                            numberOfComments, postId, domain, fullName);
+
+
+
+                    //Post post = new Post(title, subreddit, username, source, thumbnail, points, numberOfComments, postId, domain, fullName);
 
                     // add the post to the database
-                    handler.addPost(post);
+                    //handler.addPost(post);
 
-                    // add each post to our arraylist for the postadapter
-                    arrayOfPosts.add(post);
+                    ContentValues postValues = new ContentValues();
+
+                    postValues.put(PostEntry.COLUMN_TITLE, title);
+                    postValues.put(PostEntry.COLUMN_SUBREDDIT, subreddit);
+                    postValues.put(PostEntry.COLUMN_AUTHOR, username);
+                    postValues.put(PostEntry.COLUMN_SOURCE, source);
+                    postValues.put(PostEntry.COLUMN_THUMBNAIL, thumbnail);
+                    postValues.put(PostEntry.COLUMN_SCORE, points);
+                    postValues.put(PostEntry.COLUMN_NUMBER_OF_COMMENTS, numberOfComments);
+                    postValues.put(PostEntry.COLUMN_POST_ID, postId);
+                    postValues.put(PostEntry.COLUMN_SOURCE_DOMAIN, domain);
+                    postValues.put(PostEntry.COLUMN_FULLNAME, fullName);
+
+
+                    getContentResolver().insert(PostEntry.CONTENT_URI, postValues);
+
+
                 }
 
 
@@ -369,7 +404,9 @@ public class PostListActivity extends AppCompatActivity {
 
             } else {
 
-                arrayOfPosts.addAll(handler.getAllPosts());
+                System.out.println("POST COUNT IS NOT 0");
+
+                //arrayOfPosts.addAll(handler.getAllPosts());
 
                 //System.out.println("arrayOfPosts.size() = " + arrayOfPosts.size());
 
@@ -497,5 +534,28 @@ public class PostListActivity extends AppCompatActivity {
     }
 
 
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args){
+
+        return new CursorLoader(this, PostEntry.CONTENT_URI,
+                new String[]{ PostEntry._ID, PostEntry.COLUMN_TITLE, PostEntry.COLUMN_SUBREDDIT,
+                        PostEntry.COLUMN_AUTHOR, PostEntry.COLUMN_SOURCE, PostEntry.COLUMN_THUMBNAIL,
+                        PostEntry.COLUMN_POST_ID, PostEntry.COLUMN_SOURCE_DOMAIN, PostEntry.COLUMN_FULLNAME,
+                        PostEntry.COLUMN_SCORE, PostEntry.COLUMN_NUMBER_OF_COMMENTS},
+                null,
+                null,
+                null);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data){
+        adapter.swapCursor(data);
+        cursor = data;
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader){
+        adapter.swapCursor(null);
+    }
 
 }
