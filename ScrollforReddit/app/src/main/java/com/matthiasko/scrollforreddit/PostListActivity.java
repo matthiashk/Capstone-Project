@@ -9,6 +9,10 @@ import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -39,6 +43,7 @@ import net.dean.jraw.paginators.SubredditPaginator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 /**
  * An activity representing a list of Posts. This activity
@@ -77,17 +82,39 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     private Cursor cursor;
 
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
+
+    private RedditClient redditClient;
+
+    //private String mLastSelectedMenuItem;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_post_list);
 
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        navigationView = (NavigationView) findViewById(R.id.navigation);
+
         handler = new DBHandler(this);
+
+        redditClient = new AndroidRedditClient(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
+
+        final ActionBar actionBar = getSupportActionBar();
+
+        if (actionBar != null) {
+            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
+            actionBar.setDisplayHomeAsUpEnabled(true);
+        }
+
+        setupNavigationView();
 
         /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -100,8 +127,9 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         });
         */
 
+        //final RedditClient redditClient = new AndroidRedditClient(this);
 
-        final RedditClient redditClient = new AndroidRedditClient(this);
+
 
         RefreshTokenHandler handler = new RefreshTokenHandler(new AndroidTokenStore(this), redditClient);
 
@@ -146,13 +174,9 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 break;
         }
 
-        //arrayOfPosts = new ArrayList<>();
-
-
         getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
 
         adapter = new PostsAdapter(this, null);
-
 
         View recyclerView = findViewById(R.id.post_list);
         assert recyclerView != null;
@@ -168,7 +192,130 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             // activity should be in two-pane mode.
             mTwoPane = true;
         }
+    }
 
+    private void setupNavigationView() {
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+
+                        // dont highlight 'subreddits', only allow highlight on other menu items
+                        if (menuItem.getTitle().equals("subreddits")) {
+                            menuItem.setCheckable(false);
+                            menuItem.setChecked(false);
+
+                        } else {
+
+                            menuItem.setCheckable(true);
+                            menuItem.setChecked(true);
+                        }
+                        /*
+
+                        if (mPreviousMenuItem != null) {
+                            mPreviousMenuItem.setChecked(false);
+                        }
+                        mPreviousMenuItem = menuItem;
+                        */
+                        drawerLayout.closeDrawers();
+                        selectedNavMenuItem(menuItem.getTitle());
+                        return true;
+                    }
+                });
+
+        // populate menu programatically based on user subreddits...
+        FetchSubsAsyncTask task = new FetchSubsAsyncTask(this);
+
+        task.setAsyncListener(new AsyncListener() {
+            @Override
+            public void createNavMenuItems(ArrayList<String> arrayList) {
+
+                Menu menu = navigationView.getMenu(); // get the default menu from xml
+
+                //System.out.println("arrayList.toString() = " + arrayList.toString());
+
+                for (String item: arrayList) {
+
+                    menu.add(R.id.group1, Menu.NONE, 1, item);
+                }
+            }
+        });
+
+        task.execute();
+
+        /*
+        // get menu from sharedprefs
+        SharedPreferences appSharedPrefs = PreferenceManager
+                .getDefaultSharedPreferences(getApplicationContext());
+        Gson gson = new Gson();
+
+        // if the list is found in sharedprefs load it
+        if (appSharedPrefs.contains("com.keycoding.TODO_LISTS")) {
+
+            String getJson = appSharedPrefs.getString("com.keycoding.TODO_LISTS", "");
+
+            Type type = new TypeToken<ArrayList<String>>(){}.getType();
+            ArrayList<String> todoList = gson.fromJson(getJson, type);
+
+            // we need to remove 'inbox' b/c it is already loaded by xml
+            // we need to do this in  onactivityresult also
+            todoList.remove("Inbox");
+
+            for (String item: todoList) {
+
+                menu.add(R.id.group1, Menu.NONE, 1, item);
+            }
+        }
+        */
+    }
+
+    public void selectedNavMenuItem(CharSequence menuTitle) {
+
+        //System.out.println("MainActivity - selectedNavMenuItem - menuTitle = " + menuTitle);
+
+        // add 4 numbers to end of menu title? we want them to be unique...
+        // or only do it to default, and let the others not be duplicated
+
+        //mLastSelectedMenuItem = null;
+
+        if (menuTitle.equals("subreddits")) {
+            // just return here, we dont want to select anything here
+            return;
+        }
+
+        if (menuTitle.equals("Settings")) {
+
+            //Intent intent = new Intent(this, PreferencesActivity.class);
+            //startActivityForResult(intent, UPDATE_THEME);
+
+            return;
+        }
+
+
+
+        //System.out.println("menuTitle.toString() = " + menuTitle.toString());
+
+
+
+
+
+
+
+
+        /*
+        // show selected list
+        DSLVFragment dragFragment = (DSLVFragment) getSupportFragmentManager()
+                .findFragmentByTag("dslvTag");
+
+        dragFragment.changeListAdapter(newTitle);
+
+        // change title of toolbar to selected list
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+
+            actionBar.setTitle(menuTitle);
+        }
+        */
     }
 
 
@@ -190,11 +337,13 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
-        int id = item.getItemId();
-
-        if (id == R.id.action_refresh) {
-
-            refreshPosts();
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                drawerLayout.openDrawer(GravityCompat.START);
+                return true;
+            case R.id.action_refresh:
+                refreshPosts();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -391,7 +540,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
             } else {
 
-                System.out.println("POST COUNT IS NOT 0");
+                System.out.println("PostListActivity - loading from database");
             }
 
             return null;
@@ -429,7 +578,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             // check the authentication state of user
             AuthenticationState authState =  AuthenticationManager.get().checkAuthState();
 
-            System.out.println("authState = " + authState.toString());
+            //System.out.println("authState = " + authState.toString());
 
             AndroidTokenStore store = new AndroidTokenStore(PostListActivity.this);
 
@@ -462,7 +611,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
                     int score = submission.getScore();
 
-                    System.out.println("score = " + score);
+                    //System.out.println("score = " + score);
 
                     try {
 
@@ -492,12 +641,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     getContentResolver().update(PostContract.PostEntry.CONTENT_URI, values,
                             PostContract.PostEntry._ID + "=?", new String[]{String.valueOf(id)});
 
-                    //TODO: update UI to show new post score
-
-
                     //TODO: disable future upvotes for this post
-
-
 
                 } catch (OAuthException e) {
 
