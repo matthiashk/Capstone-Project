@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.DataSetObserver;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,12 +17,12 @@ import com.squareup.picasso.Picasso;
 
 /**
  * Created by matthiasko on 4/1/16.
+ * Credit to skyfishjy gist:
+ *    https://gist.github.com/skyfishjy/443b7448f59be978bc59
  */
 public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> {
 
     private boolean mTwoPane; // TODO: change this
-
-    //private final ArrayList<Post> values;
 
     private Context context;
 
@@ -84,30 +85,26 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-
         cursor.moveToPosition(position);
 
         final long id = cursor.getLong(0);
-        String title = cursor.getString(1);
-        String subreddit = cursor.getString(2);
-        String author = cursor.getString(3);
+        final String title = cursor.getString(1);
+        final String subreddit = cursor.getString(2);
+        final String author = cursor.getString(3);
         final String source = cursor.getString(4);
-        String thumbnail = cursor.getString(5);
+        final String thumbnail = cursor.getString(5);
         final String postId = cursor.getString(6);
-        String domain = cursor.getString(7);
-        String fullName = cursor.getString(8);
-        String points = cursor.getString(9);
-        String numberOfComments = cursor.getString(10);
+        final String domain = cursor.getString(7);
+        final String fullName = cursor.getString(8);
+        final int points = cursor.getInt(9);
+        final int numberOfComments = cursor.getInt(10);
 
         holder.postTitle.setText(title);
         holder.subreddit.setText(subreddit);
         holder.author.setText(author);
         holder.source.setText(source);
-        //holder.thumbnail.setText(subreddit);
-        holder.points.setText(points);
-        holder.numberOfComments.setText(numberOfComments);
-
-
+        holder.points.setText(String.valueOf(points));
+        holder.numberOfComments.setText(String.valueOf(numberOfComments));
 
         // thumbnail setup
         holder.thumbnail.setVisibility(View.VISIBLE);
@@ -136,18 +133,15 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
             });
         }
 
-
-
         holder.upButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 //System.out.println("OVERRIDE UP");
 
-                ((PostListActivity) context).onVote(postId,
-                        id);
-                // test
-                //notifyItemChanged(position);
+                String voteDirection = "up";
+
+                ((PostListActivity) context).onVote(postId, id, voteDirection);
             }
         });
 
@@ -155,82 +149,18 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
             @Override
             public void onClick(View v) {
 
-            }
-        });
+                String voteDirection = "down";
 
-
-        /*
-
-        // using domain as 'source' text, save source for later
-
-        holder.mItem = values.get(position);
-        holder.postTitle.setText(values.get(position).postTitle);
-        holder.subreddit.setText(values.get(position).postSubreddit);
-        holder.author.setText(values.get(position).postAuthor);
-        holder.source.setText(values.get(position).postDomain);
-        holder.points.setText(String.valueOf(values.get(position).postPoints));
-        holder.numberOfComments.setText(String.valueOf(values.get(position).postNumberOfComments));
-
-        final String postFullName = values.get(position).postFullName;
-
-        //System.out.println("onBindViewHolder - postFullName = " + postFullName);
-
-        //System.out.println("values.get(position).postThumbnail = " + values.get(position).postThumbnail);
-
-        //System.out.println("values.get(position).postTitle = " + values.get(position).postTitle);
-
-        holder.upButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                //System.out.println("OVERRIDE UP");
-
-                ((PostListActivity) context).onVote(values.get(position).getPostId(),
-                        values.get(position).getId());
-                // test
-                //notifyItemChanged(position);
-            }
-        });
-
-        holder.downButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+                ((PostListActivity) context).onVote(postId, id, voteDirection);
 
             }
         });
-
-        // check if there is a thumbnail
-        holder.thumbnail.setVisibility(View.VISIBLE);
-
-        if (values.get(position).postThumbnail == null) {
-
-            holder.thumbnail.setVisibility(View.GONE);
-
-        } else {
-
-            Picasso.with(context)
-                    .load(values.get(position).postThumbnail)
-                    .into(holder.thumbnail);
-
-            holder.thumbnail.setOnClickListener(new View.OnClickListener() {
-
-                @Override
-                public void onClick(View v) {
-
-                    //load 'source' into the webview, send source as string to webview
-                    Intent intent = new Intent(context, WebViewActivity.class);
-                    intent.putExtra("SOURCE", holder.mItem.postSource);
-
-                    context.startActivity(intent);
-                }
-            });
-        }
 
         holder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                String postId = values.get(position).postId;
+                //String postId = values.get(position).postId;
 
                 //System.out.println("postId = " + postId);
 
@@ -245,16 +175,16 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                 if (mTwoPane) { // this is for tablet mode
                     Bundle arguments = new Bundle();
 
-                    arguments.putString("POST_TITLE", holder.mItem.postTitle);
-                    arguments.putString("SUBREDDIT", holder.mItem.postSubreddit);
+                    arguments.putString("POST_TITLE", title);
+                    arguments.putString("SUBREDDIT", subreddit);
                     arguments.putString("POST_ID", postId);
-                    arguments.putString("AUTHOR", holder.mItem.postAuthor);
-                    arguments.putString("SOURCE", holder.mItem.postSource);
-                    arguments.putString("THUMBNAIL", holder.mItem.postThumbnail);
-                    arguments.putInt("POINTS", holder.mItem.postPoints);
-                    arguments.putInt("NUMBER_OF_COMMENTS", holder.mItem.postNumberOfComments);
-                    arguments.putString("DOMAIN", holder.mItem.postDomain);
-                    arguments.putString("FULLNAME", postFullName);
+                    arguments.putString("AUTHOR", author);
+                    arguments.putString("SOURCE", source);
+                    arguments.putString("THUMBNAIL", thumbnail);
+                    arguments.putInt("POINTS", points);
+                    arguments.putInt("NUMBER_OF_COMMENTS", numberOfComments);
+                    arguments.putString("DOMAIN", domain);
+                    arguments.putString("FULLNAME", fullName);
 
                     //arguments.putString("COMMENT_AUTHOR", commentAuthor);
 
@@ -269,16 +199,16 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
 
                     Context context = v.getContext();
                     Intent intent = new Intent(context, PostDetailActivity.class);
-                    intent.putExtra("POST_TITLE", holder.mItem.postTitle);
-                    intent.putExtra("SUBREDDIT", holder.mItem.postSubreddit);
+                    intent.putExtra("POST_TITLE", title);
+                    intent.putExtra("SUBREDDIT", subreddit);
                     intent.putExtra("POST_ID", postId);
-                    intent.putExtra("AUTHOR", holder.mItem.postAuthor);
-                    intent.putExtra("SOURCE", holder.mItem.postSource);
-                    intent.putExtra("THUMBNAIL", holder.mItem.postThumbnail);
-                    intent.putExtra("POINTS", holder.mItem.postPoints);
-                    intent.putExtra("NUMBER_OF_COMMENTS", holder.mItem.postNumberOfComments);
-                    intent.putExtra("DOMAIN", holder.mItem.postDomain);
-                    intent.putExtra("FULLNAME", postFullName);
+                    intent.putExtra("AUTHOR", author);
+                    intent.putExtra("SOURCE", source);
+                    intent.putExtra("THUMBNAIL", thumbnail);
+                    intent.putExtra("POINTS", points);
+                    intent.putExtra("NUMBER_OF_COMMENTS", numberOfComments);
+                    intent.putExtra("DOMAIN", domain);
+                    intent.putExtra("FULLNAME", fullName);
 
                     //intent.putExtra("COMMENT_AUTHOR", commentAuthor);
 
@@ -286,9 +216,6 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                 }
             }
         });
-
-        */
-
     }
 
     @Override
@@ -313,7 +240,6 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         public final View mView;
-        public Post mItem;
         TextView postTitle;
         TextView subreddit;
         TextView author;
@@ -339,8 +265,6 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
             downButton = (Button) view.findViewById(R.id.downButton);
 
             view.setOnClickListener(this);
-
-
         }
 
         @Override

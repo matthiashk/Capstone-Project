@@ -18,28 +18,25 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
     private final ArrayList<ScrollComment> mValues;
 
-    private Context mContext;
+    private Context context;
 
     public CommentsAdapter(Context context, ArrayList<ScrollComment> items) {
 
-        mContext = context;
+        this.context = context;
         mValues = items;
     }
-
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        //System.out.println("**************** ONCREATEVIEWHOLDER");
-
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.comments_card_view, parent, false);
+
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-
 
         holder.mItem = mValues.get(position);
 
@@ -64,7 +61,6 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
             holder.commentBody.setText(mValues.get(position).getBody());
 
-
             // setting margins dynamically here depending on the comment level
             // margins are set in pixels, might have to convert to dp...
             ViewGroup.MarginLayoutParams commentMargins = (ViewGroup.MarginLayoutParams) holder.commentBody
@@ -77,14 +73,12 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
             authorMargin.setMargins(indentedMarginSize, 0, 0, 0);
 
-
             //System.out.println("indentedComment = " + indentedComment);
 
         } else {
 
             holder.commentBody.setText(mValues.get(position).getBody());
         }
-
 
         //holder.commentBody.setText(mValues.get(position).getBody());
         holder.commentAuthor.setText(mValues.get(position).getAuthor());
@@ -96,6 +90,10 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
             @Override
             public void onClick(View v) {
 
+                // this should happen on a long click
+                // get all comment children
+                // remove them from current array
+                // insert/replace 'hidden comment' for top level comment
 
                 //String postId = mValues.get(position).postId;
 
@@ -105,11 +103,9 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
                 //System.out.println("commentNode.getTotalSize() = " + commentNode.getTotalSize());
 
-
                 //String testTitle = mValues.get(position).postTitle;
 
                 //System.out.println("testTitle = " + testTitle);
-
 
                 /*
                 String commentAuthor = commentNode.getComment().getAuthor();
@@ -119,48 +115,31 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
                 String commentText = commentNode.getComment().getBody();
                 */
 
-
             }
         });
-
     }
-
-
 
     @Override
     public int getItemCount() {
-
-        //System.out.println("mValues.size() = " + mValues.size());
 
         return mValues.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
-        public final View mView;
-        //public final TextView mIdView;
-        //public final TextView mContentView;
-        public ScrollComment mItem;
 
+        public final View mView;
+        public ScrollComment mItem;
         TextView commentBody;
         TextView commentAuthor;
         TextView commentPoints;
 
-        //CommentNode commentNode;
-
         public ViewHolder(View view) {
             super(view);
             mView = view;
-            //mIdView = (TextView) view.findViewById(R.id.id);
-            //mContentView = (TextView) view.findViewById(R.id.content);
 
             commentBody = (TextView) view.findViewById(R.id.commentBody);
             commentAuthor = (TextView) view.findViewById(R.id.commentAuthor);
             commentPoints = (TextView) view.findViewById(R.id.commentPoints);
-
-
-
-
         }
-
     }
 }

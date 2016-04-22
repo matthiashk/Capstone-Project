@@ -172,11 +172,11 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     }
 
 
-    public void onVote (String postId, long id) {
+    public void onVote (String postId, long id, String voteDirection) {
 
         //System.out.println("VOTE UP");
 
-        new VoteAsyncTask().execute(postId, String.valueOf(id));
+        new VoteAsyncTask().execute(postId, String.valueOf(id), voteDirection);
 
 
     }
@@ -185,8 +185,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_post_list, menu);
         return true;
-
-
     }
 
     @Override
@@ -197,9 +195,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         if (id == R.id.action_refresh) {
 
             refreshPosts();
-
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -372,9 +368,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     String commentText = commentNode.getComment().getBody();
                     */
 
-
-
-
                     //Post post = new Post(title, subreddit, username, source, thumbnail, points, numberOfComments, postId, domain, fullName);
 
                     // add the post to the database
@@ -393,29 +386,13 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     postValues.put(PostEntry.COLUMN_SOURCE_DOMAIN, domain);
                     postValues.put(PostEntry.COLUMN_FULLNAME, fullName);
 
-
                     getContentResolver().insert(PostEntry.CONTENT_URI, postValues);
-
-
                 }
-
-
-
 
             } else {
 
                 System.out.println("POST COUNT IS NOT 0");
-
-                //arrayOfPosts.addAll(handler.getAllPosts());
-
-                //System.out.println("arrayOfPosts.size() = " + arrayOfPosts.size());
-
             }
-
-
-
-
-            //System.out.println("arrayOfPosts.size() = " + arrayOfPosts.size());
 
             return null;
         }
@@ -431,8 +408,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
         }
     }
-
-
 
     private class VoteAsyncTask extends AsyncTask<String, Void, Void> {
 
@@ -473,6 +448,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
                     String postId = params[0];
 
+                    String voteDirection = params[2];
+
                     //System.out.println("fullName = " + fullName);
                     // we crop the prefix from fullName, since we only need id
                     //StringBuilder cropped = new StringBuilder(fullName);
@@ -488,9 +465,18 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     System.out.println("score = " + score);
 
                     try {
-                        accountManager.vote(submission, VoteDirection.UPVOTE);
-                    }
-                    catch (ApiException e) {
+
+                        if (voteDirection.equals("up")) {
+
+                            accountManager.vote(submission, VoteDirection.UPVOTE);
+
+                        } else if (voteDirection.equals("down")) {
+
+                            accountManager.vote(submission, VoteDirection.DOWNVOTE);
+                        }
+
+                    } catch (ApiException e) {
+
                         e.printStackTrace();
                     }
 
