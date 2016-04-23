@@ -35,7 +35,6 @@ public class FetchSubsAsyncTask extends AsyncTask<String, Void, ArrayList> {
     private AsyncListener mAsyncListener;
 
     public FetchSubsAsyncTask(Context context) {
-
         mContext = context;
     }
 
@@ -59,18 +58,12 @@ public class FetchSubsAsyncTask extends AsyncTask<String, Void, ArrayList> {
         // check the authentication state of user
         AuthenticationState authState =  AuthenticationManager.get().checkAuthState();
 
-        System.out.println("authState = " + authState.toString());
-
         AndroidTokenStore store = new AndroidTokenStore(mContext);
 
         try {
-
             String refreshToken = store.readToken("EXAMPLE_KEY");
-
             oAuthHelper.setRefreshToken(refreshToken);
-
             try {
-
                 OAuthData finalData = oAuthHelper.refreshToken(credentials);
 
                 redditClient.authenticate(finalData);
@@ -82,37 +75,26 @@ public class FetchSubsAsyncTask extends AsyncTask<String, Void, ArrayList> {
                 ArrayList<String> subredditNames = new ArrayList<>();
 
                 // put into array, sort array alphabetically, send array back to postlistactivity, populate menu
-
                 for (Subreddit subreddit : subreddits) {
-
-                    //System.out.println("subreddit.getDisplayName() = " + subreddit.getDisplayName());
                     subredditNames.add(subreddit.getDisplayName());
                 }
-
                 // sort list alphabetically
                 Collections.sort(subredditNames, String.CASE_INSENSITIVE_ORDER);
-
                 return subredditNames;
 
             } catch (OAuthException e) {
-
                 e.printStackTrace();
             }
-
         } catch (NoSuchTokenException e) {
-
             e.printStackTrace();
         }
-
         return null;
     }
 
     @Override
     protected void onPostExecute(ArrayList arrayList) {
         super.onPostExecute(arrayList);
-
         if (mAsyncListener != null ) {
-
             mAsyncListener.createNavMenuItems(arrayList);
         }
     }

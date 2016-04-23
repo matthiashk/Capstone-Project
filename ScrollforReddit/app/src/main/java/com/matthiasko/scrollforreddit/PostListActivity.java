@@ -5,10 +5,12 @@ import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -45,6 +47,10 @@ import net.dean.jraw.paginators.SubredditPaginator;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * An activity representing a list of Posts. This activity
@@ -201,22 +207,51 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     }
                 });
 
-        // populate menu programatically based on user subreddits...
-        FetchSubsAsyncTask task = new FetchSubsAsyncTask(this);
+        // check first if the list is in shared prefs
+        SharedPreferences appSharedPrefs = PreferenceManager
+                .getDefaultSharedPreferences(getApplicationContext());
 
-        task.setAsyncListener(new AsyncListener() {
-            @Override
-            public void createNavMenuItems(ArrayList<String> arrayList) {
-                Menu menu = navigationView.getMenu(); // get the default menu from xml
-                if (arrayList != null) {
-                    for (String item: arrayList) {
-                        menu.add(R.id.group1, Menu.NONE, 1, item);
-                    }
+        if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USERSUBREDDITS")) {
+            // load from sharedprefs
+            Set<String> set = appSharedPrefs.getStringSet("com.matthiasko.scrollforreddit.USERSUBREDDITS", null);
+            List<String> userSubredditsList = new ArrayList<>(set);
+            // sort the list alphabetically
+            Collections.sort(userSubredditsList, String.CASE_INSENSITIVE_ORDER);
+
+            Menu menu = navigationView.getMenu(); // get the default menu from xml
+            if (userSubredditsList != null) {
+                for (String item : userSubredditsList) { // create the menu items based on arraylist
+                    menu.add(R.id.group1, Menu.NONE, 1, item);
                 }
             }
-        });
+        } else {
+            // populate menu programatically based on user subreddits
+            // get arraylist of subreddits
+            FetchSubsAsyncTask task = new FetchSubsAsyncTask(this);
 
-        task.execute();
+            task.setAsyncListener(new AsyncListener() {
+                @Override
+                public void createNavMenuItems(ArrayList<String> arrayList) {
+                    // put list into sharedprefs
+                    SharedPreferences appSharedPrefs = PreferenceManager
+                            .getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor edit = appSharedPrefs.edit();
+
+                    Set<String> set = new HashSet<>();
+                    set.addAll(arrayList);
+                    edit.putStringSet("com.matthiasko.scrollforreddit.USERSUBREDDITS", set);
+                    edit.commit();
+
+                    Menu menu = navigationView.getMenu(); // get the default menu from xml
+                    if (arrayList != null) {
+                        for (String item : arrayList) { // create the menu items based on arraylist
+                            menu.add(R.id.group1, Menu.NONE, 1, item);
+                        }
+                    }
+                }
+            });
+            task.execute();
+        }
 
         /*
         // get menu from sharedprefs
