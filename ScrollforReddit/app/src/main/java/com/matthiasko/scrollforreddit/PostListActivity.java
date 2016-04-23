@@ -55,7 +55,6 @@ import java.util.ArrayList;
  * item details side-by-side using two vertical panes.
  */
 public class PostListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
-
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -70,14 +69,11 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     private PostsAdapter adapter;
 
-    //private ArrayList<Post> arrayOfPosts;
-
     private DBHandler mHandler;
 
     static final int LOGIN_REQUEST = 1;
 
     private static final String DATABASE_NAME = "posts.db";
-
 
     private static final int CURSOR_LOADER_ID = 0;
 
@@ -92,11 +88,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     private View mRecyclerView;
 
-    //private String mLastSelectedMenuItem;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_post_list);
@@ -118,9 +111,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
             actionBar.setDisplayHomeAsUpEnabled(true);
         }
-
         setupNavigationView();
-
         /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -131,51 +122,36 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             }
         });
         */
-
-        //final RedditClient redditClient = new AndroidRedditClient(this);
-
-
-
         RefreshTokenHandler handler = new RefreshTokenHandler(new AndroidTokenStore(this), redditClient);
-
         AuthenticationManager.get().init(redditClient, handler);
 
         // check the authentication state of user
         AuthenticationState authState =  AuthenticationManager.get().checkAuthState();
 
         switch (authState) {
-
             case NONE:
                 System.out.println("NONE");
-
                 // load webview activity to login and authenticate user
                 Intent intent = new Intent(this, LoginWebViewActivity.class);
                 //startActivity(intent);
                 startActivityForResult(intent, LOGIN_REQUEST);
-
                 break;
 
             case NEED_REFRESH:
                 System.out.println("NEED_REFRESH");
-
                 // get the token from shared prefs using store
                 AndroidTokenStore store = new AndroidTokenStore(this);
 
                 try {
-
                     String refreshToken = store.readToken("EXAMPLE_KEY");
                     new RefreshTokenAsync().execute(refreshToken, "Frontpage"); // TODO: is this correct???
-
                 } catch (NoSuchTokenException e) {
-
                     Log.e(LOG_TAG, e.getMessage());
                 }
-
                 break;
 
             case READY:
                 System.out.println("READY");
-
                 break;
         }
 
@@ -204,14 +180,11 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
-
                         // dont highlight 'subreddits', only allow highlight on other menu items
                         if (menuItem.getTitle().equals("subreddits")) {
                             menuItem.setCheckable(false);
                             menuItem.setChecked(false);
-
                         } else {
-
                             menuItem.setCheckable(true);
                             menuItem.setChecked(true);
                         }
@@ -234,18 +207,9 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         task.setAsyncListener(new AsyncListener() {
             @Override
             public void createNavMenuItems(ArrayList<String> arrayList) {
-
                 Menu menu = navigationView.getMenu(); // get the default menu from xml
-
-                //System.out.println("arrayList.toString() = " + arrayList.toString());
-
-                if (arrayList == null) {
-
-
-                } else {
-
+                if (arrayList != null) {
                     for (String item: arrayList) {
-
                         menu.add(R.id.group1, Menu.NONE, 1, item);
                     }
                 }
@@ -281,24 +245,12 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     }
 
     public void selectedNavMenuItem(CharSequence menuTitle) {
-
-        //System.out.println("MainActivity - selectedNavMenuItem - menuTitle = " + menuTitle);
-
-        // add 4 numbers to end of menu title? we want them to be unique...
-        // or only do it to default, and let the others not be duplicated
-
-        //mLastSelectedMenuItem = null;
-
         if (menuTitle.equals("subreddits")) {
-            // just return here, we dont want to select anything here
-
+            // TODO: add edit subreddit button/action here
         } else if (menuTitle.equals("Settings")) {
-
             //Intent intent = new Intent(this, PreferencesActivity.class);
             //startActivityForResult(intent, UPDATE_THEME);
-
         } else {
-
             // show loader
             findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
 
@@ -308,37 +260,18 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             SQLiteDatabase db = dbHandler.getWritableDatabase();
             db.execSQL("delete from "+ PostEntry.TABLE_NAME);
 
-
             mRecyclerView.setVisibility(View.GONE);
 
             // get updated list
             AndroidTokenStore store = new AndroidTokenStore(this);
 
             try {
-
                 String refreshToken = store.readToken("EXAMPLE_KEY");
                 new RefreshTokenAsync().execute(refreshToken, menuTitle.toString());
-
             } catch (NoSuchTokenException e) {
-
                 Log.e(LOG_TAG, e.getMessage());
             }
         }
-
-
-
-
-
-
-        //System.out.println("menuTitle.toString() = " + menuTitle.toString());
-
-
-
-
-
-
-
-
         /*
         // show selected list
         DSLVFragment dragFragment = (DSLVFragment) getSupportFragmentManager()
@@ -355,14 +288,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         */
     }
 
-
     public void onVote (String postId, long id, String voteDirection) {
-
-        //System.out.println("VOTE UP");
-
         new VoteAsyncTask().execute(postId, String.valueOf(id), voteDirection);
-
-
     }
 
     @Override
@@ -373,7 +300,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
         switch (item.getItemId()) {
             case android.R.id.home:
                 drawerLayout.openDrawer(GravityCompat.START);
@@ -387,30 +313,18 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
         if (requestCode == LOGIN_REQUEST) {
-
             if (resultCode == RESULT_OK) {
-
-                //String value = data.getStringExtra("MY_KEY");
-
-                //System.out.println("value = " + value);
-
                 // coming from loginwebviewactivity after logging in
                 // fetch posts
-
                 AndroidTokenStore store = new AndroidTokenStore(this);
 
                 try {
-
                     String refreshToken = store.readToken("EXAMPLE_KEY");
                     new RefreshTokenAsync().execute(refreshToken, "Frontpage");
-
                 } catch (NoSuchTokenException e) {
-
                     Log.e(LOG_TAG, e.getMessage());
                 }
-
             }
         }
     }
@@ -422,16 +336,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     }
 
     private void refreshPosts() {
-
         // we need to remove posts from the database
-        // first, clear the array for the recyclerview
-        //arrayOfPosts.clear();
-
-        //adapter.notifyDataSetChanged(); // do we need this???
-
-
         if (mSelectedSubredditName == null) {
-
             mSelectedSubredditName = "Frontpage";
         }
 
@@ -439,7 +345,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
 
         //delete database entries
-        //getApplicationContext().deleteDatabase(DATABASE_NAME);
         DBHandler dbHandler = new DBHandler(this);
         SQLiteDatabase db = dbHandler.getWritableDatabase();
         db.execSQL("delete from "+ PostEntry.TABLE_NAME);
@@ -450,12 +355,9 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         AndroidTokenStore store = new AndroidTokenStore(this);
 
         try {
-
             String refreshToken = store.readToken("EXAMPLE_KEY");
             new RefreshTokenAsync().execute(refreshToken, mSelectedSubredditName);
-
         } catch (NoSuchTokenException e) {
-
             Log.e(LOG_TAG, e.getMessage());
         }
     }
@@ -497,7 +399,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 e.printStackTrace();
             }
 
-            // TODO: check here if database exists, if yes we need to add to existing database
+            // check here if database exists, if yes we need to add to existing database
             if (mHandler.getPostCount() == 0) {
 
                 System.out.println("POST COUNT IS 0");
@@ -511,19 +413,12 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     paginator = new SubredditPaginator(redditClient, subredditMenuName);
                 }
 
-                //SubredditPaginator paginator = new SubredditPaginator(redditClient, subredditMenuName);
-
                 Listing<Submission> submissions = paginator.next();
 
                 for (Submission submission : submissions) {
 
                     String title = submission.getTitle();
-                    //System.out.println("title = " + title);
-
                     // store fullname so we can get the specific post later...
-
-                    //System.out.println("submission.getFullName() = " + submission.getFullName());
-
                     String subreddit = submission.getSubredditName();
 
                     String username = submission.getAuthor();
@@ -531,16 +426,12 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     String source = submission.getUrl();
 
                     // shorten source url by extracting domain name and send as string
-
                     String domain = "";
 
                     try {
-
                         URI uri = new URI(source);
                         domain = uri.getHost();
-
                     } catch (URISyntaxException e) {
-
                         e.printStackTrace();
                     }
 
@@ -551,39 +442,11 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     String thumbnail = submission.getThumbnail();
 
                     // we need to add this to the post item data so we can retrieve the commentnode in details view
-
                     String postId = submission.getId();
 
                     String fullName = submission.getFullName();
 
-                    //System.out.println("postId = " + postId);
-
-                    // we should process comments in the adapter?
-                    // loading them here takes too long, hangs the UI
-
-                    //CommentNode commentNode = submission.getComments();
-
-                    //System.out.println("commentNode.getTotalSize() = " + commentNode.getTotalSize());
-
-                    //Submission fullSubmissionData = redditClient.getSubmission(submission.getId());
-                    //System.out.println(fullSubmissionData.getTitle());
-                    //System.out.println(fullSubmissionData.getComments());
-
-                    //CommentNode commentNode = fullSubmissionData.getComments();
-
-                    /*
-                    String commentAuthor = commentNode.getComment().getAuthor();
-                    int commentPoints = commentNode.getComment().getScore();
-                    Date commentTime = commentNode.getComment().getCreated();
-                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat(commentTime.toString(), Locale.US);
-                    String commentText = commentNode.getComment().getBody();
-                    */
-
-                    //Post post = new Post(title, subreddit, username, source, thumbnail, points, numberOfComments, postId, domain, fullName);
-
-                    // add the post to the database
-                    //handler.addPost(post);
-
+                    // add post data to database
                     ContentValues postValues = new ContentValues();
 
                     postValues.put(PostEntry.COLUMN_TITLE, title);
@@ -599,25 +462,17 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
                     getContentResolver().insert(PostEntry.CONTENT_URI, postValues);
                 }
-
             } else {
-
                 System.out.println("PostListActivity - loading from database");
             }
-
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-
-            // we need this to update the adapter on the main thread
-            //adapter.notifyDataSetChanged();
-
             // hide the loading animation
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-
             // show the view after fetching new data
             mRecyclerView.setVisibility(View.VISIBLE);
         }
@@ -629,28 +484,16 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         protected Void doInBackground(String... params) {
 
             // we need to check authentication to get submission info and vote
-
             final RedditClient redditClient = new AndroidRedditClient(PostListActivity.this);
 
             final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
 
             final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
 
-            RefreshTokenHandler handler = new RefreshTokenHandler(new AndroidTokenStore(PostListActivity.this), redditClient);
-
-            AuthenticationManager.get().init(redditClient, handler);
-
-            // check the authentication state of user
-            AuthenticationState authState =  AuthenticationManager.get().checkAuthState();
-
-            //System.out.println("authState = " + authState.toString());
-
             AndroidTokenStore store = new AndroidTokenStore(PostListActivity.this);
 
             try {
-
                 String refreshToken = store.readToken("EXAMPLE_KEY");
-                //new RefreshTokenAsync().execute(refreshToken);
 
                 oAuthHelper.setRefreshToken(refreshToken);
 
@@ -664,44 +507,27 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
                     String voteDirection = params[2];
 
-                    //System.out.println("fullName = " + fullName);
-                    // we crop the prefix from fullName, since we only need id
-                    //StringBuilder cropped = new StringBuilder(fullName);
-                    //cropped.delete(0, 3);
-                    //System.out.println("cropped.toString() = " + cropped.toString());
-
                     AccountManager accountManager = new AccountManager(redditClient);
 
                     Submission submission = redditClient.getSubmission(postId);
 
                     int score = submission.getScore();
 
-                    //System.out.println("score = " + score);
-
                     try {
-
                         if (voteDirection.equals("up")) {
-
                             accountManager.vote(submission, VoteDirection.UPVOTE);
-
                         } else if (voteDirection.equals("down")) {
-
                             accountManager.vote(submission, VoteDirection.DOWNVOTE);
                         }
-
                     } catch (ApiException e) {
-
                         e.printStackTrace();
                     }
 
                     // update post in database
-
                     long id = Long.valueOf(params[1]);
 
                     ContentValues values = new ContentValues();
                     values.put(PostContract.PostEntry.COLUMN_SCORE, score + 1);
-
-                    //System.out.println("PostContract.PostEntry.CONTENT_URI.toString() = " + PostContract.PostEntry.CONTENT_URI.toString());
 
                     getContentResolver().update(PostContract.PostEntry.CONTENT_URI, values,
                             PostContract.PostEntry._ID + "=?", new String[]{String.valueOf(id)});
@@ -709,12 +535,9 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     //TODO: disable future upvotes for this post
 
                 } catch (OAuthException e) {
-
                     e.printStackTrace();
                 }
-
             } catch (NoSuchTokenException e) {
-
                 Log.e(LOG_TAG, e.getMessage());
             }
             return null;
@@ -723,15 +546,12 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-
             adapter.notifyDataSetChanged();
         }
     }
 
-
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args){
-
         return new CursorLoader(this, PostEntry.CONTENT_URI,
                 new String[]{ PostEntry._ID, PostEntry.COLUMN_TITLE, PostEntry.COLUMN_SUBREDDIT,
                         PostEntry.COLUMN_AUTHOR, PostEntry.COLUMN_SOURCE, PostEntry.COLUMN_THUMBNAIL,
@@ -752,5 +572,4 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     public void onLoaderReset(Loader<Cursor> loader){
         adapter.swapCursor(null);
     }
-
 }
