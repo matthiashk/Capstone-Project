@@ -6,6 +6,7 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -71,7 +72,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     //private ArrayList<Post> arrayOfPosts;
 
-    DBHandler handler;
+    private DBHandler mHandler;
 
     static final int LOGIN_REQUEST = 1;
 
@@ -87,6 +88,10 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     private RedditClient redditClient;
 
+    private String mSelectedSubredditName;
+
+    private View mRecyclerView;
+
     //private String mLastSelectedMenuItem;
 
     @Override
@@ -99,7 +104,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         navigationView = (NavigationView) findViewById(R.id.navigation);
 
-        handler = new DBHandler(this);
+        mHandler = new DBHandler(this);
 
         redditClient = new AndroidRedditClient(this);
 
@@ -159,7 +164,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 try {
 
                     String refreshToken = store.readToken("EXAMPLE_KEY");
-                    new RefreshTokenAsync().execute(refreshToken);
+                    new RefreshTokenAsync().execute(refreshToken, "Frontpage"); // TODO: is this correct???
 
                 } catch (NoSuchTokenException e) {
 
@@ -178,12 +183,12 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
         adapter = new PostsAdapter(this, null);
 
-        View recyclerView = findViewById(R.id.post_list);
-        assert recyclerView != null;
-        setupRecyclerView((RecyclerView) recyclerView);
+        mRecyclerView = findViewById(R.id.post_list);
+        assert mRecyclerView != null;
+        setupRecyclerView((RecyclerView) mRecyclerView);
 
         //RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST);
-        //recyclerView.addItemDecoration(itemDecoration);
+        //mRecyclerView.addItemDecoration(itemDecoration);
 
         if (findViewById(R.id.post_detail_container) != null) {
             // The detail container view will be present only in the
@@ -234,9 +239,15 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
                 //System.out.println("arrayList.toString() = " + arrayList.toString());
 
-                for (String item: arrayList) {
+                if (arrayList == null) {
 
-                    menu.add(R.id.group1, Menu.NONE, 1, item);
+
+                } else {
+
+                    for (String item: arrayList) {
+
+                        menu.add(R.id.group1, Menu.NONE, 1, item);
+                    }
                 }
             }
         });
@@ -280,16 +291,42 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
         if (menuTitle.equals("subreddits")) {
             // just return here, we dont want to select anything here
-            return;
-        }
 
-        if (menuTitle.equals("Settings")) {
+        } else if (menuTitle.equals("Settings")) {
 
             //Intent intent = new Intent(this, PreferencesActivity.class);
             //startActivityForResult(intent, UPDATE_THEME);
 
-            return;
+        } else {
+
+            // show loader
+            findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
+
+            mSelectedSubredditName = menuTitle.toString();
+
+            DBHandler dbHandler = new DBHandler(this);
+            SQLiteDatabase db = dbHandler.getWritableDatabase();
+            db.execSQL("delete from "+ PostEntry.TABLE_NAME);
+
+
+            mRecyclerView.setVisibility(View.GONE);
+
+            // get updated list
+            AndroidTokenStore store = new AndroidTokenStore(this);
+
+            try {
+
+                String refreshToken = store.readToken("EXAMPLE_KEY");
+                new RefreshTokenAsync().execute(refreshToken, menuTitle.toString());
+
+            } catch (NoSuchTokenException e) {
+
+                Log.e(LOG_TAG, e.getMessage());
+            }
         }
+
+
+
 
 
 
@@ -367,7 +404,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 try {
 
                     String refreshToken = store.readToken("EXAMPLE_KEY");
-                    new RefreshTokenAsync().execute(refreshToken);
+                    new RefreshTokenAsync().execute(refreshToken, "Frontpage");
 
                 } catch (NoSuchTokenException e) {
 
@@ -390,13 +427,24 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         // first, clear the array for the recyclerview
         //arrayOfPosts.clear();
 
-        adapter.notifyDataSetChanged();
+        //adapter.notifyDataSetChanged(); // do we need this???
+
+
+        if (mSelectedSubredditName == null) {
+
+            mSelectedSubredditName = "Frontpage";
+        }
 
         // show loader
         findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
 
-        //delete database
-        getApplicationContext().deleteDatabase(DATABASE_NAME);
+        //delete database entries
+        //getApplicationContext().deleteDatabase(DATABASE_NAME);
+        DBHandler dbHandler = new DBHandler(this);
+        SQLiteDatabase db = dbHandler.getWritableDatabase();
+        db.execSQL("delete from "+ PostEntry.TABLE_NAME);
+
+        mRecyclerView.setVisibility(View.GONE);
 
         // get updated list
         AndroidTokenStore store = new AndroidTokenStore(this);
@@ -404,7 +452,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         try {
 
             String refreshToken = store.readToken("EXAMPLE_KEY");
-            new RefreshTokenAsync().execute(refreshToken);
+            new RefreshTokenAsync().execute(refreshToken, mSelectedSubredditName);
 
         } catch (NoSuchTokenException e) {
 
@@ -433,6 +481,10 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
             String refreshToken = params[0];
 
+            String subredditMenuName = params[1];
+
+            SubredditPaginator paginator;
+
             oAuthHelper.setRefreshToken(refreshToken);
 
             try {
@@ -446,11 +498,21 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             }
 
             // TODO: check here if database exists, if yes we need to add to existing database
-            if (handler.getPostCount() == 0) {
+            if (mHandler.getPostCount() == 0) {
 
                 System.out.println("POST COUNT IS 0");
 
-                SubredditPaginator paginator = new SubredditPaginator(redditClient);
+                if (subredditMenuName.equals("Frontpage")) {
+
+                    paginator = new SubredditPaginator(redditClient);
+
+                } else {
+
+                    paginator = new SubredditPaginator(redditClient, subredditMenuName);
+                }
+
+                //SubredditPaginator paginator = new SubredditPaginator(redditClient, subredditMenuName);
+
                 Listing<Submission> submissions = paginator.next();
 
                 for (Submission submission : submissions) {
@@ -551,10 +613,13 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             super.onPostExecute(aVoid);
 
             // we need this to update the adapter on the main thread
-            adapter.notifyDataSetChanged();
+            //adapter.notifyDataSetChanged();
 
             // hide the loading animation
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+
+            // show the view after fetching new data
+            mRecyclerView.setVisibility(View.VISIBLE);
         }
     }
 
