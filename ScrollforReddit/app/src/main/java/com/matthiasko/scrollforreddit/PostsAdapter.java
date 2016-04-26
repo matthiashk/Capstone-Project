@@ -24,6 +24,8 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
 
     private boolean mTwoPane; // TODO: change this
 
+    private boolean mUserlessMode;
+
     private Context context;
 
     private Cursor cursor;
@@ -34,7 +36,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
 
     private DataSetObserver dataSetObserver;
 
-    public PostsAdapter(Context ctxt, Cursor crsr){
+    public PostsAdapter(Context ctxt, Cursor crsr, boolean userlessMode){
         context = ctxt;
         cursor = crsr;
         dataValid = crsr != null;
@@ -43,6 +45,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         if (dataValid){
             cursor.registerDataSetObserver(dataSetObserver);
         }
+        mUserlessMode = userlessMode;
     }
 
     public Cursor getCursor() {
@@ -109,11 +112,13 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         // thumbnail setup
         holder.thumbnail.setVisibility(View.VISIBLE);
 
-        if (thumbnail == null) {
+        if (thumbnail == null || thumbnail.isEmpty()) {
 
             holder.thumbnail.setVisibility(View.GONE);
 
         } else {
+
+            //System.out.println("thumbnail = " + thumbnail);
 
             Picasso.with(context)
                     .load(thumbnail)
@@ -186,6 +191,8 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                     arguments.putString("DOMAIN", domain);
                     arguments.putString("FULLNAME", fullName);
 
+                    arguments.putBoolean("USERLESS_MODE", mUserlessMode);
+
                     //arguments.putString("COMMENT_AUTHOR", commentAuthor);
 
                     PostDetailFragment fragment = new PostDetailFragment();
@@ -209,6 +216,8 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                     intent.putExtra("NUMBER_OF_COMMENTS", numberOfComments);
                     intent.putExtra("DOMAIN", domain);
                     intent.putExtra("FULLNAME", fullName);
+
+                    intent.putExtra("USERLESS_MODE", mUserlessMode);
 
                     //intent.putExtra("COMMENT_AUTHOR", commentAuthor);
 

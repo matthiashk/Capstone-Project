@@ -63,6 +63,7 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
             arguments.putString("POST_TITLE", getIntent().getStringExtra("POST_TITLE"));
             arguments.putString("POST_ID", getIntent().getStringExtra("POST_ID"));
             arguments.putString("FULLNAME", getIntent().getStringExtra("FULLNAME"));
+            arguments.putBoolean("USERLESS_MODE", getIntent().getBooleanExtra("USERLESS_MODE", false));
 
             PostDetailFragment fragment = new PostDetailFragment();
             fragment.setArguments(arguments);
@@ -122,7 +123,7 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
                     .centerCrop()
                     .into((ImageView) findViewById(R.id.header_imageview));
 
-        } else {
+        } else if (!getIntent().getStringExtra("THUMBNAIL").isEmpty()) {
 
             Picasso.with(getBaseContext())
                     .load(getIntent().getStringExtra("THUMBNAIL"))

@@ -1,5 +1,6 @@
 package com.matthiasko.scrollforreddit;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -25,6 +26,12 @@ import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
 import net.dean.jraw.paginators.SubredditPaginator;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -39,6 +46,8 @@ public class PostDetailFragment extends Fragment {
      * represents.
      */
     public static final String ARG_ITEM_ID = "item_id";
+
+    private boolean mUserlessMode;
 
     private Post mItem;
 
@@ -72,19 +81,6 @@ public class PostDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        AndroidTokenStore store = new AndroidTokenStore(getContext());
-
-        try {
-
-            String refreshToken = store.readToken("EXAMPLE_KEY");
-            new RetrieveComments().execute(refreshToken);
-
-        } catch (NoSuchTokenException e) {
-
-            Log.e(LOG_TAG, e.getMessage());
-        }
-
-        //String title = getArguments().getString("POST_TITLE");
 
         if (getArguments().containsKey("POST_TITLE")) {
 
@@ -101,14 +97,64 @@ public class PostDetailFragment extends Fragment {
 
             postFullName = getArguments().getString("FULLNAME");
 
+            mUserlessMode = getArguments().getBoolean("USERLESS_MODE");
+
+            //System.out.println("PostDetailFragment - mUserlessMode = " + mUserlessMode);
+
             //System.out.println("postFullName = " + postFullName);
 
-            //System.out.println("postId = " + postId);
+            System.out.println("postId = " + postId);
 
             //commentAuthor = getArguments().getString("COMMENT_AUTHOR");
 
             //System.out.println("postTitle = " + postTitle);
         }
+
+
+
+        // TODO: fetch userless token if in userless mode
+
+        if (mUserlessMode) {
+
+            // get access token
+            AndroidTokenStore store = new AndroidTokenStore(getContext());
+
+            try {
+
+                String refreshToken = store.readToken("USERLESS_TOKEN");
+
+                System.out.println("refreshToken = " + refreshToken);
+
+                new RetrieveUserlessComments().execute(refreshToken);
+
+            } catch (NoSuchTokenException e) {
+
+                Log.e(LOG_TAG, e.getMessage());
+            }
+
+
+        } else {
+
+            // get access token
+            AndroidTokenStore store = new AndroidTokenStore(getContext());
+
+            try {
+
+                String refreshToken = store.readToken("EXAMPLE_KEY");
+                new RetrieveComments().execute(refreshToken);
+
+            } catch (NoSuchTokenException e) {
+
+                Log.e(LOG_TAG, e.getMessage());
+            }
+
+        }
+
+
+
+        //String title = getArguments().getString("POST_TITLE");
+
+
 
     }
 
@@ -309,4 +355,109 @@ public class PostDetailFragment extends Fragment {
         public void postDetailSpinner();
     }
 
+
+    private class RetrieveUserlessComments extends AsyncTask<String, Void, Void> {
+
+        HttpURLConnection urlConnection = null;
+        BufferedReader reader = null;
+
+
+        @Override
+        protected Void doInBackground(String... params) {
+
+            String userlessToken = params[0];
+
+            try {
+                // get access_token from response data
+
+                // call api using the token we just recieved and ask for hot posts
+                final String REDDIT_OAUTH_API_BASE_URL = "https://oauth.reddit.com/comments/";
+                final String bearer = "Bearer " + userlessToken;
+
+                Uri builtUri = Uri.parse(REDDIT_OAUTH_API_BASE_URL)
+                        .buildUpon()
+                        .appendPath(postId)
+                        .build();
+
+                URL oauthUrl = new URL(builtUri.toString());
+
+                System.out.println("oauthUrl = " + oauthUrl);
+
+                urlConnection = (HttpURLConnection) oauthUrl.openConnection();
+                urlConnection.setRequestMethod("GET");
+                urlConnection.setRequestProperty("Authorization", bearer);
+                urlConnection.connect();
+
+                // Read the input stream into a String
+                InputStream is = urlConnection.getInputStream();
+                StringBuffer b = new StringBuffer();
+                if (is == null) {
+                    // Nothing to do.
+                    return null;
+                }
+                reader = new BufferedReader(new InputStreamReader(is));
+
+                String l;
+                while ((l = reader.readLine()) != null) {
+                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
+                    // But it does make debugging a *lot* easier if you print out the completed
+                    // buffer for debugging.
+                    b.append(l + "\n");
+                }
+
+                if (b.length() == 0) {
+                    // Stream was empty.  No point in parsing.
+                    return null;
+                }
+                String r = b.toString();
+
+                System.out.println("r = " + r);
+
+                // TODO: parse json here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            }  catch (IOException e) {
+                Log.e(LOG_TAG, "Error ", e);
+            }
+            finally {
+                if (urlConnection != null) {
+                    urlConnection.disconnect();
+                }
+                if (reader != null) {
+                    try {
+                        reader.close();
+                    } catch (final IOException e) {
+                        Log.e(LOG_TAG, "Error closing stream", e);
+                    }
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            adapter.notifyDataSetChanged();
+
+            // stop the spinner
+            try {
+                ((PostDetailActivity) getActivity()).postDetailSpinner();
+            } catch (ClassCastException cce) {
+                cce.printStackTrace();
+            }
+        }
+    }
 }

@@ -142,6 +142,7 @@ public class LoginWebViewActivity extends Activity{
 
             //Log.v(LOG_TAG, "onPostExecute()");
 
+            // store access token
             String refreshToken = redditClient.getOAuthData().getRefreshToken();
 
             AndroidTokenStore store = new AndroidTokenStore(LoginWebViewActivity.this);

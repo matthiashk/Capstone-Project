@@ -9,17 +9,14 @@ import android.net.Uri;
 
 /**
  * Created by matthiasko on 4/19/16.
+ * based partly on the Sunshine Version 2 project content provider code
  */
 public class PostProvider extends ContentProvider {
-
-    // used the Sunshine Version 2 project content provider code as a base
 
     private static final UriMatcher sUriMatcher = buildUriMatcher();
     private DBHandler handler;
 
     static final int POST = 100;
-
-
 
     static UriMatcher buildUriMatcher() {
 
@@ -78,8 +75,6 @@ public class PostProvider extends ContentProvider {
                 );
                 break;
             }
-
-
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }

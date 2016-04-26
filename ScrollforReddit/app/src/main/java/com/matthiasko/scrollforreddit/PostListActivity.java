@@ -5,12 +5,10 @@ import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -46,11 +44,6 @@ import net.dean.jraw.paginators.SubredditPaginator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * An activity representing a list of Posts. This activity
@@ -66,6 +59,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
      * device.
      */
     private boolean mTwoPane;
+
+    private boolean mUserlessMode;
 
     private static final String LOG_TAG = "MainActivity";
 
@@ -137,10 +132,53 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         switch (authState) {
             case NONE:
                 System.out.println("NONE");
+
+
+                // TODO: check if there are posts in database, if yes load posts
+                // check for token
+                // how often should we check?
+                // why do we need to refresh token?
+
+                //System.out.println("mHandler.getPostCount() = " + mHandler.getPostCount());
+
+                mUserlessMode = true;
+
+
+                // skip userless authentication if there are posts in database
+                // cursor will load existing posts
+                if (mHandler.getPostCount() == 0)
+
+
+                new FetchUserlessTokenAsyncTask(this, new FetchUserlessTokenListener() {
+                    @Override
+                    public void onUserlessTokenFetched() {
+
+                        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+
+
+                    }
+                }).execute();
+
+
+
+
+
+
+                /* allow no user mode
+                   make asynctask to fetch token
+                   request token from https://www.reddit.com/api/v1/access_token
+                   include grant_type=https://oauth.reddit.com/grants/installed_client&\device_id=DEVICE_ID in the POST request
+                   user is client_id password is client_secret
+
+                   should we not store results/posts when not logged in?
+                */
+
+                /* TODO: we no longer need this logic here, move it when the user requests to login to their account...
                 // load webview activity to login and authenticate user
                 Intent intent = new Intent(this, LoginWebViewActivity.class);
                 //startActivity(intent);
                 startActivityForResult(intent, LOGIN_REQUEST);
+                */
                 break;
 
             case NEED_REFRESH:
@@ -163,7 +201,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
         getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
 
-        adapter = new PostsAdapter(this, null);
+        adapter = new PostsAdapter(this, null, mUserlessMode);
 
         mRecyclerView = findViewById(R.id.post_list);
         assert mRecyclerView != null;
@@ -206,7 +244,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                         return true;
                     }
                 });
-
+        /* TEMP DISABLED
         // check first if the list is in shared prefs
         SharedPreferences appSharedPrefs = PreferenceManager
                 .getDefaultSharedPreferences(getApplicationContext());
@@ -252,30 +290,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             });
             task.execute();
         }
-
-        /*
-        // get menu from sharedprefs
-        SharedPreferences appSharedPrefs = PreferenceManager
-                .getDefaultSharedPreferences(getApplicationContext());
-        Gson gson = new Gson();
-
-        // if the list is found in sharedprefs load it
-        if (appSharedPrefs.contains("com.keycoding.TODO_LISTS")) {
-
-            String getJson = appSharedPrefs.getString("com.keycoding.TODO_LISTS", "");
-
-            Type type = new TypeToken<ArrayList<String>>(){}.getType();
-            ArrayList<String> todoList = gson.fromJson(getJson, type);
-
-            // we need to remove 'inbox' b/c it is already loaded by xml
-            // we need to do this in  onactivityresult also
-            todoList.remove("Inbox");
-
-            for (String item: todoList) {
-
-                menu.add(R.id.group1, Menu.NONE, 1, item);
-            }
-        }
         */
     }
 
@@ -297,11 +311,12 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
             mRecyclerView.setVisibility(View.GONE);
 
-            // get updated list
+            // read token
             AndroidTokenStore store = new AndroidTokenStore(this);
 
             try {
                 String refreshToken = store.readToken("EXAMPLE_KEY");
+                // get updated list
                 new RefreshTokenAsync().execute(refreshToken, menuTitle.toString());
             } catch (NoSuchTokenException e) {
                 Log.e(LOG_TAG, e.getMessage());
