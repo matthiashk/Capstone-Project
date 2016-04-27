@@ -26,6 +26,10 @@ import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
 import net.dean.jraw.paginators.SubredditPaginator;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -103,7 +107,7 @@ public class PostDetailFragment extends Fragment {
 
             //System.out.println("postFullName = " + postFullName);
 
-            System.out.println("postId = " + postId);
+            //System.out.println("postId = " + postId);
 
             //commentAuthor = getArguments().getString("COMMENT_AUTHOR");
 
@@ -115,6 +119,8 @@ public class PostDetailFragment extends Fragment {
         // TODO: fetch userless token if in userless mode
 
         if (mUserlessMode) {
+
+            System.out.println("***** USERLESS MODE *****");
 
             // get access token
             AndroidTokenStore store = new AndroidTokenStore(getContext());
@@ -134,6 +140,8 @@ public class PostDetailFragment extends Fragment {
 
 
         } else {
+
+            System.out.println("***** NOT USERLESS MODE *****");
 
             // get access token
             AndroidTokenStore store = new AndroidTokenStore(getContext());
@@ -374,6 +382,8 @@ public class PostDetailFragment extends Fragment {
                 final String REDDIT_OAUTH_API_BASE_URL = "https://oauth.reddit.com/comments/";
                 final String bearer = "Bearer " + userlessToken;
 
+                //System.out.println("userlessToken = " + userlessToken);
+
                 Uri builtUri = Uri.parse(REDDIT_OAUTH_API_BASE_URL)
                         .buildUpon()
                         .appendPath(postId)
@@ -381,17 +391,23 @@ public class PostDetailFragment extends Fragment {
 
                 URL oauthUrl = new URL(builtUri.toString());
 
-                System.out.println("oauthUrl = " + oauthUrl);
+                //System.out.println("oauthUrl = " + oauthUrl);
 
                 urlConnection = (HttpURLConnection) oauthUrl.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.setRequestProperty("Authorization", bearer);
                 urlConnection.connect();
 
+                //int responseCode = urlConnection.getResponseCode();
+
+                //System.out.println("responseCode = " + responseCode);
+
                 // Read the input stream into a String
                 InputStream is = urlConnection.getInputStream();
                 StringBuffer b = new StringBuffer();
                 if (is == null) {
+
+                    System.out.println("INPUTSTREAM IS NULL");
                     // Nothing to do.
                     return null;
                 }
@@ -406,14 +422,121 @@ public class PostDetailFragment extends Fragment {
                 }
 
                 if (b.length() == 0) {
+                    System.out.println("STRINGBUFFER IS EMPTY");
                     // Stream was empty.  No point in parsing.
                     return null;
                 }
                 String r = b.toString();
 
-                System.out.println("r = " + r);
+                System.out.println("PostDetailFragment - r = " + r);
+
+                //JSONObject aResponse = new JSONObject(r);
+                //JSONObject data = aResponse.getJSONObject("data");
+                JSONArray jsonArray = new JSONArray(r);
+
+                System.out.println("jsonArray.length() = " + jsonArray.length());
+
+                String commentText;
+
+                int depth = 0;
+
 
                 // TODO: parse json here
+                for (int i = 0; i < jsonArray.length(); i++) {
+
+                    JSONObject jsonObject = jsonArray.getJSONObject(i).getJSONObject("data");
+
+                    //System.out.println("jsonObject.toString() = " + jsonObject.toString());
+
+                    JSONArray commentsArray = jsonObject.getJSONArray("children");
+
+                    System.out.println("commentsArray.length() = " + commentsArray.length());
+
+                    //System.out.println("commentsArray.toString() = " + commentsArray.toString());
+
+                    for (int j = 0; j < commentsArray.length(); j++) {
+
+                        if (commentsArray.getJSONObject(i).optString("kind").equals("t1") == false)
+                            continue;
+
+                        JSONObject innerElem = commentsArray.getJSONObject(j);
+
+                        JSONObject commentElem = innerElem.getJSONObject("data");
+
+
+
+
+
+
+
+
+                        //System.out.println("commentElem.toString() = " + commentElem.toString());
+
+                        //System.out.println("commentElem.getString(\"body\") = " + commentElem.optString("body"));
+
+                        // TODO: one body value will be null, this contains a list of comment ids in a 'children' array
+
+                        // TODO: how do we get/handle the depth?
+
+                        //System.out.println("commentsIds.toString() = " + commentsIds.toString());
+
+                        if (commentElem.optString("body").isEmpty())
+                            continue;
+
+                        ScrollComment scrollComment = new ScrollComment(commentElem.optString("body"),
+                                commentElem.optString("author"), commentElem.optInt("score"), 0);
+
+                        arrayOfComments.add(scrollComment);
+
+
+
+                        if (!commentElem.get("replies").equals("")) {
+
+                            JSONArray replies = commentElem.getJSONObject("replies")
+                                    .getJSONObject("data")
+                                    .getJSONArray("children");
+
+                            //System.out.println("replies = " + replies);
+
+
+                            // TODO: how do we put the replies under the proper comment?
+                            // TODO: how do we set the level of replies?
+
+
+
+
+                            for (int k = 0; k < replies.length(); k++){
+
+                                if (replies.getJSONObject(k).optString("kind") == null)
+                                    continue;
+                                if (replies.getJSONObject(k).optString("kind").equals("t1") == false)
+                                    continue;
+                                JSONObject data = replies.getJSONObject(k).getJSONObject("data");
+
+
+                                System.out.println("data.getString(\"body\") = " + data.getString("body"));
+
+                                //depth++;
+
+                                System.out.println("data.getString(\"parent_id\") = " + data.getString("parent_id"));
+
+
+                                //System.out.println("depth = " + depth);
+
+                                //System.out.println("***** data = " + data);
+
+
+                                /*
+                                Comment comment = loadComment(data,level);
+                                if (comment.author != null) {
+                                    comments.add(comment);
+                                    addReplies(comments, data, level+1);
+                                }
+                                */
+                            }
+
+
+                        }
 
 
 
@@ -425,13 +548,19 @@ public class PostDetailFragment extends Fragment {
 
 
 
+                        //System.out.println("innerElem.toString() = " + innerElem.toString());
 
+                        //commentText = innerElem.getString("body_html");
 
+                        //System.out.println("commentText = " + commentText);
 
-            }  catch (IOException e) {
+                    }
+                }
+            } catch (IOException e) {
                 Log.e(LOG_TAG, "Error ", e);
-            }
-            finally {
+            } catch (JSONException e) {
+                Log.e(LOG_TAG, e.getMessage(), e);
+            } finally {
                 if (urlConnection != null) {
                     urlConnection.disconnect();
                 }

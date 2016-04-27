@@ -2,30 +2,25 @@ package com.matthiasko.scrollforreddit;
 
 import android.content.ContentValues;
 import android.content.Context;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.util.Base64;
 import android.util.Log;
 
-import net.dean.jraw.android.AndroidTokenStore;
+import net.dean.jraw.RedditClient;
+import net.dean.jraw.android.AndroidRedditClient;
+import net.dean.jraw.http.oauth.Credentials;
+import net.dean.jraw.http.oauth.OAuthData;
+import net.dean.jraw.http.oauth.OAuthException;
+import net.dean.jraw.http.oauth.OAuthHelper;
+import net.dean.jraw.models.Listing;
+import net.dean.jraw.models.Submission;
+import net.dean.jraw.paginators.SubredditPaginator;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.UUID;
 
 /**
  * Created by matthiasko on 4/23/16.
  */
-public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, String> {
+public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
 
     private Context mContext;
     private final String LOG_TAG = FetchUserlessTokenAsyncTask.class.getSimpleName();
@@ -33,183 +28,118 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, String>
 
     private FetchUserlessTokenListener mListener;
 
+    private static final String CLIENT_ID = "cAizcZuXu-Mn9w";
+
+    private DBHandler mHandler;
+
     public FetchUserlessTokenAsyncTask(Context context, FetchUserlessTokenListener listener) {
         this.mContext = context;
         this.mListener = listener;
     }
 
     @Override
-    protected String doInBackground(String... params) {
-        /*
-        request token from https://www.reddit.com/api/v1/access_token
-        include grant_type=https://oauth.reddit.com/grants/installed_client&\device_id=DEVICE_ID in the POST request
-        user is client_id password is blank
-        */
-        // generate random device_id
-        String uuid = UUID.randomUUID().toString();
+    protected Void doInBackground(String... params) {
 
-        HttpURLConnection urlConnection = null;
-        BufferedReader reader = null;
+        // generate random uuid -> needed to request api access
+        UUID deviceId = UUID.randomUUID();
 
-        final String ACCESS_TOKEN = "access_token";
+        final RedditClient redditClient = new AndroidRedditClient(mContext);
+
+        final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
+
+        // note 'userlessApp' used here instead of 'installedApp'
+        final Credentials credentials = Credentials.userlessApp(CLIENT_ID, deviceId);
 
         try {
-            final String REDDIT_API_BASE_URL = "https://www.reddit.com/api/v1/access_token";
-            final String GRANT_TYPE = "grant_type";
-            final String DEVICE_ID = "device_id";
-            final String basicAuth = "Basic " + Base64.encodeToString("cAizcZuXu-Mn9w:".getBytes(), Base64.NO_WRAP);
-
-            Uri builtUri = Uri.parse(REDDIT_API_BASE_URL)
-                    .buildUpon()
-                    .appendQueryParameter(GRANT_TYPE, "https://oauth.reddit.com/grants/installed_client")
-                    .appendQueryParameter(DEVICE_ID, uuid)
-                    .build();
-            URL url = new URL(builtUri.toString());
-
-            //System.out.println("builtUri = " + builtUri.toString());
-            urlConnection = (HttpURLConnection) url.openConnection();
-            urlConnection.setRequestMethod("POST");
-            urlConnection.setRequestProperty("Authorization", basicAuth);
-            urlConnection.connect();
-
-            // Read the input stream into a String
-            InputStream inputStream = urlConnection.getInputStream();
-            StringBuffer buffer = new StringBuffer();
-            if (inputStream == null) {
-                // Nothing to do.
-                return null;
+            OAuthData finalData = oAuthHelper.easyAuth(credentials);
+            redditClient.authenticate(finalData);
+            if (redditClient.isAuthenticated()) {
+                Log.v(LOG_TAG, "Authenticated");
             }
-            reader = new BufferedReader(new InputStreamReader(inputStream));
+        } catch (OAuthException e) {
+            e.printStackTrace();
+        }
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                // But it does make debugging a *lot* easier if you print out the completed
-                // buffer for debugging.
-                buffer.append(line + "\n");
+        mHandler = new DBHandler(mContext);
+
+        SubredditPaginator paginator;
+
+        // check here if database exists, if yes we need to add to existing database
+        if (mHandler.getPostCount() == 0) {
+
+            System.out.println("POST COUNT IS 0");
+
+            /*
+            if (subredditMenuName.equals("Frontpage")) {
+
+                paginator = new SubredditPaginator(redditClient);
+
+            } else {
+
+                paginator = new SubredditPaginator(redditClient, subredditMenuName);
             }
+            */
 
-            if (buffer.length() == 0) {
-                // Stream was empty.  No point in parsing.
-                return null;
-            }
-            String response = buffer.toString();
+            paginator = new SubredditPaginator(redditClient);
 
-            // get access_token from response data
-            JSONTokener tokener = new JSONTokener(response);
+            Listing<Submission> submissions = paginator.next();
 
-            JSONObject oneObject = new JSONObject(tokener);
+            for (Submission submission : submissions) {
 
-            // TODO: store token?
-            mToken = oneObject.getString(ACCESS_TOKEN);
+                String title = submission.getTitle();
+                // store fullname so we can get the specific post later...
+                String subreddit = submission.getSubredditName();
 
-            // call api using the token we just recieved and ask for hot posts
-            final String REDDIT_OAUTH_API_BASE_URL = "https://oauth.reddit.com/hot";
-            final String bearer = "Bearer " + mToken;
+                String username = submission.getAuthor();
 
-            URL oauthUrl = new URL(REDDIT_OAUTH_API_BASE_URL);
+                String source = submission.getUrl();
 
-            urlConnection = (HttpURLConnection) oauthUrl.openConnection();
-            urlConnection.setRequestMethod("GET");
-            urlConnection.setRequestProperty("Authorization", bearer);
-            urlConnection.connect();
+                String domain = submission.getDomain();
 
-            // Read the input stream into a String
-            InputStream is = urlConnection.getInputStream();
-            StringBuffer b = new StringBuffer();
-            if (is == null) {
-                // Nothing to do.
-                return null;
-            }
-            reader = new BufferedReader(new InputStreamReader(is));
+                int points = submission.getScore();
 
-            String l;
-            while ((l = reader.readLine()) != null) {
-                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                // But it does make debugging a *lot* easier if you print out the completed
-                // buffer for debugging.
-                b.append(l + "\n");
-            }
+                int numberOfComments = submission.getCommentCount();
 
-            if (b.length() == 0) {
-                // Stream was empty.  No point in parsing.
-                return null;
-            }
-            String r = b.toString();
+                String thumbnail = submission.getThumbnail();
 
-            System.out.println("r = " + r);
+                // we need to add this to the post item data so we can retrieve the commentnode in details view
+                String postId = submission.getId();
 
-            JSONObject aResponse = new JSONObject(r);
-            JSONObject data = aResponse.getJSONObject("data");
-            JSONArray hotTopics = data.getJSONArray("children");
+                String fullName = submission.getFullName();
 
-            for (int i = 0; i < hotTopics.length(); i++) {
-                JSONObject topic = hotTopics.getJSONObject(i).getJSONObject("data");
-
-                String title = topic.getString("title");
-                String subreddit = topic.getString("subreddit");
-                String author = topic.getString("author");
-                String domain = topic.getString("domain");
-                String source = topic.getString("url");// might be null...
-                String score = topic.getString("score");
-                String numberOfComments = topic.getString("num_comments");
-                String thumbnail = topic.getString("thumbnail");
-                String postId = topic.getString("id");
-                String fullName = topic.getString("name");
-                //String postTime = topic.getString("created_utc");
-
-                // TODO: put results into database...
-
+                // add post data to database
                 ContentValues postValues = new ContentValues();
 
                 postValues.put(PostContract.PostEntry.COLUMN_TITLE, title);
                 postValues.put(PostContract.PostEntry.COLUMN_SUBREDDIT, subreddit);
-                postValues.put(PostContract.PostEntry.COLUMN_AUTHOR, author);
+                postValues.put(PostContract.PostEntry.COLUMN_AUTHOR, username);
                 postValues.put(PostContract.PostEntry.COLUMN_SOURCE, source);
                 postValues.put(PostContract.PostEntry.COLUMN_THUMBNAIL, thumbnail);
-                postValues.put(PostContract.PostEntry.COLUMN_SCORE, score);
+                postValues.put(PostContract.PostEntry.COLUMN_SCORE, points);
                 postValues.put(PostContract.PostEntry.COLUMN_NUMBER_OF_COMMENTS, numberOfComments);
                 postValues.put(PostContract.PostEntry.COLUMN_POST_ID, postId);
                 postValues.put(PostContract.PostEntry.COLUMN_SOURCE_DOMAIN, domain);
                 postValues.put(PostContract.PostEntry.COLUMN_FULLNAME, fullName);
 
                 mContext.getContentResolver().insert(PostContract.PostEntry.CONTENT_URI, postValues);
-
-                //System.out.println("title = " + title);
-                //System.out.println("thumbnail = " + thumbnail);
-
-                //topicdata.add(new ListData(title, author, imageUrl, postTime, rScore));
-                //Log.v(DEBUG_TAG, topicdata.toString());
             }
-
-        } catch (IOException e) {
-            Log.e(LOG_TAG, "Error ", e);
-        } catch (JSONException e) {
-            Log.e(LOG_TAG, e.getMessage(), e);
-            e.printStackTrace();
+        } else {
+            System.out.println("PostListActivity - loading from database");
         }
-        finally {
-            if (urlConnection != null) {
-                urlConnection.disconnect();
-            }
-            if (reader != null) {
-                try {
-                    reader.close();
-                } catch (final IOException e) {
-                    Log.e(LOG_TAG, "Error closing stream", e);
-                }
-            }
-        }
-        return mToken;
+
+
+        return null;
     }
 
     @Override
-    protected void onPostExecute(String token) {
-        super.onPostExecute(token);
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
+        // hide the spinner in PostListActivity
         mListener.onUserlessTokenFetched();
 
+        // TEMP DISABLED
         // store access token
-        AndroidTokenStore store = new AndroidTokenStore(mContext);
-        store.writeToken("USERLESS_TOKEN", token);
+        //AndroidTokenStore store = new AndroidTokenStore(mContext);
+        //store.writeToken("USERLESS_TOKEN", token);
     }
 }
