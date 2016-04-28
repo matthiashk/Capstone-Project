@@ -2,11 +2,14 @@ package com.matthiasko.scrollforreddit;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import net.dean.jraw.RedditClient;
 import net.dean.jraw.android.AndroidRedditClient;
+import net.dean.jraw.android.AndroidTokenStore;
 import net.dean.jraw.http.oauth.Credentials;
 import net.dean.jraw.http.oauth.OAuthData;
 import net.dean.jraw.http.oauth.OAuthException;
@@ -24,13 +27,14 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
 
     private Context mContext;
     private final String LOG_TAG = FetchUserlessTokenAsyncTask.class.getSimpleName();
-    private String mToken;
 
     private FetchUserlessTokenListener mListener;
 
     private static final String CLIENT_ID = "cAizcZuXu-Mn9w";
 
     private DBHandler mHandler;
+
+    private static RedditClient redditClient;
 
     public FetchUserlessTokenAsyncTask(Context context, FetchUserlessTokenListener listener) {
         this.mContext = context;
@@ -40,10 +44,22 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
     @Override
     protected Void doInBackground(String... params) {
 
+        // we need to store the uuid after we create it and reuse it
         // generate random uuid -> needed to request api access
         UUID deviceId = UUID.randomUUID();
 
-        final RedditClient redditClient = new AndroidRedditClient(mContext);
+        //String test = deviceId.toString();
+        //UUID u = UUID.fromString(test);
+
+        // store uuid in shared prefs as a string, we need to convert back to uuid to use
+        SharedPreferences appSharedPrefs = PreferenceManager
+                .getDefaultSharedPreferences(mContext);
+        SharedPreferences.Editor sharedPrefsEditor = appSharedPrefs.edit();
+
+        sharedPrefsEditor.putString("com.matthiasko.scrollforreddit.UUID", deviceId.toString());;
+        sharedPrefsEditor.commit();
+
+        redditClient = new AndroidRedditClient(mContext);
 
         final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
 
@@ -70,6 +86,9 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
             System.out.println("POST COUNT IS 0");
 
             /*
+
+            // TODO: re-enable...
+
             if (subredditMenuName.equals("Frontpage")) {
 
                 paginator = new SubredditPaginator(redditClient);
@@ -126,8 +145,6 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
         } else {
             System.out.println("PostListActivity - loading from database");
         }
-
-
         return null;
     }
 
@@ -137,9 +154,11 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
         // hide the spinner in PostListActivity
         mListener.onUserlessTokenFetched();
 
-        // TEMP DISABLED
         // store access token
-        //AndroidTokenStore store = new AndroidTokenStore(mContext);
-        //store.writeToken("USERLESS_TOKEN", token);
+        String accessToken = redditClient.getOAuthData().getAccessToken();
+
+        AndroidTokenStore store = new AndroidTokenStore(mContext);
+
+        store.writeToken("USERLESS_TOKEN", accessToken);
     }
 }

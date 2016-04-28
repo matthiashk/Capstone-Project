@@ -62,7 +62,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     private boolean mUserlessMode;
 
-    private static final String LOG_TAG = "MainActivity";
+    private static final String LOG_TAG = PostListActivity.class.getSimpleName();
 
     private static final String CLIENT_ID = "cAizcZuXu-Mn9w";
 
@@ -132,38 +132,24 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         switch (authState) {
             case NONE:
                 System.out.println("NONE");
-
-
                 // TODO: check if there are posts in database, if yes load posts
                 // check for token
                 // how often should we check?
                 // why do we need to refresh token?
-
                 //System.out.println("mHandler.getPostCount() = " + mHandler.getPostCount());
 
                 mUserlessMode = true;
-
 
                 // skip userless authentication if there are posts in database
                 // cursor will load existing posts
                 if (mHandler.getPostCount() == 0)
 
-
                 new FetchUserlessTokenAsyncTask(this, new FetchUserlessTokenListener() {
                     @Override
                     public void onUserlessTokenFetched() {
-
                         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-
-
                     }
                 }).execute();
-
-
-
-
-
-
                 /* allow no user mode
                    make asynctask to fetch token
                    request token from https://www.reddit.com/api/v1/access_token
@@ -216,6 +202,10 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             // If this view is present, then the
             // activity should be in two-pane mode.
             mTwoPane = true;
+        }
+        // check if the spinner is visible
+        if (mHandler.getPostCount() > 0) {
+            findViewById(R.id.loadingPanel).setVisibility(View.GONE);
         }
     }
 
