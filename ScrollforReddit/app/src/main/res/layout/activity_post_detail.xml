@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
     tools:context="com.matthiasko.scrollforreddit.PostDetailActivity"
     tools:ignore="MergeRootFrame">
 
@@ -11,61 +10,36 @@
         android:id="@+id/app_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
+        android:theme="@style/AppTheme">
 
-
-
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/detail_toolbar"
+        <android.support.design.widget.CollapsingToolbarLayout
+            android:id="@+id/collapsing_toolbar_layout"
             android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:layout_collapseMode="pin"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            />
-
-
+            android:layout_height="match_parent"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
         <RelativeLayout
-            android:background="@android:color/white"
+            android:background="@color/colorPrimary"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content">
-
-            <!-- TODO: we may need to change the marginTop value to adjust to tablet mode??
-            -->
-            <RelativeLayout
-                android:id="@+id/loadingPanel"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:layout_marginTop="200dp"
-                >
-
-                <ProgressBar
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:indeterminate="true" />
-
-            </RelativeLayout>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="?attr/actionBarSize">
 
             <TextView
                 android:id="@+id/header_textview"
-
-                android:textColor="@android:color/black"
+                android:textColor="@android:color/white"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
             <TextView
                 android:id="@+id/subreddit_textview"
-
-                android:textColor="@android:color/black"
+                android:textColor="@android:color/white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/header_textview"/>
 
             <TextView
                 android:id="@+id/author_textview"
-
-                android:textColor="@android:color/black"
+                android:textColor="@android:color/white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_toRightOf="@+id/subreddit_textview"
@@ -74,8 +48,7 @@
 
             <TextView
                 android:id="@+id/source_textview"
-
-                android:textColor="@android:color/black"
+                android:textColor="@android:color/white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_toRightOf="@+id/author_textview"
@@ -90,11 +63,14 @@
 
         </RelativeLayout>
 
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/detail_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:layout_collapseMode="pin"
+            android:background="@color/colorPrimary"/>
 
-
-
-
-
+        </android.support.design.widget.CollapsingToolbarLayout>
 
     </android.support.design.widget.AppBarLayout>
 
@@ -103,6 +79,20 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <RelativeLayout
+        android:id="@+id/loadingPanel"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        >
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true" />
+
+    </RelativeLayout>
 
     <!--
     <android.support.design.widget.FloatingActionButton

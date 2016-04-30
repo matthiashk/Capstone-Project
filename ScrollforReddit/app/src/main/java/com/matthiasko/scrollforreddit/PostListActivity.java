@@ -5,10 +5,12 @@ import android.content.ContentValues;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -44,6 +46,11 @@ import net.dean.jraw.paginators.SubredditPaginator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * An activity representing a list of Posts. This activity
@@ -89,10 +96,11 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     private View mRecyclerView;
 
+    private ActionBar mActionBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_post_list);
 
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -104,15 +112,15 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
+        //toolbar.setTitle(getTitle());
 
-        final ActionBar actionBar = getSupportActionBar();
+        mActionBar = getSupportActionBar();
 
-        if (actionBar != null) {
-            actionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
-            actionBar.setDisplayHomeAsUpEnabled(true);
+        if (mActionBar != null) {
+            mActionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
+            mActionBar.setDisplayHomeAsUpEnabled(true);
         }
-        setupNavigationView();
+
         /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -131,7 +139,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
         switch (authState) {
             case NONE:
-                System.out.println("NONE");
+                System.out.println("NO CREDENTIALS, GET USERLESS AUTHENTICATION");
                 // TODO: check if there are posts in database, if yes load posts
                 // check for token
                 // how often should we check?
@@ -207,6 +215,18 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         if (mHandler.getPostCount() > 0) {
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
         }
+        setupNavigationView();
+
+        // get and set selected subreddit menu item if it exists
+        SharedPreferences appSharedPrefs = PreferenceManager
+                .getDefaultSharedPreferences(getApplicationContext());
+        if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT")) {
+            // load from sharedprefs
+            mSelectedSubredditName = appSharedPrefs.getString("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT", null);
+
+            mActionBar.setTitle("r/" + mSelectedSubredditName);
+
+        }
     }
 
     private void setupNavigationView() {
@@ -234,23 +254,55 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                         return true;
                     }
                 });
-        /* TEMP DISABLED
-        // check first if the list is in shared prefs
+
         SharedPreferences appSharedPrefs = PreferenceManager
                 .getDefaultSharedPreferences(getApplicationContext());
 
-        if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USERSUBREDDITS")) {
+        // check if we are in userless mode
+        if (mUserlessMode) {
+            if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USERLESS_SUBREDDITS")) {
+                // load from sharedprefs
+                Set<String> set = appSharedPrefs.getStringSet("com.matthiasko.scrollforreddit.USERLESS_SUBREDDITS", null);
+                List<String> userSubredditsList = new ArrayList<>(set);
+                // sort the list alphabetically
+                Collections.sort(userSubredditsList, String.CASE_INSENSITIVE_ORDER);
+                Menu menu = navigationView.getMenu(); // get the default menu from xml
+                for (String item : userSubredditsList) { // create the menu items based on arraylist
+                    menu.add(R.id.group1, Menu.NONE, 1, item);
+                }
+            } else {
+                // populate menu programatically based on user subreddits
+                // get arraylist of subreddits
+                FetchUserlessSubsAsyncTask task = new FetchUserlessSubsAsyncTask(this);
+                task.setAsyncListener(new AsyncListener() {
+                    @Override
+                    public void createNavMenuItems(ArrayList<String> arrayList) {
+                        // put list into sharedprefs
+                        SharedPreferences appSharedPrefs = PreferenceManager
+                                .getDefaultSharedPreferences(getApplicationContext());
+                        SharedPreferences.Editor edit = appSharedPrefs.edit();
+                        Set<String> set = new HashSet<>();
+                        set.addAll(arrayList);
+                        edit.putStringSet("com.matthiasko.scrollforreddit.USERLESS_SUBREDDITS", set);
+                        edit.commit();
+                        Menu menu = navigationView.getMenu(); // get the default menu from xml
+                        for (String item : arrayList) { // create the menu items based on arraylist
+                            menu.add(R.id.group1, Menu.NONE, 1, item);
+                        }
+                    }
+                });
+                task.execute();
+            }
+
+        } else if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USERSUBREDDITS")) {
             // load from sharedprefs
             Set<String> set = appSharedPrefs.getStringSet("com.matthiasko.scrollforreddit.USERSUBREDDITS", null);
             List<String> userSubredditsList = new ArrayList<>(set);
             // sort the list alphabetically
             Collections.sort(userSubredditsList, String.CASE_INSENSITIVE_ORDER);
-
             Menu menu = navigationView.getMenu(); // get the default menu from xml
-            if (userSubredditsList != null) {
-                for (String item : userSubredditsList) { // create the menu items based on arraylist
-                    menu.add(R.id.group1, Menu.NONE, 1, item);
-                }
+            for (String item : userSubredditsList) { // create the menu items based on arraylist
+                menu.add(R.id.group1, Menu.NONE, 1, item);
             }
         } else {
             // populate menu programatically based on user subreddits
@@ -271,16 +323,13 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     edit.commit();
 
                     Menu menu = navigationView.getMenu(); // get the default menu from xml
-                    if (arrayList != null) {
-                        for (String item : arrayList) { // create the menu items based on arraylist
-                            menu.add(R.id.group1, Menu.NONE, 1, item);
-                        }
+                    for (String item : arrayList) { // create the menu items based on arraylist
+                        menu.add(R.id.group1, Menu.NONE, 1, item);
                     }
                 }
             });
             task.execute();
         }
-        */
     }
 
     public void selectedNavMenuItem(CharSequence menuTitle) {
@@ -295,21 +344,41 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
             mSelectedSubredditName = menuTitle.toString();
 
+            mActionBar.setTitle("r/" + mSelectedSubredditName);
+
+            // save selected menu item to prefs so we can load later, on start, etc.
+            SharedPreferences appSharedPrefs = PreferenceManager
+                    .getDefaultSharedPreferences(getApplicationContext());
+            SharedPreferences.Editor edit = appSharedPrefs.edit();
+            edit.putString("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT", mSelectedSubredditName);
+            edit.commit();
+
             DBHandler dbHandler = new DBHandler(this);
             SQLiteDatabase db = dbHandler.getWritableDatabase();
             db.execSQL("delete from "+ PostEntry.TABLE_NAME);
 
             mRecyclerView.setVisibility(View.GONE);
 
-            // read token
-            AndroidTokenStore store = new AndroidTokenStore(this);
-
-            try {
-                String refreshToken = store.readToken("EXAMPLE_KEY");
-                // get updated list
-                new RefreshTokenAsync().execute(refreshToken, menuTitle.toString());
-            } catch (NoSuchTokenException e) {
-                Log.e(LOG_TAG, e.getMessage());
+            if (mUserlessMode) {
+                // TODO: create new asynctask to fetch posts in userless mode
+                // basically FetchUserlessTokenAsyncTask without token saving code...
+                new FetchUserlessPostsAsyncTask(this, new FetchUserlessTokenListener() {
+                    @Override
+                    public void onUserlessTokenFetched() {
+                        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+                        mRecyclerView.setVisibility(View.VISIBLE);
+                    }
+                }).execute(mSelectedSubredditName);
+            } else {
+                // read token
+                AndroidTokenStore store = new AndroidTokenStore(this);
+                try {
+                    String refreshToken = store.readToken("EXAMPLE_KEY");
+                    // get updated list
+                    new RefreshTokenAsync().execute(refreshToken, menuTitle.toString());
+                } catch (NoSuchTokenException e) {
+                    Log.e(LOG_TAG, e.getMessage());
+                }
             }
         }
         /*
@@ -373,6 +442,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     protected void onResume() {
         super.onResume();
         getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
+
+        System.out.println("mSelectedSubredditName = " + mSelectedSubredditName);
     }
 
     private void refreshPosts() {
@@ -388,17 +459,25 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         DBHandler dbHandler = new DBHandler(this);
         SQLiteDatabase db = dbHandler.getWritableDatabase();
         db.execSQL("delete from "+ PostEntry.TABLE_NAME);
-
         mRecyclerView.setVisibility(View.GONE);
 
-        // get updated list
-        AndroidTokenStore store = new AndroidTokenStore(this);
-
-        try {
-            String refreshToken = store.readToken("EXAMPLE_KEY");
-            new RefreshTokenAsync().execute(refreshToken, mSelectedSubredditName);
-        } catch (NoSuchTokenException e) {
-            Log.e(LOG_TAG, e.getMessage());
+        if (mUserlessMode) {
+            new FetchUserlessPostsAsyncTask(this, new FetchUserlessTokenListener() {
+                @Override
+                public void onUserlessTokenFetched() {
+                    findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+                    mRecyclerView.setVisibility(View.VISIBLE);
+                }
+            }).execute(mSelectedSubredditName);
+        } else {
+            // get updated list
+            AndroidTokenStore store = new AndroidTokenStore(this);
+            try {
+                String refreshToken = store.readToken("EXAMPLE_KEY");
+                new RefreshTokenAsync().execute(refreshToken, mSelectedSubredditName);
+            } catch (NoSuchTokenException e) {
+                Log.e(LOG_TAG, e.getMessage());
+            }
         }
     }
 

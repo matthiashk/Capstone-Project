@@ -25,6 +25,7 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_detail);
         Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
+        //toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
 
         /*
@@ -123,6 +124,10 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
                     .centerCrop()
                     .into((ImageView) findViewById(R.id.header_imageview));
 
+        }  else if (getIntent().getStringExtra("THUMBNAIL") == null) {
+
+            System.out.println("NULL THUMBNAIL");
+
         } else if (!getIntent().getStringExtra("THUMBNAIL").isEmpty()) {
 
             Picasso.with(getBaseContext())
@@ -130,6 +135,7 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
                     .resize(400, 200)
                     .centerCrop()
                     .into((ImageView) findViewById(R.id.header_imageview));
+
         }
     }
 
