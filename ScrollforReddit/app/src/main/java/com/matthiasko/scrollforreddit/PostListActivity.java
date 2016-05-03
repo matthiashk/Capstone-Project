@@ -2,7 +2,9 @@ package com.matthiasko.scrollforreddit;
 
 import android.app.LoaderManager;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.CursorLoader;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.Loader;
 import android.content.SharedPreferences;
@@ -16,13 +18,18 @@ import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 
 import com.matthiasko.scrollforreddit.PostContract.PostEntry;
 
@@ -139,7 +146,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
         switch (authState) {
             case NONE:
-                System.out.println("NO CREDENTIALS, GET USERLESS AUTHENTICATION");
+                System.out.println("NO CREDENTIALS, GETTING USERLESS AUTHENTICATION");
                 // TODO: check if there are posts in database, if yes load posts
                 // check for token
                 // how often should we check?
@@ -157,6 +164,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     public void onUserlessTokenFetched() {
                         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                     }
+                    @Override
+                    public void onSubredditNotFound() {}
                 }).execute();
                 /* allow no user mode
                    make asynctask to fetch token
@@ -223,9 +232,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT")) {
             // load from sharedprefs
             mSelectedSubredditName = appSharedPrefs.getString("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT", null);
-
             mActionBar.setTitle("r/" + mSelectedSubredditName);
-
         }
     }
 
@@ -334,7 +341,124 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     public void selectedNavMenuItem(CharSequence menuTitle) {
         if (menuTitle.equals("subreddits")) {
-            // TODO: add edit subreddit button/action here
+
+            // show keyboard
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+
+            LayoutInflater inflater = getLayoutInflater();
+            final View dialogLayout = inflater.inflate(R.layout.nav_menu_subreddit, null);
+
+
+            final EditText editText = (EditText) dialogLayout.findViewById(R.id.subreddit_edittext);
+            editText.requestFocus();
+            //editText.setTextColor(getResources().getColor(R.color.blueGrey900));
+            //editText.setText(selectedWord);
+            editText.setSingleLine();
+            editText.setSelection(editText.getText().length());
+            editText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
+                    this);
+
+            alertDialogBuilder
+                    .setView(dialogLayout)
+                    .setMessage("subreddit")
+                    .setCancelable(false)
+                    .setPositiveButton("OK",new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog,int id) {
+
+                            //System.out.println("editText.getText() = " + editText.getText());
+
+                            //System.out.println("mSelectedSubredditName = " + mSelectedSubredditName);
+
+                            // check if subreddit exists
+
+                            //new SubredditSearchAsyncTask(getApplicationContext()).execute(editText.getText().toString());
+
+                            // if yes, change to subreddit
+
+                            // show loader
+                            findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
+
+
+
+                            DBHandler dbHandler = new DBHandler(getApplicationContext());
+                            SQLiteDatabase db = dbHandler.getWritableDatabase();
+                            db.execSQL("delete from "+ PostEntry.TABLE_NAME);
+
+                            mRecyclerView.setVisibility(View.GONE);
+
+                            if (mUserlessMode) {
+                                // TODO: if there are 0 results, notify user to check their query
+                                new FetchUserlessPostsAsyncTask(getApplicationContext(), new FetchUserlessTokenListener() {
+                                    @Override
+                                    public void onUserlessTokenFetched() {
+                                        // this block only runs if the subreddit exists
+                                        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+                                        mRecyclerView.setVisibility(View.VISIBLE);
+
+                                        mSelectedSubredditName = editText.getText().toString();
+                                        mActionBar.setTitle("r/" + mSelectedSubredditName);
+
+                                        // save selected menu item to prefs so we can load later, on start, etc.
+                                        SharedPreferences appSharedPrefs = PreferenceManager
+                                                .getDefaultSharedPreferences(getApplicationContext());
+                                        SharedPreferences.Editor edit = appSharedPrefs.edit();
+                                        edit.putString("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT", mSelectedSubredditName);
+                                        edit.commit();
+                                    }
+                                    @Override
+                                    public void onSubredditNotFound() {
+                                    // this block only runs if the subreddit does not exist
+                                        findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+                                        mRecyclerView.setVisibility(View.VISIBLE);
+
+                                        new AlertDialog.Builder(PostListActivity.this)
+                                                .setTitle("Subreddit not found")
+                                                .setMessage("Please try again.")
+                                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                                    public void onClick(DialogInterface dialog, int which) {
+                                                        // continue with delete
+                                                    }
+                                                })
+                                                .setIcon(android.R.drawable.ic_dialog_alert)
+                                                .show();
+                                    }
+
+                                }).execute(editText.getText().toString());
+                            } else {
+                                // read token
+                                AndroidTokenStore store = new AndroidTokenStore(getApplicationContext());
+                                try {
+                                    String refreshToken = store.readToken("EXAMPLE_KEY");
+                                    // get updated list
+                                    // TODO: if there are 0 results, notify user to check their query
+                                    new RefreshTokenAsync().execute(refreshToken, editText.getText().toString());
+                                } catch (NoSuchTokenException e) {
+                                    Log.e(LOG_TAG, e.getMessage());
+                                }
+                            }
+
+                            // if no, alert user
+
+                            // dismiss keyboard
+                            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+                        }
+                    })
+                    .setNegativeButton("Cancel",new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog,int id) {
+                            // dismiss keyboard
+                            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
+                            // close dialog
+                            dialog.cancel();
+                        }
+                    });
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+
         } else if (menuTitle.equals("Settings")) {
             //Intent intent = new Intent(this, PreferencesActivity.class);
             //startActivityForResult(intent, UPDATE_THEME);
@@ -368,6 +492,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                         mRecyclerView.setVisibility(View.VISIBLE);
                     }
+                    @Override
+                    public void onSubredditNotFound() {}
                 }).execute(mSelectedSubredditName);
             } else {
                 // read token
@@ -398,7 +524,20 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     }
 
     public void onVote (String postId, long id, String voteDirection) {
-        new VoteAsyncTask().execute(postId, String.valueOf(id), voteDirection);
+
+        if (mUserlessMode) {
+            new AlertDialog.Builder(PostListActivity.this)
+                    .setTitle("Unable to vote")
+                    .setMessage("Please login and try again.")
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+        } else {
+            new VoteAsyncTask().execute(postId, String.valueOf(id), voteDirection);
+        }
     }
 
     @Override
@@ -427,7 +566,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 // coming from loginwebviewactivity after logging in
                 // fetch posts
                 AndroidTokenStore store = new AndroidTokenStore(this);
-
                 try {
                     String refreshToken = store.readToken("EXAMPLE_KEY");
                     new RefreshTokenAsync().execute(refreshToken, "Frontpage");
@@ -442,8 +580,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     protected void onResume() {
         super.onResume();
         getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
-
-        System.out.println("mSelectedSubredditName = " + mSelectedSubredditName);
+        //System.out.println("mSelectedSubredditName = " + mSelectedSubredditName);
     }
 
     private void refreshPosts() {
@@ -451,7 +588,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         if (mSelectedSubredditName == null) {
             mSelectedSubredditName = "Frontpage";
         }
-
         // show loader
         findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
 
@@ -468,6 +604,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                     mRecyclerView.setVisibility(View.VISIBLE);
                 }
+                @Override
+                public void onSubredditNotFound() {}
             }).execute(mSelectedSubredditName);
         } else {
             // get updated list

@@ -51,6 +51,7 @@ public class PostDetailFragment extends Fragment {
     private ArrayList<ScrollComment> mArrayOfComments;
     private RedditClient mRedditClient;
     private UUID mDeviceId;
+    private String mSelectedSubreddit;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -240,6 +241,14 @@ public class PostDetailFragment extends Fragment {
                 mDeviceId = UUID.fromString(uuidString);
             }
 
+            if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT")) {
+                mSelectedSubreddit =
+                        appSharedPrefs.getString("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT", null);
+            } else {
+
+                mSelectedSubreddit = "Frontpage";
+            }
+
             // check authentication
             mRedditClient = new AndroidRedditClient(getContext());
             final OAuthHelper oAuthHelper = mRedditClient.getOAuthHelper();
@@ -258,7 +267,7 @@ public class PostDetailFragment extends Fragment {
             }
 
             // using paginator to process comments
-            SubredditPaginator paginator = new SubredditPaginator(mRedditClient);
+            SubredditPaginator paginator = new SubredditPaginator(mRedditClient, mSelectedSubreddit);
 
             Listing<Submission> submissions = paginator.next();
 
@@ -266,7 +275,10 @@ public class PostDetailFragment extends Fragment {
 
             for (Submission submission : submissions) {
                 //System.out.println("commentNode.getTotalSize() = " + commentNode.getTotalSize());
+
                 //System.out.println("mPostId = " + mPostId);
+
+                //System.out.println("submission.getId() = " + submission.getId());
 
                 if (submission.getId().equals(mPostId)) {
 

@@ -15,14 +15,16 @@ import net.dean.jraw.http.oauth.OAuthException;
 import net.dean.jraw.http.oauth.OAuthHelper;
 import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
+import net.dean.jraw.models.Subreddit;
 import net.dean.jraw.paginators.SubredditPaginator;
+import net.dean.jraw.paginators.SubredditSearchPaginator;
 
 import java.util.UUID;
 
 /**
  * Created by matthiasko on 4/28/16.
  */
-public class FetchUserlessPostsAsyncTask extends AsyncTask<String, Void, Void> {
+public class FetchUserlessPostsAsyncTask extends AsyncTask<String, Void, Boolean> {
 
     private Context mContext;
     private final String LOG_TAG = FetchUserlessTokenAsyncTask.class.getSimpleName();
@@ -41,7 +43,7 @@ public class FetchUserlessPostsAsyncTask extends AsyncTask<String, Void, Void> {
     }
 
     @Override
-    protected Void doInBackground(String... params) {
+    protected Boolean doInBackground(String... params) {
 
         String subredditMenuName = params[0];
 
@@ -72,9 +74,23 @@ public class FetchUserlessPostsAsyncTask extends AsyncTask<String, Void, Void> {
             e.printStackTrace();
         }
 
+        // check here if the subreddit exists
+        SubredditSearchPaginator subredditSearchPaginator =
+                new SubredditSearchPaginator(redditClient, subredditMenuName);
+
+        Listing<Subreddit> subreddits = subredditSearchPaginator.next();
+
+        //System.out.println("subreddits.size() = " + subreddits.size());
+
+        if (subreddits.size() == 0) { // subreddit not found
+            // TODO: notify user, no subreddit found matching 'name'
+            Boolean isSubreddit = false;
+            return isSubreddit;
+        }
+
         SubredditPaginator paginator;
 
-        //System.out.println("subredditMenuName = " + subredditMenuName);
+        System.out.println("subredditMenuName = " + subredditMenuName);
 
         if (subredditMenuName.equals("Frontpage")) {
 
@@ -129,14 +145,21 @@ public class FetchUserlessPostsAsyncTask extends AsyncTask<String, Void, Void> {
 
             mContext.getContentResolver().insert(PostContract.PostEntry.CONTENT_URI, postValues);
         }
+        Boolean isSubreddit = true;
 
-        return null;
+        return isSubreddit;
     }
 
     @Override
-    protected void onPostExecute(Void aVoid) {
-        super.onPostExecute(aVoid);
-        // hide the spinner in PostListActivity
-        mListener.onUserlessTokenFetched();
+    protected void onPostExecute(Boolean isSubreddit) {
+        super.onPostExecute(isSubreddit);
+        if (!isSubreddit) {
+            System.out.println("SUBREDDIT NOT FOUND");
+            mListener.onSubredditNotFound();
+        } else {
+            System.out.println("SUBREDDIT FOUND");
+            // hide the spinner in PostListActivity
+            mListener.onUserlessTokenFetched();
+        }
     }
 }

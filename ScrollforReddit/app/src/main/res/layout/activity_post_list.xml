@@ -71,6 +71,7 @@
         android:layout_gravity="start"
         app:menu="@menu/navigation_items"
         app:itemTextColor="@color/colorPrimary"
+        android:background="@android:color/white"
         />
 
 </android.support.v4.widget.DrawerLayout>
