@@ -41,8 +41,7 @@ public class LoginWebViewActivity extends Activity{
 
         setContentView(R.layout.activity_login_webview);
 
-        /* used code from https://gist.github.com/fbis251/5d54e95d96fbfda22a3f */
-
+        /* based on parts of code from https://gist.github.com/fbis251/5d54e95d96fbfda22a3f */
         redditClient = new AndroidRedditClient(this);
 
         redditClient.setLoggingMode(LoggingMode.ALWAYS);
@@ -80,15 +79,11 @@ public class LoginWebViewActivity extends Activity{
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
 
                 //Log.v(LOG_TAG, "onPageStarted - WebView URL: " + url);
-
                 if (url.contains("code=")) {
                     //Log.v(LOG_TAG, "onPageStarted - REDIRECT URL: " + url);
                     // We've detected the redirect URL
                     new UserChallengeTask(oAuthHelper, credentials).execute(url);
-
                     // exit back to mainactivity once authenticated
-
-
                 }
             }
         });
@@ -114,26 +109,18 @@ public class LoginWebViewActivity extends Activity{
 
             //Log.v(LOG_TAG, "doInBackground()");
             //Log.v(LOG_TAG, "params[0]: " + params[0]);
-
             try {
-
                 mOAuthData = mOAuthHelper.onUserChallenge(params[0], mCredentials);
-
                 redditClient.authenticate(mOAuthData);
-
                 //Log.v(LOG_TAG, "Reddit client authentication: " + redditClient.isAuthenticated());
-
                 //return mOAuthHelper.onUserChallenge(params[0], mCredentials);
             } catch (IllegalStateException | NetworkException | OAuthException e) {
                 // Handle me gracefully
                 Log.e(LOG_TAG, "OAuth failed");
                 Log.e(LOG_TAG, e.getMessage());
-
                 //OAuthHelper.AuthStatus authStatus = mOAuthHelper.getAuthStatus();
-
                 //System.out.println("authStatus = " + authStatus.toString());
             }
-
             return null;
         }
 
@@ -144,14 +131,9 @@ public class LoginWebViewActivity extends Activity{
 
             // store access token
             String refreshToken = redditClient.getOAuthData().getRefreshToken();
-
             AndroidTokenStore store = new AndroidTokenStore(LoginWebViewActivity.this);
-
-            store.writeToken("EXAMPLE_KEY", refreshToken);
-
+            store.writeToken("USER_TOKEN", refreshToken);
             //Log.v(LOG_TAG, "Refresh Token: " + refreshToken);
-
-
 
             // send the onactivityresult intent, since we are done with this activity here
             Intent i = getIntent();

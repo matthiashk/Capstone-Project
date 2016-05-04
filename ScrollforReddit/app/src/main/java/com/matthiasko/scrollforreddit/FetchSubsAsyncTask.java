@@ -61,7 +61,7 @@ public class FetchSubsAsyncTask extends AsyncTask<String, Void, ArrayList> {
         AndroidTokenStore store = new AndroidTokenStore(mContext);
 
         try {
-            String refreshToken = store.readToken("EXAMPLE_KEY");
+            String refreshToken = store.readToken("USER_TOKEN");
             oAuthHelper.setRefreshToken(refreshToken);
             try {
                 OAuthData finalData = oAuthHelper.refreshToken(credentials);

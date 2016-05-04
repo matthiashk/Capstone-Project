@@ -83,14 +83,13 @@ public class FetchUserlessPostsAsyncTask extends AsyncTask<String, Void, Boolean
         //System.out.println("subreddits.size() = " + subreddits.size());
 
         if (subreddits.size() == 0) { // subreddit not found
-            // TODO: notify user, no subreddit found matching 'name'
-            Boolean isSubreddit = false;
-            return isSubreddit;
+            // notify user, no subreddit found matching 'name'
+            return false;
         }
 
         SubredditPaginator paginator;
 
-        System.out.println("subredditMenuName = " + subredditMenuName);
+        //System.out.println("subredditMenuName = " + subredditMenuName);
 
         if (subredditMenuName.equals("Frontpage")) {
 
@@ -145,9 +144,7 @@ public class FetchUserlessPostsAsyncTask extends AsyncTask<String, Void, Boolean
 
             mContext.getContentResolver().insert(PostContract.PostEntry.CONTENT_URI, postValues);
         }
-        Boolean isSubreddit = true;
-
-        return isSubreddit;
+        return true;
     }
 
     @Override

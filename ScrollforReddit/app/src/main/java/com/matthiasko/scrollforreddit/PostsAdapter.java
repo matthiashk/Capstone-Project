@@ -24,7 +24,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
 
     private boolean mTwoPane; // TODO: change this
 
-    private boolean mUserlessMode;
+        private boolean mUserlessMode;
 
     private Context context;
 
@@ -36,7 +36,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
 
     private DataSetObserver dataSetObserver;
 
-    public PostsAdapter(Context ctxt, Cursor crsr, boolean userlessMode){
+    public PostsAdapter(Context ctxt, Cursor crsr){
         context = ctxt;
         cursor = crsr;
         dataValid = crsr != null;
@@ -45,7 +45,12 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         if (dataValid){
             cursor.registerDataSetObserver(dataSetObserver);
         }
-        mUserlessMode = userlessMode;
+
+        //mUserlessMode = PostListActivity.mUserlessMode;
+
+        //System.out.println("PostListActivity.mUserlessMode = " + PostListActivity.mUserlessMode);
+
+        //mUserlessMode = userlessMode;
     }
 
     public Cursor getCursor() {
@@ -191,7 +196,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                     arguments.putString("DOMAIN", domain);
                     arguments.putString("FULLNAME", fullName);
 
-                    arguments.putBoolean("USERLESS_MODE", mUserlessMode);
+                    //arguments.putBoolean("USERLESS_MODE", mUserlessMode);
 
                     //arguments.putString("COMMENT_AUTHOR", commentAuthor);
 
@@ -217,7 +222,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                     intent.putExtra("DOMAIN", domain);
                     intent.putExtra("FULLNAME", fullName);
 
-                    intent.putExtra("USERLESS_MODE", mUserlessMode);
+                    //intent.putExtra("USERLESS_MODE", mUserlessMode);
 
                     //intent.putExtra("COMMENT_AUTHOR", commentAuthor);
 

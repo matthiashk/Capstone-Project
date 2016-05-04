@@ -64,7 +64,7 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
             arguments.putString("POST_TITLE", getIntent().getStringExtra("POST_TITLE"));
             arguments.putString("POST_ID", getIntent().getStringExtra("POST_ID"));
             arguments.putString("FULLNAME", getIntent().getStringExtra("FULLNAME"));
-            arguments.putBoolean("USERLESS_MODE", getIntent().getBooleanExtra("USERLESS_MODE", false));
+            //arguments.putBoolean("USERLESS_MODE", getIntent().getBooleanExtra("USERLESS_MODE", false));
 
             PostDetailFragment fragment = new PostDetailFragment();
             fragment.setArguments(arguments);
@@ -103,10 +103,7 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
             extension = sourceUrl.substring(i + 1);
         }
 
-        //System.out.println("PostDetailActivity - extension = " + extension);
-
         if (extension.equals("jpg")) {
-
             Picasso.with(getBaseContext())
                     .load(sourceUrl)
                     .resize(400, 200)
@@ -114,7 +111,6 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
                     .into((ImageView) findViewById(R.id.header_imageview));
 
         } else if (sourceUrl.contains("imgur.com")) {
-
             // we need to add .jpg to the url to load it properly
             String modifiedUrl = sourceUrl.concat(".jpg");
 
@@ -125,9 +121,7 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
                     .into((ImageView) findViewById(R.id.header_imageview));
 
         }  else if (getIntent().getStringExtra("THUMBNAIL") == null) {
-
-            System.out.println("NULL THUMBNAIL");
-
+            //System.out.println("NULL THUMBNAIL");
         } else if (!getIntent().getStringExtra("THUMBNAIL").isEmpty()) {
 
             Picasso.with(getBaseContext())
@@ -135,7 +129,6 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
                     .resize(400, 200)
                     .centerCrop()
                     .into((ImageView) findViewById(R.id.header_imageview));
-
         }
     }
 
@@ -160,19 +153,12 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
         return super.onOptionsItemSelected(item);
     }
 
-
     // we need to load the spinner here
     // then in postdetailfragment in the onpostexecute, stop the spinner by calling a method in the activity
-
     public void postDetailSpinner() {
-
         // hide spinner, called from postdetailfragment / onpostexecute
-
         if (findViewById(R.id.loadingPanel) != null) {
-
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
         }
-
-
     }
 }

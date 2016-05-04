@@ -18,20 +18,17 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
     private final ArrayList<ScrollComment> mValues;
 
-    private Context context;
+    private Context mContext;
 
     public CommentsAdapter(Context context, ArrayList<ScrollComment> items) {
-
-        this.context = context;
+        this.mContext = context;
         mValues = items;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.comments_card_view, parent, false);
-
         return new ViewHolder(view);
     }
 

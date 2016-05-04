@@ -4,14 +4,18 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
-    <group android:id="@+id/group1">
-
-
-
+    <group android:id="@+id/group0">
+        <item
+            android:id="@+id/accounts"
+            android:title="Accounts"
+            />
         <item
             android:id="@+id/edit"
-            android:title="subreddits"
+            android:title="Subreddits"
             />
+    </group>
+
+    <group android:id="@+id/group1">
 
         <item
             android:id="@+id/inbox"
@@ -20,7 +24,6 @@
     </group>
 
     <group android:id="@+id/group2">
-
         <item
             android:id="@+id/settings"
             android:title="Settings"

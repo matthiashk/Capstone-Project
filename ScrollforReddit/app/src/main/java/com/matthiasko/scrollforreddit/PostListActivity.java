@@ -48,8 +48,10 @@ import net.dean.jraw.http.oauth.OAuthHelper;
 import net.dean.jraw.managers.AccountManager;
 import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
+import net.dean.jraw.models.Subreddit;
 import net.dean.jraw.models.VoteDirection;
 import net.dean.jraw.paginators.SubredditPaginator;
+import net.dean.jraw.paginators.SubredditSearchPaginator;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -74,7 +76,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
      */
     private boolean mTwoPane;
 
-    private boolean mUserlessMode;
+    public static boolean mUserlessMode;
 
     private static final String LOG_TAG = PostListActivity.class.getSimpleName();
 
@@ -147,11 +149,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         switch (authState) {
             case NONE:
                 System.out.println("NO CREDENTIALS, GETTING USERLESS AUTHENTICATION");
-                // TODO: check if there are posts in database, if yes load posts
-                // check for token
-                // how often should we check?
-                // why do we need to refresh token?
-                //System.out.println("mHandler.getPostCount() = " + mHandler.getPostCount());
 
                 mUserlessMode = true;
 
@@ -167,31 +164,19 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     @Override
                     public void onSubredditNotFound() {}
                 }).execute();
-                /* allow no user mode
-                   make asynctask to fetch token
-                   request token from https://www.reddit.com/api/v1/access_token
-                   include grant_type=https://oauth.reddit.com/grants/installed_client&\device_id=DEVICE_ID in the POST request
-                   user is client_id password is client_secret
-
-                   should we not store results/posts when not logged in?
-                */
-
-                /* TODO: we no longer need this logic here, move it when the user requests to login to their account...
-                // load webview activity to login and authenticate user
-                Intent intent = new Intent(this, LoginWebViewActivity.class);
-                //startActivity(intent);
-                startActivityForResult(intent, LOGIN_REQUEST);
-                */
                 break;
 
             case NEED_REFRESH:
-                System.out.println("NEED_REFRESH");
+                System.out.println("NEED_REFRESH"); // only for logged in mode, userless mode does not get a refresh token
                 // get the token from shared prefs using store
+
+                mUserlessMode = false;
+
                 AndroidTokenStore store = new AndroidTokenStore(this);
 
                 try {
-                    String refreshToken = store.readToken("EXAMPLE_KEY");
-                    new RefreshTokenAsync().execute(refreshToken, "Frontpage"); // TODO: is this correct???
+                    String refreshToken = store.readToken("USER_TOKEN");
+                    new RefreshTokenAsync().execute(refreshToken, "Frontpage");
                 } catch (NoSuchTokenException e) {
                     Log.e(LOG_TAG, e.getMessage());
                 }
@@ -204,7 +189,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
         getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
 
-        adapter = new PostsAdapter(this, null, mUserlessMode);
+        adapter = new PostsAdapter(this, null);
 
         mRecyclerView = findViewById(R.id.post_list);
         assert mRecyclerView != null;
@@ -267,6 +252,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
         // check if we are in userless mode
         if (mUserlessMode) {
+            // navigation menu logic setup when in 'userless' mode
             if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USERLESS_SUBREDDITS")) {
                 // load from sharedprefs
                 Set<String> set = appSharedPrefs.getStringSet("com.matthiasko.scrollforreddit.USERLESS_SUBREDDITS", null);
@@ -300,7 +286,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 });
                 task.execute();
             }
-
+        // navigation menu logic setup when logged in
         } else if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USERSUBREDDITS")) {
             // load from sharedprefs
             Set<String> set = appSharedPrefs.getStringSet("com.matthiasko.scrollforreddit.USERSUBREDDITS", null);
@@ -340,7 +326,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     }
 
     public void selectedNavMenuItem(CharSequence menuTitle) {
-        if (menuTitle.equals("subreddits")) {
+        if (menuTitle.equals("Subreddits")) {
 
             // show keyboard
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -349,11 +335,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             LayoutInflater inflater = getLayoutInflater();
             final View dialogLayout = inflater.inflate(R.layout.nav_menu_subreddit, null);
 
-
             final EditText editText = (EditText) dialogLayout.findViewById(R.id.subreddit_edittext);
             editText.requestFocus();
-            //editText.setTextColor(getResources().getColor(R.color.blueGrey900));
-            //editText.setText(selectedWord);
             editText.setSingleLine();
             editText.setSelection(editText.getText().length());
             editText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
@@ -367,34 +350,22 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     .setCancelable(false)
                     .setPositiveButton("OK",new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog,int id) {
-
-                            //System.out.println("editText.getText() = " + editText.getText());
-
-                            //System.out.println("mSelectedSubredditName = " + mSelectedSubredditName);
-
-                            // check if subreddit exists
-
-                            //new SubredditSearchAsyncTask(getApplicationContext()).execute(editText.getText().toString());
-
-                            // if yes, change to subreddit
-
                             // show loader
                             findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
-
-
-
-                            DBHandler dbHandler = new DBHandler(getApplicationContext());
-                            SQLiteDatabase db = dbHandler.getWritableDatabase();
-                            db.execSQL("delete from "+ PostEntry.TABLE_NAME);
 
                             mRecyclerView.setVisibility(View.GONE);
 
                             if (mUserlessMode) {
-                                // TODO: if there are 0 results, notify user to check their query
                                 new FetchUserlessPostsAsyncTask(getApplicationContext(), new FetchUserlessTokenListener() {
                                     @Override
                                     public void onUserlessTokenFetched() {
                                         // this block only runs if the subreddit exists
+
+                                        // remove all items from database
+                                        DBHandler dbHandler = new DBHandler(getApplicationContext());
+                                        SQLiteDatabase db = dbHandler.getWritableDatabase();
+                                        db.execSQL("delete from "+ PostEntry.TABLE_NAME);
+
                                         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                                         mRecyclerView.setVisibility(View.VISIBLE);
 
@@ -419,29 +390,22 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                                                 .setMessage("Please try again.")
                                                 .setPositiveButton("OK", new DialogInterface.OnClickListener() {
                                                     public void onClick(DialogInterface dialog, int which) {
-                                                        // continue with delete
                                                     }
                                                 })
                                                 .setIcon(android.R.drawable.ic_dialog_alert)
                                                 .show();
                                     }
-
                                 }).execute(editText.getText().toString());
                             } else {
                                 // read token
                                 AndroidTokenStore store = new AndroidTokenStore(getApplicationContext());
                                 try {
-                                    String refreshToken = store.readToken("EXAMPLE_KEY");
-                                    // get updated list
-                                    // TODO: if there are 0 results, notify user to check their query
+                                    String refreshToken = store.readToken("USER_TOKEN");
                                     new RefreshTokenAsync().execute(refreshToken, editText.getText().toString());
                                 } catch (NoSuchTokenException e) {
                                     Log.e(LOG_TAG, e.getMessage());
                                 }
                             }
-
-                            // if no, alert user
-
                             // dismiss keyboard
                             InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
                             imm.hideSoftInputFromWindow(editText.getWindowToken(), 0);
@@ -462,7 +426,18 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         } else if (menuTitle.equals("Settings")) {
             //Intent intent = new Intent(this, PreferencesActivity.class);
             //startActivityForResult(intent, UPDATE_THEME);
-        } else {
+        } else if (menuTitle.equals("Accounts")) {
+
+            // load webview activity to login and authenticate user
+            Intent intent = new Intent(this, LoginWebViewActivity.class);
+            //startActivity(intent);
+            startActivityForResult(intent, LOGIN_REQUEST);
+
+            // show spinner and hide list
+            findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
+            mRecyclerView.setVisibility(View.GONE);
+
+        } else { // this should match the subreddit names
             // show loader
             findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
 
@@ -484,8 +459,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             mRecyclerView.setVisibility(View.GONE);
 
             if (mUserlessMode) {
-                // TODO: create new asynctask to fetch posts in userless mode
-                // basically FetchUserlessTokenAsyncTask without token saving code...
                 new FetchUserlessPostsAsyncTask(this, new FetchUserlessTokenListener() {
                     @Override
                     public void onUserlessTokenFetched() {
@@ -499,7 +472,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 // read token
                 AndroidTokenStore store = new AndroidTokenStore(this);
                 try {
-                    String refreshToken = store.readToken("EXAMPLE_KEY");
+                    String refreshToken = store.readToken("USER_TOKEN");
                     // get updated list
                     new RefreshTokenAsync().execute(refreshToken, menuTitle.toString());
                 } catch (NoSuchTokenException e) {
@@ -561,17 +534,21 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        // result from loginwebviewactivity here
         if (requestCode == LOGIN_REQUEST) {
             if (resultCode == RESULT_OK) {
                 // coming from loginwebviewactivity after logging in
                 // fetch posts
                 AndroidTokenStore store = new AndroidTokenStore(this);
                 try {
-                    String refreshToken = store.readToken("EXAMPLE_KEY");
+                    String refreshToken = store.readToken("USER_TOKEN");
                     new RefreshTokenAsync().execute(refreshToken, "Frontpage");
                 } catch (NoSuchTokenException e) {
                     Log.e(LOG_TAG, e.getMessage());
                 }
+
+                // hide spinner
+                findViewById(R.id.loadingPanel).setVisibility(View.GONE);
             }
         }
     }
@@ -611,7 +588,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             // get updated list
             AndroidTokenStore store = new AndroidTokenStore(this);
             try {
-                String refreshToken = store.readToken("EXAMPLE_KEY");
+                String refreshToken = store.readToken("USER_TOKEN");
                 new RefreshTokenAsync().execute(refreshToken, mSelectedSubredditName);
             } catch (NoSuchTokenException e) {
                 Log.e(LOG_TAG, e.getMessage());
@@ -627,7 +604,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         here we use RefreshTokenAsync to authenticate with our token in the background
         and update our UI in onPostExecute
     */
-    private class RefreshTokenAsync extends AsyncTask<String, Void, Void> {
+    private class RefreshTokenAsync extends AsyncTask<String, Void, Boolean> {
 
         final RedditClient redditClient = new AndroidRedditClient(PostListActivity.this);
 
@@ -636,7 +613,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
 
         @Override
-        protected Void doInBackground(String... params) {
+        protected Boolean doInBackground(String... params) {
 
             String refreshToken = params[0];
 
@@ -651,87 +628,121 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 redditClient.authenticate(finalData);
                 if (redditClient.isAuthenticated()) {
                     Log.v(LOG_TAG, "Authenticated");
+                    // set to false, since user will no longer be in this mode
+                    mUserlessMode = false;
                 }
             } catch (OAuthException e) {
                 e.printStackTrace();
             }
 
-            // check here if database exists, if yes we need to add to existing database
-            if (mHandler.getPostCount() == 0) {
+            // check here if the subreddit exists
+            SubredditSearchPaginator subredditSearchPaginator =
+                    new SubredditSearchPaginator(redditClient, subredditMenuName);
 
-                System.out.println("POST COUNT IS 0");
+            Listing<Subreddit> subreddits = subredditSearchPaginator.next();
 
-                if (subredditMenuName.equals("Frontpage")) {
+            //System.out.println("subreddits.size() = " + subreddits.size());
 
-                    paginator = new SubredditPaginator(redditClient);
-
-                } else {
-
-                    paginator = new SubredditPaginator(redditClient, subredditMenuName);
-                }
-
-                Listing<Submission> submissions = paginator.next();
-
-                for (Submission submission : submissions) {
-
-                    String title = submission.getTitle();
-                    // store fullname so we can get the specific post later...
-                    String subreddit = submission.getSubredditName();
-
-                    String username = submission.getAuthor();
-
-                    String source = submission.getUrl();
-
-                    // shorten source url by extracting domain name and send as string
-                    String domain = "";
-
-                    try {
-                        URI uri = new URI(source);
-                        domain = uri.getHost();
-                    } catch (URISyntaxException e) {
-                        e.printStackTrace();
-                    }
-
-                    int points = submission.getScore();
-
-                    int numberOfComments = submission.getCommentCount();
-
-                    String thumbnail = submission.getThumbnail();
-
-                    // we need to add this to the post item data so we can retrieve the commentnode in details view
-                    String postId = submission.getId();
-
-                    String fullName = submission.getFullName();
-
-                    // add post data to database
-                    ContentValues postValues = new ContentValues();
-
-                    postValues.put(PostEntry.COLUMN_TITLE, title);
-                    postValues.put(PostEntry.COLUMN_SUBREDDIT, subreddit);
-                    postValues.put(PostEntry.COLUMN_AUTHOR, username);
-                    postValues.put(PostEntry.COLUMN_SOURCE, source);
-                    postValues.put(PostEntry.COLUMN_THUMBNAIL, thumbnail);
-                    postValues.put(PostEntry.COLUMN_SCORE, points);
-                    postValues.put(PostEntry.COLUMN_NUMBER_OF_COMMENTS, numberOfComments);
-                    postValues.put(PostEntry.COLUMN_POST_ID, postId);
-                    postValues.put(PostEntry.COLUMN_SOURCE_DOMAIN, domain);
-                    postValues.put(PostEntry.COLUMN_FULLNAME, fullName);
-
-                    getContentResolver().insert(PostEntry.CONTENT_URI, postValues);
-                }
-            } else {
-                System.out.println("PostListActivity - loading from database");
+            if (subreddits.size() == 0) { // subreddit not found
+                // notify user, no subreddit found matching 'name'
+                return false;
             }
-            return null;
+
+            // the user could have populated the database with posts using the 'userless' mode
+            // so let's just clear the database here?
+            // no need to check the count?
+            //delete database entries
+            DBHandler dbHandler = new DBHandler(PostListActivity.this);
+            SQLiteDatabase db = dbHandler.getWritableDatabase();
+            db.execSQL("delete from "+ PostEntry.TABLE_NAME);
+
+            if (subredditMenuName.equals("Frontpage")) {
+
+                paginator = new SubredditPaginator(redditClient);
+
+            } else {
+
+                paginator = new SubredditPaginator(redditClient, subredditMenuName);
+            }
+
+            Listing<Submission> submissions = paginator.next();
+
+            for (Submission submission : submissions) {
+
+                String title = submission.getTitle();
+                // store fullname so we can get the specific post later...
+                String subreddit = submission.getSubredditName();
+
+                String username = submission.getAuthor();
+
+                String source = submission.getUrl();
+
+                // shorten source url by extracting domain name and send as string
+                String domain = "";
+
+                try {
+                    URI uri = new URI(source);
+                    domain = uri.getHost();
+                } catch (URISyntaxException e) {
+                    e.printStackTrace();
+                }
+
+                int points = submission.getScore();
+
+                int numberOfComments = submission.getCommentCount();
+
+                String thumbnail = submission.getThumbnail();
+
+                // we need to add this to the post item data so we can retrieve the commentnode in details view
+                String postId = submission.getId();
+
+                String fullName = submission.getFullName();
+
+                // add post data to database
+                ContentValues postValues = new ContentValues();
+
+                postValues.put(PostEntry.COLUMN_TITLE, title);
+                postValues.put(PostEntry.COLUMN_SUBREDDIT, subreddit);
+                postValues.put(PostEntry.COLUMN_AUTHOR, username);
+                postValues.put(PostEntry.COLUMN_SOURCE, source);
+                postValues.put(PostEntry.COLUMN_THUMBNAIL, thumbnail);
+                postValues.put(PostEntry.COLUMN_SCORE, points);
+                postValues.put(PostEntry.COLUMN_NUMBER_OF_COMMENTS, numberOfComments);
+                postValues.put(PostEntry.COLUMN_POST_ID, postId);
+                postValues.put(PostEntry.COLUMN_SOURCE_DOMAIN, domain);
+                postValues.put(PostEntry.COLUMN_FULLNAME, fullName);
+
+                getContentResolver().insert(PostEntry.CONTENT_URI, postValues);
+            }
+
+            return true;
         }
 
         @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            // hide the loading animation
-            findViewById(R.id.loadingPanel).setVisibility(View.GONE);
-            // show the view after fetching new data
-            mRecyclerView.setVisibility(View.VISIBLE);
+        protected void onPostExecute(Boolean isSubreddit) {
+            super.onPostExecute(isSubreddit);
+            if (!isSubreddit) {
+                System.out.println("SUBREDDIT NOT FOUND");
+                // hide the loading animation
+                findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+                mRecyclerView.setVisibility(View.VISIBLE);
+
+                new AlertDialog.Builder(PostListActivity.this)
+                        .setTitle("Subreddit not found")
+                        .setMessage("Please try again.")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            } else {
+                System.out.println("SUBREDDIT FOUND");
+                // hide the loading animation
+                findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+                // show the view after fetching new data
+                mRecyclerView.setVisibility(View.VISIBLE);
+            }
         }
     }
 
@@ -750,7 +761,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             AndroidTokenStore store = new AndroidTokenStore(PostListActivity.this);
 
             try {
-                String refreshToken = store.readToken("EXAMPLE_KEY");
+                String refreshToken = store.readToken("USER_TOKEN");
 
                 oAuthHelper.setRefreshToken(refreshToken);
 
@@ -788,9 +799,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
                     getContentResolver().update(PostContract.PostEntry.CONTENT_URI, values,
                             PostContract.PostEntry._ID + "=?", new String[]{String.valueOf(id)});
-
-                    //TODO: disable future upvotes for this post
-
                 } catch (OAuthException e) {
                     e.printStackTrace();
                 }

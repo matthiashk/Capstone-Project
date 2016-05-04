@@ -6,13 +6,10 @@
     android:padding="16dp"
     android:orientation="vertical"
     android:gravity="bottom">
-
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Scroll for Reddit"
         android:textColor="@android:color/white"
-
         />
-
 </LinearLayout>

@@ -64,6 +64,8 @@ public class PostDetailFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mUserlessMode = PostListActivity.mUserlessMode;
+
         if (getArguments().containsKey("POST_TITLE")) {
             // Load the dummy content specified by the fragment
             // arguments. In a real-world scenario, use a Loader
@@ -74,7 +76,7 @@ public class PostDetailFragment extends Fragment {
             mPostTitle = getArguments().getString("POST_TITLE");
             mPostId = getArguments().getString("POST_ID");
             mPostFullName = getArguments().getString("FULLNAME");
-            mUserlessMode = getArguments().getBoolean("USERLESS_MODE");
+            //mUserlessMode = getArguments().getBoolean("USERLESS_MODE");
 
             //System.out.println("PostDetailFragment - mUserlessMode = " + mUserlessMode);
             //System.out.println("mPostFullName = " + mPostFullName);
@@ -85,7 +87,8 @@ public class PostDetailFragment extends Fragment {
         // fetch userless token if in userless mode
         if (mUserlessMode) {
 
-            System.out.println("***** USERLESS MODE *****");
+            Log.e(LOG_TAG, "***** USERLESS MODE *****");
+
             mRedditClient = new AndroidRedditClient(getContext());
             // get access token
             AndroidTokenStore store = new AndroidTokenStore(getContext());
@@ -99,12 +102,12 @@ public class PostDetailFragment extends Fragment {
             }
 
         } else {
-            System.out.println("***** NOT USERLESS MODE *****");
+            Log.e(LOG_TAG, "***** NOT USERLESS MODE *****");
             // get access token
             AndroidTokenStore store = new AndroidTokenStore(getContext());
 
             try {
-                String refreshToken = store.readToken("EXAMPLE_KEY");
+                String refreshToken = store.readToken("USER_TOKEN");
                 new RetrieveComments().execute(refreshToken);
             } catch (NoSuchTokenException e) {
                 Log.e(LOG_TAG, e.getMessage());
