@@ -36,6 +36,8 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
 
     private static RedditClient redditClient;
 
+    private UUID mDeviceId;
+
     public FetchUserlessTokenAsyncTask(Context context, FetchUserlessTokenListener listener) {
         this.mContext = context;
         this.mListener = listener;
@@ -44,19 +46,23 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
     @Override
     protected Void doInBackground(String... params) {
 
-        // we need to store the uuid after we create it and reuse it
-        // generate random uuid -> needed to request api access
-        UUID deviceId = UUID.randomUUID();
-
-        //String test = deviceId.toString();
-        //UUID u = UUID.fromString(test);
-
-        // store uuid in shared prefs as a string, we need to convert back to uuid to use
+        // check if uuid is in sharedprefs before creating a new uuid
         SharedPreferences appSharedPrefs = PreferenceManager
                 .getDefaultSharedPreferences(mContext);
-        SharedPreferences.Editor sharedPrefsEditor = appSharedPrefs.edit();
+        if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.UUID")) {
+            // load from sharedprefs
+            String uuidString = appSharedPrefs.getString("com.matthiasko.scrollforreddit.UUID", null);
+            mDeviceId = UUID.fromString(uuidString);
+        } else {
+            // no UUID found in sharedPrefs, create new uuid
+            mDeviceId = UUID.randomUUID();
+        }
 
-        sharedPrefsEditor.putString("com.matthiasko.scrollforreddit.UUID", deviceId.toString());;
+        // we need to store the uuid after we create it and reuse it
+        // generate random uuid -> needed to request api access
+        // store uuid in shared prefs as a string, we need to convert back to uuid to use
+        SharedPreferences.Editor sharedPrefsEditor = appSharedPrefs.edit();
+        sharedPrefsEditor.putString("com.matthiasko.scrollforreddit.UUID", mDeviceId.toString());;
         sharedPrefsEditor.commit();
 
         redditClient = new AndroidRedditClient(mContext);
@@ -64,7 +70,7 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
         final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
 
         // note 'userlessApp' used here instead of 'installedApp'
-        final Credentials credentials = Credentials.userlessApp(CLIENT_ID, deviceId);
+        final Credentials credentials = Credentials.userlessApp(CLIENT_ID, mDeviceId);
 
         try {
             OAuthData finalData = oAuthHelper.easyAuth(credentials);
@@ -83,7 +89,7 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
         // check here if database exists, if yes we need to add to existing database
         if (mHandler.getPostCount() == 0) {
 
-            System.out.println("POST COUNT IS 0");
+            Log.e(LOG_TAG, "POST COUNT IS 0");
 
             /*
 

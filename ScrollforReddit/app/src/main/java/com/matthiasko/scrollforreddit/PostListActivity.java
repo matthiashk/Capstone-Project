@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.matthiasko.scrollforreddit.PostContract.PostEntry;
 
@@ -140,21 +141,83 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             }
         });
         */
-        RefreshTokenHandler handler = new RefreshTokenHandler(new AndroidTokenStore(this), redditClient);
-        AuthenticationManager.get().init(redditClient, handler);
 
-        // check the authentication state of user
-        AuthenticationState authState =  AuthenticationManager.get().checkAuthState();
+        // how should we handle start up/credential checking?
+        // should we save the mode in preferences?
 
-        switch (authState) {
-            case NONE:
-                System.out.println("NO CREDENTIALS, GETTING USERLESS AUTHENTICATION");
+        // check preferences before checking authentication state
+        // if there is no saved usermode in preferences, create default of userlessmode
+        // when the user logs in, change the preference to usermode
 
-                mUserlessMode = true;
+        SharedPreferences appSharedPrefs = PreferenceManager
+                .getDefaultSharedPreferences(getApplicationContext());
 
-                // skip userless authentication if there are posts in database
-                // cursor will load existing posts
-                if (mHandler.getPostCount() == 0)
+        if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USER_MODE")) {
+
+            mUserlessMode = appSharedPrefs.getBoolean("com.matthiasko.scrollforreddit.USER_MODE", true);
+
+        } else {
+
+            mUserlessMode = true; // set default mode as userless mode
+
+        } // TODO: when do we save the user_mode preference?
+
+
+        Log.e(LOG_TAG, "mUserlessMode = " + mUserlessMode);
+
+        if (!mUserlessMode) { // if mUserless mode is false, we are in logged in mode, so check our credentials
+
+            RefreshTokenHandler handler = new RefreshTokenHandler(new AndroidTokenStore(this), redditClient);
+            AuthenticationManager.get().init(redditClient, handler);
+
+            // check the authentication state of user
+            AuthenticationState authState =  AuthenticationManager.get().checkAuthState();
+
+            switch (authState) {
+                case NONE:
+                    System.out.println("NO CREDENTIALS, GETTING USERLESS AUTHENTICATION");
+
+                    mUserlessMode = true;
+
+                    // skip userless authentication if there are posts in database
+                    // cursor will load existing posts
+                    if (mHandler.getPostCount() == 0)
+
+                        new FetchUserlessTokenAsyncTask(this, new FetchUserlessTokenListener() {
+                            @Override
+                            public void onUserlessTokenFetched() {
+                                findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+                            }
+                            @Override
+                            public void onSubredditNotFound() {}
+                        }).execute();
+                    break;
+
+                case NEED_REFRESH:
+
+                    System.out.println("NEED_REFRESH"); // only for logged in mode, userless mode does not get a refresh token
+                    // get the token from shared prefs using store
+
+                    mUserlessMode = false;
+
+                    AndroidTokenStore store = new AndroidTokenStore(this);
+
+                    try {
+                        String refreshToken = store.readToken("USER_TOKEN");
+                        new RefreshTokenAsync().execute(refreshToken, "Frontpage");
+                    } catch (NoSuchTokenException e) {
+                        Log.e(LOG_TAG, e.getMessage());
+                    }
+                    break;
+
+                case READY:
+                    System.out.println("READY");
+                    break;
+            }
+
+        } else { // do we need to populate posts in userless mode here???
+
+            if (mHandler.getPostCount() == 0)
 
                 new FetchUserlessTokenAsyncTask(this, new FetchUserlessTokenListener() {
                     @Override
@@ -164,27 +227,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     @Override
                     public void onSubredditNotFound() {}
                 }).execute();
-                break;
 
-            case NEED_REFRESH:
-                System.out.println("NEED_REFRESH"); // only for logged in mode, userless mode does not get a refresh token
-                // get the token from shared prefs using store
-
-                mUserlessMode = false;
-
-                AndroidTokenStore store = new AndroidTokenStore(this);
-
-                try {
-                    String refreshToken = store.readToken("USER_TOKEN");
-                    new RefreshTokenAsync().execute(refreshToken, "Frontpage");
-                } catch (NoSuchTokenException e) {
-                    Log.e(LOG_TAG, e.getMessage());
-                }
-                break;
-
-            case READY:
-                System.out.println("READY");
-                break;
         }
 
         getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
@@ -212,8 +255,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         setupNavigationView();
 
         // get and set selected subreddit menu item if it exists
-        SharedPreferences appSharedPrefs = PreferenceManager
-                .getDefaultSharedPreferences(getApplicationContext());
+
         if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT")) {
             // load from sharedprefs
             mSelectedSubredditName = appSharedPrefs.getString("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT", null);
@@ -250,8 +292,14 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         SharedPreferences appSharedPrefs = PreferenceManager
                 .getDefaultSharedPreferences(getApplicationContext());
 
+        View header = navigationView.getHeaderView(0);
+        TextView navHeaderTextView = (TextView) header.findViewById(R.id.nav_header_textview);
+
         // check if we are in userless mode
         if (mUserlessMode) {
+
+            navHeaderTextView.setText("Scroll for Reddit (Userless)");
+
             // navigation menu logic setup when in 'userless' mode
             if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USERLESS_SUBREDDITS")) {
                 // load from sharedprefs
@@ -260,6 +308,9 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 // sort the list alphabetically
                 Collections.sort(userSubredditsList, String.CASE_INSENSITIVE_ORDER);
                 Menu menu = navigationView.getMenu(); // get the default menu from xml
+                // clear previous menu
+                menu.removeGroup(R.id.group1);
+                menu.add(R.id.group1, R.id.inbox, 1, "Frontpage");
                 for (String item : userSubredditsList) { // create the menu items based on arraylist
                     menu.add(R.id.group1, Menu.NONE, 1, item);
                 }
@@ -279,6 +330,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                         edit.putStringSet("com.matthiasko.scrollforreddit.USERLESS_SUBREDDITS", set);
                         edit.commit();
                         Menu menu = navigationView.getMenu(); // get the default menu from xml
+                        menu.removeGroup(R.id.group1);
+                        menu.add(R.id.group1, R.id.inbox, 1, "Frontpage");
                         for (String item : arrayList) { // create the menu items based on arraylist
                             menu.add(R.id.group1, Menu.NONE, 1, item);
                         }
@@ -288,16 +341,20 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             }
         // navigation menu logic setup when logged in
         } else if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USERSUBREDDITS")) {
+            navHeaderTextView.setText("Scroll for Reddit (Logged In)");
             // load from sharedprefs
             Set<String> set = appSharedPrefs.getStringSet("com.matthiasko.scrollforreddit.USERSUBREDDITS", null);
             List<String> userSubredditsList = new ArrayList<>(set);
             // sort the list alphabetically
             Collections.sort(userSubredditsList, String.CASE_INSENSITIVE_ORDER);
             Menu menu = navigationView.getMenu(); // get the default menu from xml
+            menu.removeGroup(R.id.group1);
+            menu.add(R.id.group1, R.id.inbox, 1, "Frontpage");
             for (String item : userSubredditsList) { // create the menu items based on arraylist
                 menu.add(R.id.group1, Menu.NONE, 1, item);
             }
         } else {
+            navHeaderTextView.setText("Scroll for Reddit (Logged In)");
             // populate menu programatically based on user subreddits
             // get arraylist of subreddits
             FetchSubsAsyncTask task = new FetchSubsAsyncTask(this);
@@ -316,6 +373,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     edit.commit();
 
                     Menu menu = navigationView.getMenu(); // get the default menu from xml
+                    menu.removeGroup(R.id.group1);
+                    menu.add(R.id.group1, R.id.inbox, 1, "Frontpage");
                     for (String item : arrayList) { // create the menu items based on arraylist
                         menu.add(R.id.group1, Menu.NONE, 1, item);
                     }
@@ -326,6 +385,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     }
 
     public void selectedNavMenuItem(CharSequence menuTitle) {
+
         if (menuTitle.equals("Subreddits")) {
 
             // show keyboard
@@ -426,7 +486,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         } else if (menuTitle.equals("Settings")) {
             //Intent intent = new Intent(this, PreferencesActivity.class);
             //startActivityForResult(intent, UPDATE_THEME);
-        } else if (menuTitle.equals("Accounts")) {
+        } else if (menuTitle.equals("Login")) {
 
             // load webview activity to login and authenticate user
             Intent intent = new Intent(this, LoginWebViewActivity.class);
@@ -436,6 +496,31 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             // show spinner and hide list
             findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
             mRecyclerView.setVisibility(View.GONE);
+
+        } else if (menuTitle.equals("Logout")) {
+
+            // set userless mode to true
+            mUserlessMode = true;
+
+            // remove posts from database
+            DBHandler dbHandler = new DBHandler(this);
+            SQLiteDatabase db = dbHandler.getWritableDatabase();
+            db.execSQL("delete from "+ PostEntry.TABLE_NAME);
+
+            // fetch posts from frontpage using userlessmode
+            new FetchUserlessTokenAsyncTask(this, new FetchUserlessTokenListener() {
+                @Override
+                public void onUserlessTokenFetched() {
+                    findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+                }
+                @Override
+                public void onSubredditNotFound() {}
+            }).execute();
+
+            // change subreddits in the navigation menu
+            setupNavigationView();
+
+            // notify user?
 
         } else { // this should match the subreddit names
             // show loader
@@ -737,7 +822,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                         .setIcon(android.R.drawable.ic_dialog_alert)
                         .show();
             } else {
-                System.out.println("SUBREDDIT FOUND");
+                Log.e(LOG_TAG, "SUBREDDIT FOUND");
                 // hide the loading animation
                 findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                 // show the view after fetching new data

@@ -7,6 +7,7 @@
     android:orientation="vertical"
     android:gravity="bottom">
     <TextView
+        android:id="@+id/nav_header_textview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Scroll for Reddit"

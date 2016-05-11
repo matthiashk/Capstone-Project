@@ -240,8 +240,12 @@ public class PostDetailFragment extends Fragment {
                     .getDefaultSharedPreferences(getContext());
 
             if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.UUID")) {
+                Log.e(LOG_TAG, "UUID FOUND IN PREFS");
                 String uuidString = appSharedPrefs.getString("com.matthiasko.scrollforreddit.UUID", null);
                 mDeviceId = UUID.fromString(uuidString);
+            } else {
+                Log.e(LOG_TAG, "UUID NOT FOUND IN PREFS, CREATING");
+                mDeviceId = UUID.randomUUID();
             }
 
             if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT")) {
@@ -269,38 +273,21 @@ public class PostDetailFragment extends Fragment {
                 e.printStackTrace();
             }
 
-            // using paginator to process comments
-            SubredditPaginator paginator = new SubredditPaginator(mRedditClient, mSelectedSubreddit);
+            // use getSubmission instead of paginator to get the specific post + comments,
+            // otherwise the post will not be found in the paginator after some time has passed
+            Submission specificSubmission = mRedditClient.getSubmission(mPostId);
 
-            Listing<Submission> submissions = paginator.next();
+            CommentNode commentNode = specificSubmission.getComments();
+            Iterable<CommentNode> iterable = commentNode.walkTree();
 
-            //System.out.println("submissions.size() = " + submissions.size());
-
-            for (Submission submission : submissions) {
-                //System.out.println("commentNode.getTotalSize() = " + commentNode.getTotalSize());
-
-                //System.out.println("mPostId = " + mPostId);
-
-                //System.out.println("submission.getId() = " + submission.getId());
-
-                if (submission.getId().equals(mPostId)) {
-
-                    Submission fullSubmissionData = mRedditClient.getSubmission(submission.getId());
-                    //System.out.println(fullSubmissionData.getTitle());
-                    //System.out.println(fullSubmissionData.getComments());
-
-                    CommentNode commentNode = fullSubmissionData.getComments();
-                    Iterable<CommentNode> iterable = commentNode.walkTree();
-
-                    for (CommentNode node : iterable) {
-                        Comment comment = node.getComment();
-                        ScrollComment scrollComment = new ScrollComment(comment.getBody(),
-                                comment.getAuthor(), comment.getScore(), node.getDepth());
-                        //System.out.println("comment.getBody() = " + comment.getBody());
-                        mArrayOfComments.add(scrollComment);
-                    }
-                }
+            for (CommentNode node : iterable) {
+                Comment comment = node.getComment();
+                ScrollComment scrollComment = new ScrollComment(comment.getBody(),
+                        comment.getAuthor(), comment.getScore(), node.getDepth());
+                //System.out.println("comment.getBody() = " + comment.getBody());
+                mArrayOfComments.add(scrollComment);
             }
+
             return null;
         }
 

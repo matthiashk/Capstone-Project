@@ -6,8 +6,12 @@
 
     <group android:id="@+id/group0">
         <item
-            android:id="@+id/accounts"
-            android:title="Accounts"
+            android:id="@+id/login"
+            android:title="Login"
+            />
+        <item
+            android:id="@+id/logout"
+            android:title="Logout"
             />
         <item
             android:id="@+id/edit"
