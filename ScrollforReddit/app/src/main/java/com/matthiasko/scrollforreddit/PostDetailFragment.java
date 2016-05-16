@@ -23,9 +23,7 @@ import net.dean.jraw.http.oauth.OAuthException;
 import net.dean.jraw.http.oauth.OAuthHelper;
 import net.dean.jraw.models.Comment;
 import net.dean.jraw.models.CommentNode;
-import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
-import net.dean.jraw.paginators.SubredditPaginator;
 
 import java.util.ArrayList;
 import java.util.UUID;
@@ -53,6 +51,8 @@ public class PostDetailFragment extends Fragment {
     private UUID mDeviceId;
     private String mSelectedSubreddit;
 
+    private CommentsDBHandler mCommentsDBHandler;
+
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
      * fragment (e.g. upon screen orientation changes).
@@ -63,6 +63,8 @@ public class PostDetailFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mCommentsDBHandler = new CommentsDBHandler(getContext());
 
         mUserlessMode = PostListActivity.mUserlessMode;
 
@@ -181,33 +183,37 @@ public class PostDetailFragment extends Fragment {
                 e.printStackTrace();
             }
 
-            SubredditPaginator paginator = new SubredditPaginator(redditClient);
-            Listing<Submission> submissions = paginator.next();
+            if (mCommentsDBHandler.getCommentsCount(mPostId) == 0) { // fetch comments
 
-            //System.out.println("submissions.size() = " + submissions.size());
+                Log.e(LOG_TAG, "comments count == 0");
 
-            for (Submission submission : submissions) {
-                //System.out.println("commentNode.getTotalSize() = " + commentNode.getTotalSize());
-                //System.out.println("mPostId = " + mPostId);
+                // use getSubmission instead of paginator to get the specific post + comments,
+                // otherwise the post will not be found in the paginator after some time has passed
+                Submission specificSubmission = redditClient.getSubmission(mPostId);
 
-                if (submission.getId().equals(mPostId)) {
+                CommentNode commentNode = specificSubmission.getComments();
+                Iterable<CommentNode> iterable = commentNode.walkTree();
 
-                    Submission fullSubmissionData = redditClient.getSubmission(submission.getId());
-                    //System.out.println(fullSubmissionData.getTitle());
-                    //System.out.println(fullSubmissionData.getComments());
-                    CommentNode commentNode = fullSubmissionData.getComments();
+                // if depth is more than 5
+                // create new cell with 'load more' label...
+                // OR just limit the amount of comments fetched...
 
-                    Iterable<CommentNode> iterable = commentNode.walkTree();
+                for (CommentNode node : iterable) {
+                    Comment comment = node.getComment();
+                    ScrollComment scrollComment = new ScrollComment(comment.getBody(),
+                            comment.getAuthor(), comment.getScore(), node.getDepth(), mPostId);
+                    //System.out.println("comment.getBody() = " + comment.getBody());
 
-                    for (CommentNode node : iterable) {
-                        Comment comment = node.getComment();
-                        ScrollComment scrollComment = new ScrollComment(comment.getBody(),
-                                comment.getAuthor(), comment.getScore(), node.getDepth());
-                        //System.out.println("comment.getBody() = " + comment.getBody());
-                        mArrayOfComments.add(scrollComment);
-                    }
+                    mCommentsDBHandler.addComment(scrollComment); // adding to comments database
+
+                    mArrayOfComments.add(scrollComment);
                 }
+
+            } else { // else load comments from database...
+                // note: have to use addAll, not just set the arraylist
+                mArrayOfComments.addAll(mCommentsDBHandler.getAllComments(mPostId));
             }
+
             return null;
         }
 
@@ -267,25 +273,45 @@ public class PostDetailFragment extends Fragment {
                 OAuthData finalData = oAuthHelper.easyAuth(credentials);
                 mRedditClient.authenticate(finalData);
                 if (mRedditClient.isAuthenticated()) {
-                    Log.v(LOG_TAG, "PostDetailFragment - Authenticated");
+                    Log.e(LOG_TAG, "PostDetailFragment - Authenticated");
                 }
             } catch (OAuthException e) {
                 e.printStackTrace();
             }
 
-            // use getSubmission instead of paginator to get the specific post + comments,
-            // otherwise the post will not be found in the paginator after some time has passed
-            Submission specificSubmission = mRedditClient.getSubmission(mPostId);
+            // we need to check if comments are in the database here
+            // check if the post id exists in the database
+            // if yes, filter comments by post id
 
-            CommentNode commentNode = specificSubmission.getComments();
-            Iterable<CommentNode> iterable = commentNode.walkTree();
+            if (mCommentsDBHandler.getCommentsCount(mPostId) == 0) { // fetch comments
 
-            for (CommentNode node : iterable) {
-                Comment comment = node.getComment();
-                ScrollComment scrollComment = new ScrollComment(comment.getBody(),
-                        comment.getAuthor(), comment.getScore(), node.getDepth());
-                //System.out.println("comment.getBody() = " + comment.getBody());
-                mArrayOfComments.add(scrollComment);
+                Log.e(LOG_TAG, "comments count == 0");
+
+                // use getSubmission instead of paginator to get the specific post + comments,
+                // otherwise the post will not be found in the paginator after some time has passed
+                Submission specificSubmission = mRedditClient.getSubmission(mPostId);
+
+                CommentNode commentNode = specificSubmission.getComments();
+                Iterable<CommentNode> iterable = commentNode.walkTree();
+
+                // if depth is more than 5
+                // create new cell with 'load more' label...
+                // OR just limit the amount of comments fetched...
+
+                for (CommentNode node : iterable) {
+                    Comment comment = node.getComment();
+                    ScrollComment scrollComment = new ScrollComment(comment.getBody(),
+                            comment.getAuthor(), comment.getScore(), node.getDepth(), mPostId);
+                    //System.out.println("comment.getBody() = " + comment.getBody());
+
+                    mCommentsDBHandler.addComment(scrollComment); // adding to comments database
+
+                    mArrayOfComments.add(scrollComment);
+                }
+
+            } else { // else load comments from database...
+                // note: have to use addAll, not just set the arraylist
+                mArrayOfComments.addAll(mCommentsDBHandler.getAllComments(mPostId));
             }
 
             return null;

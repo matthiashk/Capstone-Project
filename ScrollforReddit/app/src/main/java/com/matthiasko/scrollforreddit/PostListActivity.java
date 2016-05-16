@@ -93,6 +93,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     private static final String DATABASE_NAME = "posts.db";
 
+    private static final String COMMENTS_DB_NAME = "comments.db";
+
     private static final int CURSOR_LOADER_ID = 0;
 
     private Cursor cursor;
@@ -131,6 +133,14 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             mActionBar.setDisplayHomeAsUpEnabled(true);
         }
 
+        // removed comments older than 12 hours from db
+        String sql = "DELETE FROM comments WHERE date_added <= date('now','12 hours')";
+
+        CommentsDBHandler dbHandler = new CommentsDBHandler(this);
+        SQLiteDatabase db = dbHandler.getWritableDatabase();
+        db.execSQL(sql);
+
+
         /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -148,13 +158,12 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         // check preferences before checking authentication state
         // if there is no saved usermode in preferences, create default of userlessmode
         // when the user logs in, change the preference to usermode
-
         SharedPreferences appSharedPrefs = PreferenceManager
                 .getDefaultSharedPreferences(getApplicationContext());
 
-        if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USER_MODE")) {
+        if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USERLESS_MODE")) {
 
-            mUserlessMode = appSharedPrefs.getBoolean("com.matthiasko.scrollforreddit.USER_MODE", true);
+            mUserlessMode = appSharedPrefs.getBoolean("com.matthiasko.scrollforreddit.USERLESS_MODE", true);
 
         } else {
 
@@ -502,6 +511,13 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             // set userless mode to true
             mUserlessMode = true;
 
+            // set userless_mode to true, since we are logged out now
+            SharedPreferences appSharedPrefs = PreferenceManager
+                    .getDefaultSharedPreferences(getApplicationContext());
+            SharedPreferences.Editor edit = appSharedPrefs.edit();
+            edit.putBoolean("com.matthiasko.scrollforreddit.USERLESS_MODE", true);
+            edit.commit();
+
             // remove posts from database
             DBHandler dbHandler = new DBHandler(this);
             SQLiteDatabase db = dbHandler.getWritableDatabase();
@@ -827,6 +843,13 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                 // show the view after fetching new data
                 mRecyclerView.setVisibility(View.VISIBLE);
+
+                // set userless_mode to false, since we are now logged in
+                SharedPreferences appSharedPrefs = PreferenceManager
+                        .getDefaultSharedPreferences(getApplicationContext());
+                SharedPreferences.Editor edit = appSharedPrefs.edit();
+                edit.putBoolean("com.matthiasko.scrollforreddit.USERLESS_MODE", false);
+                edit.commit();
             }
         }
     }
