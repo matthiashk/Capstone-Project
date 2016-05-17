@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -66,10 +67,10 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
             arguments.putString("FULLNAME", getIntent().getStringExtra("FULLNAME"));
             //arguments.putBoolean("USERLESS_MODE", getIntent().getBooleanExtra("USERLESS_MODE", false));
 
-            PostDetailFragment fragment = new PostDetailFragment();
-            fragment.setArguments(arguments);
+            PostDetailFragment postDetailFragment = new PostDetailFragment();
+            postDetailFragment.setArguments(arguments);
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.post_detail_container, fragment)
+                    .add(R.id.post_detail_container, postDetailFragment)
                     .commit();
         }
 
@@ -133,23 +134,25 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_post_detail, menu);
+        return true;
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
 
-        //System.out.println("id = " + id);
-
-        if (id == android.R.id.home) {
-            // This ID represents the Home or Up button. In the case of this
-            // activity, the Up button is shown. For
-            // more details, see the Navigation pattern on Android Design:
-            //
-            // http://developer.android.com/design/patterns/navigation.html#up-vs-back
-            //
-            //onBackPressed();
-            //System.out.println("BACK BUTTON PRESSED");
-            navigateUpTo(new Intent(this, PostListActivity.class));
-            return false;
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                navigateUpTo(new Intent(this, PostListActivity.class));
+                return false;
+            case R.id.action_refresh:
+                // get fragment
+                PostDetailFragment postDetailFragment = (PostDetailFragment) getSupportFragmentManager().findFragmentById(R.id.post_detail_container);
+                postDetailFragment.refreshComments();
+                return true;
         }
+
         return super.onOptionsItemSelected(item);
     }
 
@@ -159,6 +162,13 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
         // hide spinner, called from postdetailfragment / onpostexecute
         if (findViewById(R.id.loadingPanel) != null) {
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+        }
+    }
+
+    public void showPostDetailSpinner() {
+        // hide spinner, called from postdetailfragment / onpostexecute
+        if (findViewById(R.id.loadingPanel) != null) {
+            findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
         }
     }
 }

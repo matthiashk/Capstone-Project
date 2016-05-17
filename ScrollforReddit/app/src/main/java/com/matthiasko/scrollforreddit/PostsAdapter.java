@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,9 +23,11 @@ import com.squareup.picasso.Picasso;
  */
 public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> {
 
+    private static final String LOG_TAG = PostsAdapter.class.getSimpleName();
+
     private boolean mTwoPane; // TODO: change this
 
-        private boolean mUserlessMode;
+    private boolean mUserlessMode;
 
     private Context context;
 
@@ -134,11 +137,37 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                 @Override
                 public void onClick(View v) {
 
-                    //load 'source' into the webview, send source as string to webview
-                    Intent intent = new Intent(context, WebViewActivity.class);
-                    intent.putExtra("SOURCE", source);
+                    // TODO: fix directUrl not always loading...
 
-                    context.startActivity(intent);
+                    Log.e(LOG_TAG, "source = " + source);
+
+                    if (source.contains("imgur")) {
+
+                        System.out.println("FOUND IMGUR");
+
+                        String directUrl = source + ".jpg";
+
+                        Intent intent = new Intent(context, ImageViewActivity.class);
+                        //Intent intent = new Intent(context, WebViewActivity.class);
+                        intent.putExtra("SOURCE", directUrl);
+
+                        context.startActivity(intent);
+                    } else {
+
+                        System.out.println("NOT FOUND IMGUR");
+
+                        //Intent intent = new Intent(context, ImageViewActivity.class);
+                        //load 'source' into the webview, send source as string to webview
+
+
+                        Intent intent = new Intent(context, WebViewActivity.class);
+                        intent.putExtra("SOURCE", source);
+
+                        context.startActivity(intent);
+
+                    }
+
+
                 }
             });
         }

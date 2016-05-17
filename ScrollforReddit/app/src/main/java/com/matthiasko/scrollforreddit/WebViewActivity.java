@@ -3,7 +3,6 @@ package com.matthiasko.scrollforreddit;
 import android.app.Activity;
 import android.os.Bundle;
 import android.webkit.WebView;
-import android.webkit.WebViewClient;
 
 /**
  * Created by matthiasko on 4/11/16.
@@ -18,9 +17,16 @@ public class WebViewActivity extends Activity {
 
         String url = getIntent().getStringExtra("SOURCE");
 
+        System.out.println("url = " + url);
+
         webView = (WebView) findViewById(R.id.webView1);
         webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setBuiltInZoomControls(true);
 
+        webView.getSettings().setLoadWithOverviewMode(true);
+        webView.getSettings().setUseWideViewPort(true);
+
+        /*
         // use this to load the webview in the app
         this.webView.setWebViewClient(new WebViewClient() {
 
@@ -30,8 +36,17 @@ public class WebViewActivity extends Activity {
                 return true;
             }
         });
+        */
 
         webView.loadUrl(url);
 
+        // exit the activity if it's a youtube url,
+        // otherwise a blank view will be displayed when the user returns from the url
+        if (url.contains("youtube.com")) {
+            finish();
+        }
+
+        //String imgSrcHtml = "<html><img src='" + url + "' /></html>";
+        //webView.loadData(imgSrcHtml, "text/html", "UTF-8");
     }
 }

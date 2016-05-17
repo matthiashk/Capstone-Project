@@ -1,6 +1,7 @@
 package com.matthiasko.scrollforreddit;
 
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -155,6 +156,68 @@ public class PostDetailFragment extends Fragment {
         //((TextView) rootView.findViewById(R.id.comment_author)).setText(mCommentAuthor);
 
         return rootView;
+    }
+
+    public void refreshComments() {
+
+        try {
+            ((PostDetailActivity) getActivity()).showPostDetailSpinner();
+        } catch (ClassCastException cce) {
+            cce.printStackTrace();
+        }
+
+        // remove specific post comments 1st
+        if (mCommentsDBHandler.getCommentsCount(mPostId) > 0) {
+
+            System.out.println("REMOVING PREVIOUS COMMENTS");
+
+            String sql = "DELETE FROM comments WHERE post_id = ?";
+
+            CommentsDBHandler dbHandler = new CommentsDBHandler(getContext());
+            SQLiteDatabase db = dbHandler.getWritableDatabase();
+            db.execSQL(sql, new String[] {mPostId});
+
+            // should be 0 here...
+            //System.out.println("dbHandler.getCommentsCount(mPostId) = " + dbHandler.getCommentsCount(mPostId));
+        }
+
+        mArrayOfComments.clear();
+
+        mCommentsAdapter.notifyDataSetChanged();
+
+        // TODO: show loader
+
+
+        mUserlessMode = PostListActivity.mUserlessMode;
+
+        if (mUserlessMode) {
+
+            Log.e(LOG_TAG, "***** USERLESS MODE *****");
+
+            mRedditClient = new AndroidRedditClient(getContext());
+            // get access token
+            AndroidTokenStore store = new AndroidTokenStore(getContext());
+
+            try {
+                String refreshToken = store.readToken("USERLESS_TOKEN");
+                //System.out.println("refreshToken = " + refreshToken);
+                new RetrieveUserlessComments().execute(refreshToken);
+            } catch (NoSuchTokenException e) {
+                Log.e(LOG_TAG, e.getMessage());
+            }
+
+        } else {
+            Log.e(LOG_TAG, "***** NOT USERLESS MODE *****");
+            // get access token
+            AndroidTokenStore store = new AndroidTokenStore(getContext());
+
+            try {
+                String refreshToken = store.readToken("USER_TOKEN");
+                new RetrieveComments().execute(refreshToken);
+            } catch (NoSuchTokenException e) {
+                Log.e(LOG_TAG, e.getMessage());
+            }
+        }
     }
 
     private class RetrieveComments extends AsyncTask<String, Void, Void> {
