@@ -57,6 +57,20 @@
                 android:value="com.matthiasko.scrollforreddit.PostListActivity" />
         </activity>
 
+        <receiver android:name="com.matthiasko.scrollforreddit.ScrollWidget" >
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/app_widget_provider" />
+        </receiver>
+
+        <service
+            android:name=".ScrollWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
+
         <!-- change value below to reddit username,
              TODO: get from system prefs -->
         <meta-data android:name="net.dean.jraw.REDDIT_USERNAME" android:value="(strafeon)" />
