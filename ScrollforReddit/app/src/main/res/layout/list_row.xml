@@ -2,37 +2,75 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:background="@android:color/black" >
+    android:orientation="horizontal" >
 
     <ImageView
-        android:id="@+id/imageView"
+        android:id="@+id/thumbnail"
         android:layout_width="57dp"
         android:layout_height="57dp"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="8dip"
+        android:layout_alignParentLeft="true"
+        android:background="@android:color/white"
          />
 
     <TextView
-        android:id="@+id/heading"
+        android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_toRightOf="@id/imageView"
+        android:layout_toRightOf="@id/thumbnail"
         android:singleLine="true"
         android:textSize="14sp"
-        android:textStyle="bold"
-        android:text="Heading"/>
+        android:text="title"/>
 
     <TextView
-        android:id="@+id/content"
+        android:id="@+id/source"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_below="@id/heading"
+        android:layout_below="@id/title"
         android:layout_marginTop="5dip"
-        android:layout_toRightOf="@id/imageView"
+        android:layout_toRightOf="@id/thumbnail"
         android:textSize="14sp"
-        android:text="Content"/>
+        android:text="source"/>
+
+    <TextView
+        android:id="@+id/subreddit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dip"
+        android:layout_below="@id/source"
+        android:layout_toRightOf="@id/thumbnail"
+        android:textSize="14sp"
+        android:text="subreddit"/>
+
+    <TextView
+        android:id="@+id/author"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dip"
+        android:layout_marginLeft="5dip"
+        android:layout_below="@id/source"
+        android:layout_toRightOf="@id/subreddit"
+        android:textSize="14sp"
+        android:text="author"/>
+
+    <TextView
+        android:id="@+id/score"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dip"
+        android:layout_below="@id/subreddit"
+        android:layout_toRightOf="@id/thumbnail"
+        android:textSize="14sp"
+        android:text="score"/>
+
+    <TextView
+        android:id="@+id/numberOfComments"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dip"
+        android:layout_marginLeft="5dip"
+        android:layout_below="@id/subreddit"
+        android:layout_toRightOf="@id/score"
+        android:textSize="14sp"
+        android:text="number of comments"/>
 
 </RelativeLayout>

@@ -2,7 +2,7 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:initialLayout="@layout/scroll_widget"
     android:minHeight="90dp"
-    android:minWidth="90dp"
+    android:minWidth="180dp"
     android:updatePeriodMillis="0"
 
     >
