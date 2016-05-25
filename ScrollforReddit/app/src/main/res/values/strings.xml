@@ -2,4 +2,33 @@
     <string name="app_name">Scroll for Reddit</string>
     <string name="title_post_detail">Post Detail</string>
     <string name="action_refresh">Refresh</string>
+    <string name="imageview1">Image Viewer</string>
+    <string name="comment_body">comment body</string>
+    <string name="comment_author">author</string>
+    <string name="comment_points">1 points</string>
+    <string name="post_title">post title</string>
+    <string name="post_subreddit">subreddit name</string>
+    <string name="post_author">author</string>
+    <string name="post_source">source</string>
+    <string name="post_points">1 points</string>
+    <string name="post_number_of_comments">1 comments</string>
+
+    <string name="widget_title">title</string>
+    <string name="widget_source">source</string>
+    <string name="widget_subreddit">subreddit</string>
+    <string name="widget_author">author</string>
+    <string name="widget_score">score</string>
+    <string name="widget_number_of_comments">1 comments</string>
+
+    <string name="nav_header_text">Scroll for Reddit</string>
+
+    <string name="nav_item_login">Login</string>
+    <string name="nav_item_logout">Logout</string>
+    <string name="nav_item_subreddits">Subreddits</string>
+    <string name="nav_item_frontpage">Frontpage</string>
+    <string name="nav_item_settings">Settings</string>
+
+    <string name="post_header_imageview">Header Imageview</string>
+    <string name="list_row_imageview">Thumbnail Imageview</string>
+
 </resources>

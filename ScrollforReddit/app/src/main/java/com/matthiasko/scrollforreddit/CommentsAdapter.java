@@ -57,6 +57,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
             //String indentedComment = String.format("%" + totalIndent + "s", mValues.get(position).getBody());
 
             holder.commentBody.setText(mValues.get(position).getBody());
+            holder.commentBody.setContentDescription(mValues.get(position).getBody());
 
             // setting margins dynamically here depending on the comment level
             // margins are set in pixels, might have to convert to dp...
@@ -75,12 +76,16 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
         } else {
 
             holder.commentBody.setText(mValues.get(position).getBody());
+            holder.commentBody.setContentDescription(mValues.get(position).getBody());
+
         }
 
         //holder.commentBody.setText(mValues.get(position).getBody());
         holder.commentAuthor.setText(mValues.get(position).getAuthor());
-        holder.commentPoints.setText(String.valueOf(mValues.get(position).getScore()));
+        holder.commentAuthor.setContentDescription(mValues.get(position).getAuthor());
 
+        holder.commentPoints.setText(String.valueOf(mValues.get(position).getScore()));
+        holder.commentPoints.setContentDescription(String.valueOf(mValues.get(position).getScore()));
         //System.out.println("holder.commentBody = " + holder.commentBody);
 
         holder.mView.setOnClickListener(new View.OnClickListener() {

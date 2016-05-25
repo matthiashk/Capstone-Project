@@ -76,12 +76,17 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
 
         // populate the applayoutbar header for the detail view here
         ((TextView) findViewById(R.id.header_textview)).setText(getIntent().getStringExtra("POST_TITLE"));
+        (findViewById(R.id.header_textview)).setContentDescription(getIntent().getStringExtra("POST_TITLE"));
 
         ((TextView) findViewById(R.id.subreddit_textview)).setText(getIntent().getStringExtra("SUBREDDIT"));
+        (findViewById(R.id.subreddit_textview)).setContentDescription(getIntent().getStringExtra("SUBREDDIT"));
 
         ((TextView) findViewById(R.id.author_textview)).setText(getIntent().getStringExtra("AUTHOR"));
+        (findViewById(R.id.author_textview)).setContentDescription(getIntent().getStringExtra("AUTHOR"));
 
         ((TextView) findViewById(R.id.source_textview)).setText(getIntent().getStringExtra("DOMAIN"));
+        (findViewById(R.id.source_textview)).setContentDescription(getIntent().getStringExtra("DOMAIN"));
+
 
         // image loading logic here for detail view
         // if the source is an image load it with picasso

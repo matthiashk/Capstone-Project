@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- widget xml layout -->
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,19 +9,18 @@
         android:id="@+id/thumbnail"
         android:layout_width="57dp"
         android:layout_height="57dp"
-        android:layout_alignParentLeft="true"
-         />
+        android:layout_alignParentStart="true"
+        android:contentDescription="@string/list_row_imageview"
+        />
 
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_toRightOf="@id/thumbnail"
+        android:layout_toEndOf="@id/thumbnail"
         android:singleLine="true"
         android:textSize="14sp"
-        android:text="title"/>
-
-
+        android:text="@string/widget_title"/>
 
     <TextView
         android:id="@+id/source"
@@ -28,9 +28,9 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/title"
         android:layout_marginTop="5dip"
-        android:layout_toRightOf="@id/thumbnail"
+        android:layout_toEndOf="@id/thumbnail"
         android:textSize="14sp"
-        android:text="source"/>
+        android:text="@string/widget_source"/>
 
     <TextView
         android:id="@+id/subreddit"
@@ -38,9 +38,9 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dip"
         android:layout_below="@id/source"
-        android:layout_toRightOf="@id/thumbnail"
+        android:layout_toEndOf="@id/thumbnail"
         android:textSize="14sp"
-        android:text="subreddit"/>
+        android:text="@string/widget_subreddit"/>
 
 
 
@@ -49,11 +49,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dip"
-        android:layout_marginLeft="5dip"
+        android:layout_marginStart="5dip"
         android:layout_below="@id/source"
-        android:layout_toRightOf="@id/subreddit"
+        android:layout_toEndOf="@id/subreddit"
         android:textSize="14sp"
-        android:text="author"/>
+        android:text="@string/widget_author"/>
 
     <TextView
         android:id="@+id/score"
@@ -61,20 +61,20 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="5dip"
         android:layout_below="@id/subreddit"
-        android:layout_toRightOf="@id/thumbnail"
+        android:layout_toEndOf="@id/thumbnail"
         android:textSize="14sp"
-        android:text="score"/>
+        android:text="@string/widget_score"/>
 
     <TextView
         android:id="@+id/numberOfComments"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="5dip"
-        android:layout_marginLeft="5dip"
+        android:layout_marginStart="5dip"
         android:layout_below="@id/subreddit"
-        android:layout_toRightOf="@id/score"
+        android:layout_toEndOf="@id/score"
         android:textSize="14sp"
-        android:text="number of comments"/>
+        android:text="@string/widget_number_of_comments"/>
 
 
 </RelativeLayout>

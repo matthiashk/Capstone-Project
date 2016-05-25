@@ -13,15 +13,14 @@
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="10dp">
+        android:layout_marginStart="10dp">
 
         <TextView
             android:id="@+id/commentBody"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="comment body"
+            android:text="@string/comment_body"
             android:layout_below="@+id/commentPoints"
-
             />
 
         <TextView
@@ -29,16 +28,15 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_above="@+id/commentBody"
-
-            android:text="author" />
+            android:text="@string/comment_author" />
 
         <TextView
             android:id="@+id/commentPoints"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/commentAuthor"
-            android:layout_marginLeft="10dp"
-            android:text="1 points" />
+            android:layout_toEndOf="@+id/commentAuthor"
+            android:layout_marginStart="10dp"
+            android:text="@string/comment_points" />
 
     </RelativeLayout>
 

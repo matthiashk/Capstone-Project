@@ -6,6 +6,7 @@
         android:icon="@drawable/ic_refresh_white_24dp"
         android:title="@string/action_refresh"
         android:orderInCategory="100"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="ifRoom"
+        />
 
 </menu>

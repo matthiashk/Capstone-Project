@@ -7,7 +7,8 @@
         android:id="@+id/widgetListView"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:paddingLeft="16dp"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
         android:divider="@android:color/white"
         android:dividerHeight="1px"
         />
@@ -17,7 +18,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:text=" "
         android:textColor="#ffffff"
         android:textSize="20sp"
         android:visibility="gone" />

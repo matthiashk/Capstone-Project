@@ -7,15 +7,15 @@
     <group android:id="@+id/group0">
         <item
             android:id="@+id/login"
-            android:title="Login"
+            android:title="@string/nav_item_login"
             />
         <item
             android:id="@+id/logout"
-            android:title="Logout"
+            android:title="@string/nav_item_logout"
             />
         <item
             android:id="@+id/edit"
-            android:title="Subreddits"
+            android:title="@string/nav_item_subreddits"
             />
     </group>
 
@@ -23,14 +23,14 @@
 
         <item
             android:id="@+id/inbox"
-            android:title="Frontpage"
+            android:title="@string/nav_item_frontpage"
             />
     </group>
 
     <group android:id="@+id/group2">
         <item
             android:id="@+id/settings"
-            android:title="Settings"
+            android:title="@string/nav_item_settings"
             android:orderInCategory="99"/>
     </group>
 </menu>

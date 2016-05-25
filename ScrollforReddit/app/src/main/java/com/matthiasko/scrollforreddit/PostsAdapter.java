@@ -117,6 +117,13 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         holder.points.setText(String.valueOf(points));
         holder.numberOfComments.setText(String.valueOf(numberOfComments));
 
+        holder.postTitle.setContentDescription(title);
+        holder.subreddit.setContentDescription(subreddit);
+        holder.author.setContentDescription(author);
+        holder.source.setContentDescription(source);
+        holder.points.setContentDescription(String.valueOf(points));
+        holder.numberOfComments.setContentDescription(String.valueOf(numberOfComments));
+
         // thumbnail setup
         holder.thumbnail.setVisibility(View.VISIBLE);
 
