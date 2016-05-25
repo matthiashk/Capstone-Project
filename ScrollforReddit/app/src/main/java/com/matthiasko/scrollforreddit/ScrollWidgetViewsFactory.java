@@ -69,12 +69,16 @@ public class ScrollWidgetViewsFactory implements RemoteViewsService.RemoteViewsF
 
         final RemoteViews remoteView = new RemoteViews(context.getPackageName(), R.layout.list_row);
         Post listItem = listItemList.get(position);
+
         remoteView.setTextViewText(R.id.title, listItem.postTitle);
         remoteView.setTextViewText(R.id.source, listItem.postSource);
+
         remoteView.setTextViewText(R.id.subreddit, listItem.postSubreddit);
+
         remoteView.setTextViewText(R.id.author, listItem.postAuthor);
         remoteView.setTextViewText(R.id.score, String.valueOf(listItem.postPoints));
         remoteView.setTextViewText(R.id.numberOfComments, String.valueOf(listItem.postNumberOfComments));
+
 
         // set bitmap using https://groups.google.com/forum/?fromgroups=#!topic/android-developers/jupslaeAEuo
         // tried using picasso to load image, but doesn't work in a widget listview yet

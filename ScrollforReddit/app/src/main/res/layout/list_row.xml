@@ -9,7 +9,6 @@
         android:layout_width="57dp"
         android:layout_height="57dp"
         android:layout_alignParentLeft="true"
-        android:background="@android:color/white"
          />
 
     <TextView
@@ -20,6 +19,8 @@
         android:singleLine="true"
         android:textSize="14sp"
         android:text="title"/>
+
+
 
     <TextView
         android:id="@+id/source"
@@ -40,6 +41,8 @@
         android:layout_toRightOf="@id/thumbnail"
         android:textSize="14sp"
         android:text="subreddit"/>
+
+
 
     <TextView
         android:id="@+id/author"
@@ -72,5 +75,6 @@
         android:layout_toRightOf="@id/score"
         android:textSize="14sp"
         android:text="number of comments"/>
+
 
 </RelativeLayout>
