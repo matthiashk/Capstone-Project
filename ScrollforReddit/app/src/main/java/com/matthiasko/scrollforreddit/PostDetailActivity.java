@@ -11,6 +11,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -136,6 +138,15 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
                     .centerCrop()
                     .into((ImageView) findViewById(R.id.header_imageview));
         }
+
+        // Obtain the shared Tracker instance.
+        AnalyticsApplication analyticsApplication = (AnalyticsApplication) getApplication();
+        Tracker tracker = analyticsApplication.getDefaultTracker();
+
+        // google analytics code
+        String name = "PostDetailActivity";
+        tracker.setScreenName(name);
+        tracker.send(new HitBuilders.ScreenViewBuilder().build());
     }
 
     @Override

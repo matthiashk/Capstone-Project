@@ -34,4 +34,7 @@ dependencies {
     compile "net.dean.jraw:JRAW:0.8.0"
     compile 'com.squareup.picasso:picasso:2.5.2'
     compile project(':jrawandroidlib')
+    compile 'com.google.android.gms:play-services-analytics:9.0.0'
 }
+
+apply plugin: 'com.google.gms.google-services'

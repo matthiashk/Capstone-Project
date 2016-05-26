@@ -32,6 +32,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.matthiasko.scrollforreddit.PostContract.PostEntry;
 
 import net.dean.jraw.ApiException;
@@ -110,6 +112,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     private ActionBar mActionBar;
 
+    private Tracker mTracker;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -141,6 +145,11 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         db.execSQL(sql);
 
 
+        // Obtain the shared Tracker instance.
+        AnalyticsApplication analyticsApplication = (AnalyticsApplication) getApplication();
+        mTracker = analyticsApplication.getDefaultTracker();
+
+
         /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -158,7 +167,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         // check preferences before checking authentication state
         // if there is no saved usermode in preferences, create default of userlessmode
         // when the user logs in, change the preference to usermode
-        SharedPreferences appSharedPrefs = PreferenceManager
+                SharedPreferences appSharedPrefs = PreferenceManager
                 .getDefaultSharedPreferences(getApplicationContext());
 
         if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USERLESS_MODE")) {
@@ -658,10 +667,22 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     protected void onResume() {
         super.onResume();
         getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
+
+        // google analytics code
+        String name = "PostListActivity";
+        mTracker.setScreenName(name);
+        mTracker.send(new HitBuilders.ScreenViewBuilder().build());
+
         //System.out.println("mSelectedSubredditName = " + mSelectedSubredditName);
     }
 
     private void refreshPosts() {
+
+        mTracker.send(new HitBuilders.EventBuilder()
+                .setCategory("Action")
+                .setAction("Refresh Posts")
+                .build());
+
         // we need to remove posts from the database
         if (mSelectedSubredditName == null) {
             mSelectedSubredditName = "Frontpage";
