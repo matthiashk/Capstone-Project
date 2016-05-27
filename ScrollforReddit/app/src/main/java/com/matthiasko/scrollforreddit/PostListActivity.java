@@ -32,6 +32,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.matthiasko.scrollforreddit.PostContract.PostEntry;
@@ -148,6 +151,21 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         // Obtain the shared Tracker instance.
         AnalyticsApplication analyticsApplication = (AnalyticsApplication) getApplication();
         mTracker = analyticsApplication.getDefaultTracker();
+
+        // setup google mobile ads
+        MobileAds.initialize(getApplicationContext(), "ca-app-pub-3940256099942544~3347511713");
+
+        AdView mAdView = (AdView) findViewById(R.id.adView);
+        //AdRequest adRequest = new AdRequest.Builder().build();
+
+
+        AdRequest request = new AdRequest.Builder()
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)        // All emulators
+                .addTestDevice("939A21019B69A9BB56EB6EF8C371161A")  // An example device ID
+                .build();
+
+        mAdView.loadAd(request);
+
 
 
         /*

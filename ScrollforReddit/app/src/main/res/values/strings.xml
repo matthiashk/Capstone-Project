@@ -31,4 +31,7 @@
     <string name="post_header_imageview">Header Imageview</string>
     <string name="list_row_imageview">Thumbnail Imageview</string>
 
+    <string name="banner_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+
+
 </resources>

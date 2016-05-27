@@ -177,6 +177,8 @@ public class PostDetailFragment extends Fragment {
             SQLiteDatabase db = dbHandler.getWritableDatabase();
             db.execSQL(sql, new String[] {mPostId});
 
+            db.close();
+
             // should be 0 here...
             //System.out.println("dbHandler.getCommentsCount(mPostId) = " + dbHandler.getCommentsCount(mPostId));
         }
