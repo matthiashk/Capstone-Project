@@ -148,6 +148,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         db.execSQL(sql);
 
 
+
         // Obtain the shared Tracker instance.
         AnalyticsApplication analyticsApplication = (AnalyticsApplication) getApplication();
         mTracker = analyticsApplication.getDefaultTracker();
@@ -312,6 +313,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                             menuItem.setCheckable(true);
                             menuItem.setChecked(true);
                         }
+
+                        System.out.println("menuItem.getTitle() = " + menuItem.getTitle());
                         /*
 
                         if (mPreviousMenuItem != null) {
@@ -686,10 +689,12 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         super.onResume();
         getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
 
+
         // google analytics code
         String name = "PostListActivity";
         mTracker.setScreenName(name);
         mTracker.send(new HitBuilders.ScreenViewBuilder().build());
+
 
         //System.out.println("mSelectedSubredditName = " + mSelectedSubredditName);
     }
