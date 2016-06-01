@@ -2,11 +2,11 @@ package com.matthiasko.scrollforreddit;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.DataSetObserver;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -110,12 +110,16 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         final int points = cursor.getInt(9);
         final int numberOfComments = cursor.getInt(10);
 
+        Resources res = context.getResources();
+        String points_text = String.format(res.getString(R.string.posts_adapter_points), points);
+        String comments_text = String.format(res.getString(R.string.posts_adapter_comments), numberOfComments);
+
         holder.postTitle.setText(title);
         holder.subreddit.setText(subreddit);
         holder.author.setText(author);
         holder.source.setText(source);
-        holder.points.setText(String.valueOf(points));
-        holder.numberOfComments.setText(String.valueOf(numberOfComments));
+        holder.points.setText(points_text);
+        holder.numberOfComments.setText(comments_text);
 
         holder.postTitle.setContentDescription(title);
         holder.subreddit.setContentDescription(subreddit);
@@ -144,37 +148,12 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                 @Override
                 public void onClick(View v) {
 
-                    // TODO: fix directUrl not always loading...
+                    //Log.e(LOG_TAG, "source = " + source);
 
-                    Log.e(LOG_TAG, "source = " + source);
+                    Intent intent = new Intent(context, WebViewActivity.class);
+                    intent.putExtra("SOURCE", source);
 
-                    if (source.contains("imgur")) {
-
-                        System.out.println("FOUND IMGUR");
-
-                        String directUrl = source + ".jpg";
-
-                        Intent intent = new Intent(context, ImageViewActivity.class);
-                        //Intent intent = new Intent(context, WebViewActivity.class);
-                        intent.putExtra("SOURCE", directUrl);
-
-                        context.startActivity(intent);
-                    } else {
-
-                        System.out.println("NOT FOUND IMGUR");
-
-                        //Intent intent = new Intent(context, ImageViewActivity.class);
-                        //load 'source' into the webview, send source as string to webview
-
-
-                        Intent intent = new Intent(context, WebViewActivity.class);
-                        intent.putExtra("SOURCE", source);
-
-                        context.startActivity(intent);
-
-                    }
-
-
+                    context.startActivity(intent);
                 }
             });
         }

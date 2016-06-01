@@ -146,8 +146,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         CommentsDBHandler dbHandler = new CommentsDBHandler(this);
         SQLiteDatabase db = dbHandler.getWritableDatabase();
         db.execSQL(sql);
-
-
+        db.close();
 
         // Obtain the shared Tracker instance.
         AnalyticsApplication analyticsApplication = (AnalyticsApplication) getApplication();
@@ -159,15 +158,12 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         AdView mAdView = (AdView) findViewById(R.id.adView);
         //AdRequest adRequest = new AdRequest.Builder().build();
 
-
         AdRequest request = new AdRequest.Builder()
                 .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)        // All emulators
                 .addTestDevice("939A21019B69A9BB56EB6EF8C371161A")  // An example device ID
                 .build();
 
         mAdView.loadAd(request);
-
-
 
         /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -197,8 +193,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
             mUserlessMode = true; // set default mode as userless mode
 
-        } // TODO: when do we save the user_mode preference?
-
+        }
 
         Log.e(LOG_TAG, "mUserlessMode = " + mUserlessMode);
 
@@ -291,6 +286,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         }
         setupNavigationView();
 
+        /*
         // get and set selected subreddit menu item if it exists
 
         if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT")) {
@@ -298,6 +294,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             mSelectedSubredditName = appSharedPrefs.getString("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT", null);
             mActionBar.setTitle("r/" + mSelectedSubredditName);
         }
+        */
     }
 
     private void setupNavigationView() {
@@ -459,11 +456,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                                     @Override
                                     public void onUserlessTokenFetched() {
                                         // this block only runs if the subreddit exists
-
-                                        // remove all items from database
-                                        DBHandler dbHandler = new DBHandler(getApplicationContext());
-                                        SQLiteDatabase db = dbHandler.getWritableDatabase();
-                                        db.execSQL("delete from "+ PostEntry.TABLE_NAME);
+                                        // and this block will run after new posts are fetched
 
                                         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                                         mRecyclerView.setVisibility(View.VISIBLE);
@@ -532,10 +525,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             //startActivity(intent);
             startActivityForResult(intent, LOGIN_REQUEST);
 
-            // show spinner and hide list
-            findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
-            mRecyclerView.setVisibility(View.GONE);
-
         } else if (menuTitle.equals("Logout")) {
 
             // set userless mode to true
@@ -552,6 +541,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             DBHandler dbHandler = new DBHandler(this);
             SQLiteDatabase db = dbHandler.getWritableDatabase();
             db.execSQL("delete from "+ PostEntry.TABLE_NAME);
+            db.close();
 
             // fetch posts from frontpage using userlessmode
             new FetchUserlessTokenAsyncTask(this, new FetchUserlessTokenListener() {
@@ -668,6 +658,11 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         // result from loginwebviewactivity here
         if (requestCode == LOGIN_REQUEST) {
             if (resultCode == RESULT_OK) {
+
+                // show spinner and hide list
+                findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
+                mRecyclerView.setVisibility(View.GONE);
+
                 // coming from loginwebviewactivity after logging in
                 // fetch posts
                 AndroidTokenStore store = new AndroidTokenStore(this);
@@ -677,9 +672,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 } catch (NoSuchTokenException e) {
                     Log.e(LOG_TAG, e.getMessage());
                 }
-
-                // hide spinner
-                findViewById(R.id.loadingPanel).setVisibility(View.GONE);
             }
         }
     }
@@ -791,15 +783,18 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             if (subreddits.size() == 0) { // subreddit not found
                 // notify user, no subreddit found matching 'name'
                 return false;
-            }
 
-            // the user could have populated the database with posts using the 'userless' mode
-            // so let's just clear the database here?
-            // no need to check the count?
-            //delete database entries
-            DBHandler dbHandler = new DBHandler(PostListActivity.this);
-            SQLiteDatabase db = dbHandler.getWritableDatabase();
-            db.execSQL("delete from "+ PostEntry.TABLE_NAME);
+            } else {
+
+                // the user could have populated the database with posts using the 'userless' mode
+                // so let's just clear the database here?
+                // no need to check the count?
+                //delete database entries
+                DBHandler dbHandler = new DBHandler(PostListActivity.this);
+                SQLiteDatabase db = dbHandler.getWritableDatabase();
+                db.execSQL("delete from "+ PostEntry.TABLE_NAME);
+                db.close();
+            }
 
             if (subredditMenuName.equals("Frontpage")) {
 

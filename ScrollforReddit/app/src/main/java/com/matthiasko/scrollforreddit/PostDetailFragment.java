@@ -187,9 +187,6 @@ public class PostDetailFragment extends Fragment {
 
         mCommentsAdapter.notifyDataSetChanged();
 
-        // TODO: show loader
-
-
         mUserlessMode = PostListActivity.mUserlessMode;
 
         if (mUserlessMode) {

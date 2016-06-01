@@ -40,15 +40,9 @@ public class ScrollWidgetViewsFactory implements RemoteViewsService.RemoteViewsF
 
     @Override
     public void onCreate() {
-
         dbHandler = new DBHandler(context);
-
         // populate an arraylist of post items to display
         listItemList = dbHandler.getAllPosts();
-
-        // TODO: fix list_row layout, thumbnail should be on left, text to the right
-        // change layout_width of textviews?
-
     }
 
     @Override
@@ -91,9 +85,6 @@ public class ScrollWidgetViewsFactory implements RemoteViewsService.RemoteViewsF
             remoteView.setImageViewBitmap(R.id.thumbnail, BitmapFactory.decodeResource(context.getResources(),
                     R.drawable.transparent_pixel));
         }
-
-        // TODO: we need to set an empty thumbnail, otherwise wrong thumbnail displayed
-
         return remoteView;
     }
 

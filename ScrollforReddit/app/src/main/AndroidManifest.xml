@@ -96,8 +96,7 @@
             </intent-filter>
         </receiver>
 
-        <!-- change value below to reddit username,
-             TODO: get from system prefs -->
+        <!-- app developer's username, needed for jraw library -->
         <meta-data android:name="net.dean.jraw.REDDIT_USERNAME" android:value="(strafeon)" />
 
         <provider

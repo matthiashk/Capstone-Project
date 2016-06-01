@@ -40,11 +40,9 @@ public class WebViewActivity extends Activity {
 
         webView.loadUrl(url);
 
-        // exit the activity if it's a youtube url,
+        // exit the activity,
         // otherwise a blank view will be displayed when the user returns from the url
-        if (url.contains("youtube.com")) {
-            finish();
-        }
+        finish();
 
         //String imgSrcHtml = "<html><img src='" + url + "' /></html>";
         //webView.loadData(imgSrcHtml, "text/html", "UTF-8");

@@ -23,7 +23,7 @@ public class ImageViewActivity extends Activity {
 
         String url = getIntent().getStringExtra("SOURCE");
 
-        Picasso.with(getApplicationContext()).load(url).into(image);
+        Picasso.with(getApplicationContext()).load(url).fit().centerCrop().into(image);
 
     }
 }

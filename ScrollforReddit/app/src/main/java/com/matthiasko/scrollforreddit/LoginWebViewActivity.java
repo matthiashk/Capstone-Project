@@ -25,7 +25,7 @@ import net.dean.jraw.http.oauth.OAuthHelper;
 /**
  * Created by matthiasko on 4/1/16.
  */
-public class LoginWebViewActivity extends Activity{
+public class LoginWebViewActivity extends Activity {
 
     private static final String LOG_TAG = "LoginWebViewActivity";
     private WebView webView;
@@ -110,6 +110,7 @@ public class LoginWebViewActivity extends Activity{
             //Log.v(LOG_TAG, "doInBackground()");
             //Log.v(LOG_TAG, "params[0]: " + params[0]);
             try {
+
                 mOAuthData = mOAuthHelper.onUserChallenge(params[0], mCredentials);
                 redditClient.authenticate(mOAuthData);
                 //Log.v(LOG_TAG, "Reddit client authentication: " + redditClient.isAuthenticated());
@@ -128,6 +129,8 @@ public class LoginWebViewActivity extends Activity{
         protected void onPostExecute(OAuthData oAuthData) {
 
             //Log.v(LOG_TAG, "onPostExecute()");
+
+            // loader will be hidden in PostListActivity / onActivityResult
 
             // store access token
             String refreshToken = redditClient.getOAuthData().getRefreshToken();

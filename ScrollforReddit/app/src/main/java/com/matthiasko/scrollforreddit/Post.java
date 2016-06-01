@@ -14,7 +14,7 @@ public class Post {
     public int postNumberOfComments;
     public String postId;
     public String postDomain;
-    public long id; // TODO: is this needed for database?
+    public long id;
     public String postFullName;
 
     public Post() {}

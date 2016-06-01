@@ -3,6 +3,7 @@ package com.matthiasko.scrollforreddit;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -85,6 +86,14 @@ public class FetchUserlessPostsAsyncTask extends AsyncTask<String, Void, Boolean
         if (subreddits.size() == 0) { // subreddit not found
             // notify user, no subreddit found matching 'name'
             return false;
+        } else {
+
+            // remove all items from database, so new results will be shown
+            DBHandler dbHandler = new DBHandler(mContext);
+            SQLiteDatabase db = dbHandler.getWritableDatabase();
+            db.execSQL("delete from "+ PostContract.PostEntry.TABLE_NAME);
+
+            db.close();
         }
 
         SubredditPaginator paginator;

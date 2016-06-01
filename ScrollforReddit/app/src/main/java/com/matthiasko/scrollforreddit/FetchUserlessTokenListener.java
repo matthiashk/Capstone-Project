@@ -6,4 +6,5 @@ package com.matthiasko.scrollforreddit;
 public interface FetchUserlessTokenListener {
     void onUserlessTokenFetched();
     void onSubredditNotFound();
+
 }

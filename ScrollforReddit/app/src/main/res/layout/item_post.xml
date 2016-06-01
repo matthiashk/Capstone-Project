@@ -57,35 +57,40 @@
         android:id="@+id/postPoints"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/downButton"
         android:layout_below="@+id/postSubreddit"
-        android:layout_toEndOf="@+id/thumbnail"
+        android:layout_margin="8dp"
         android:text="@string/post_points" />
 
     <TextView
         android:id="@+id/postNumberOfComments"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/postSubreddit"
         android:layout_toEndOf="@+id/postPoints"
+        android:layout_below="@+id/postSubreddit"
+        android:layout_margin="8dp"
         android:layout_marginStart="10dp"
         android:text="@string/post_number_of_comments" />
 
     <Button
         android:id="@+id/upButton"
         android:background="@drawable/ic_arrow_upward_black_18dp"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_below="@+id/postNumberOfComments"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_margin="8dp"
+        android:layout_below="@+id/postSubreddit"
         android:layout_toEndOf="@+id/thumbnail"
+        android:layout_alignParentStart="true"
         android:layout_marginStart="18dp"
         />
 
     <Button
         android:id="@+id/downButton"
         android:background="@drawable/ic_arrow_downward_black_18dp"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:layout_below="@+id/postNumberOfComments"
+        android:layout_width="18dp"
+        android:layout_height="18dp"
+        android:layout_margin="8dp"
+        android:layout_below="@+id/postSubreddit"
         android:layout_toEndOf="@+id/upButton"
         android:layout_marginStart="18dp"
         />
