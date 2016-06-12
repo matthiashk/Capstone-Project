@@ -59,6 +59,9 @@ public class FetchUserlessSubsAsyncTask extends AsyncTask<String, Void, ArrayLis
         if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.UUID")) {
             String uuidString = appSharedPrefs.getString("com.matthiasko.scrollforreddit.UUID", null);
             mDeviceId = UUID.fromString(uuidString);
+        }else {
+            // no UUID found in sharedPrefs, create new uuid
+            mDeviceId = UUID.randomUUID();
         }
 
         // check authentication

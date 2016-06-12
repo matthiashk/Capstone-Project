@@ -38,7 +38,7 @@ public class FetchUserlessPostsAsyncTask extends AsyncTask<String, Void, Boolean
 
     private UUID mDeviceId;
 
-    public FetchUserlessPostsAsyncTask(Context context, FetchUserlessTokenListener listener) {
+    public  FetchUserlessPostsAsyncTask(Context context, FetchUserlessTokenListener listener) {
         this.mContext = context;
         this.mListener = listener;
     }

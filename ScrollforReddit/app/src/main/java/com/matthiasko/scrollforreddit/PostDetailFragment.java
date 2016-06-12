@@ -169,7 +169,7 @@ public class PostDetailFragment extends Fragment {
         // remove specific post comments 1st
         if (mCommentsDBHandler.getCommentsCount(mPostId) > 0) {
 
-            System.out.println("REMOVING PREVIOUS COMMENTS");
+            //System.out.println("REMOVING PREVIOUS COMMENTS");
 
             String sql = "DELETE FROM comments WHERE post_id = ?";
 
@@ -219,7 +219,18 @@ public class PostDetailFragment extends Fragment {
         }
     }
 
-    private class RetrieveComments extends AsyncTask<String, Void, Void> {
+    // TODO: implement
+
+    public void getMoreComments() {
+
+        // call asynctask to get more comments
+
+
+    }
+
+
+
+    private class RetrieveMoreComments extends AsyncTask<String, Void, Void> {
 
         final RedditClient redditClient = new AndroidRedditClient(getContext());
 
@@ -227,7 +238,92 @@ public class PostDetailFragment extends Fragment {
 
         final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
 
-        String commentText;
+        @Override
+        protected Void doInBackground(String... params) {
+
+            if (mUserlessMode) {
+
+
+            } else {
+
+                String refreshToken = params[0];
+                oAuthHelper.setRefreshToken(refreshToken);
+
+                try {
+                    OAuthData finalData = oAuthHelper.refreshToken(credentials);
+                    redditClient.authenticate(finalData);
+                    if (redditClient.isAuthenticated()) {
+                        Log.v(LOG_TAG, "Authenticated");
+                    }
+                } catch (OAuthException e) {
+                    e.printStackTrace();
+                }
+
+
+                // TODO: fix below
+                //
+
+
+                if (mCommentsDBHandler.getCommentsCount(mPostId) == 0) { // fetch comments
+
+                    // use getSubmission instead of paginator to get the specific post + comments,
+                    // otherwise the post will not be found in the paginator after some time has passed
+                    Submission specificSubmission = redditClient.getSubmission(mPostId);
+
+                    CommentNode commentNode = specificSubmission.getComments();
+                    Iterable<CommentNode> iterable = commentNode.walkTree();
+
+                    // if depth is more than 5
+                    // create new cell with 'load more' label...
+                    // OR just limit the amount of comments fetched...
+
+                    for (CommentNode node : iterable) {
+                        Comment comment = node.getComment();
+                        ScrollComment scrollComment = new ScrollComment(comment.getBody(),
+                                comment.getAuthor(), comment.getScore(), node.getDepth(), mPostId);
+                        //System.out.println("comment.getBody() = " + comment.getBody());
+
+                        mCommentsDBHandler.addComment(scrollComment); // adding to comments database
+
+                        mArrayOfComments.add(scrollComment);
+                    }
+
+                } else { // else load comments from database...
+                    // note: have to use addAll, not just set the arraylist
+                    mArrayOfComments.addAll(mCommentsDBHandler.getAllComments(mPostId));
+                }
+
+            }
+
+
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            //System.out.println("mArrayOfComments.size() = " + mArrayOfComments.size());
+            //System.out.println("string = " + s);
+            //mCommentTextView.setText(s);
+            mCommentsAdapter.notifyDataSetChanged();
+            try {
+                ((PostDetailActivity) getActivity()).postDetailSpinner();
+            } catch (ClassCastException cce) {
+                cce.printStackTrace();
+            }
+        }
+    }
+
+
+
+    private class RetrieveComments extends AsyncTask<String, Void, Void> {
+
+        final RedditClient redditClient = new AndroidRedditClient(getContext());
+
+        final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
+
+        final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
 
         @Override
         protected Void doInBackground(String... params) {
@@ -385,7 +481,9 @@ public class PostDetailFragment extends Fragment {
             mCommentsAdapter.notifyDataSetChanged();
             // stop the spinner
             try {
-                ((PostDetailActivity) getActivity()).postDetailSpinner();
+                if (getActivity() != null) {
+                    ((PostDetailActivity) getActivity()).postDetailSpinner();
+                }
             } catch (ClassCastException cce) {
                 cce.printStackTrace();
             }

@@ -51,15 +51,14 @@
                 android:textColor="@android:color/white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_toEndOf="@+id/author_textview"
-                android:layout_below="@+id/header_textview"
-                android:layout_marginStart="10dp"/>
+                android:layout_below="@+id/subreddit_textview"
+                />
 
             <ImageView
                 android:id="@+id/header_imageview"
                 android:layout_width="400dp"
-                android:layout_height="200dp"
-                android:layout_below="@+id/subreddit_textview"
+                android:layout_height="wrap_content"
+                android:layout_below="@+id/source_textview"
                 android:contentDescription="@string/post_header_imageview"/>
 
         </RelativeLayout>

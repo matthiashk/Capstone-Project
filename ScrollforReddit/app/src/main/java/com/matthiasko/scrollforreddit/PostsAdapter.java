@@ -90,6 +90,8 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
 
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_post, parent, false);
 
+
+
         return new ViewHolder(view);
     }
 
@@ -117,14 +119,14 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         holder.postTitle.setText(title);
         holder.subreddit.setText(subreddit);
         holder.author.setText(author);
-        holder.source.setText(source);
+        holder.source.setText(domain);
         holder.points.setText(points_text);
         holder.numberOfComments.setText(comments_text);
 
         holder.postTitle.setContentDescription(title);
         holder.subreddit.setContentDescription(subreddit);
         holder.author.setContentDescription(author);
-        holder.source.setContentDescription(source);
+        holder.source.setContentDescription(domain);
         holder.points.setContentDescription(String.valueOf(points));
         holder.numberOfComments.setContentDescription(String.valueOf(numberOfComments));
 

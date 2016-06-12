@@ -1,20 +1,24 @@
 package com.matthiasko.scrollforreddit;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by matthiasko on 4/4/16.
  */
 public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHolder> {
 
-    private boolean mTwoPane; // TODO: change this
+    private boolean mTwoPane;
 
     private final ArrayList<ScrollComment> mValues;
 
@@ -108,6 +112,36 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
                 //String testTitle = mValues.get(position).postTitle;
 
                 //System.out.println("testTitle = " + testTitle);
+
+                // match url in body of comment text, so user can follow link
+                String body = mValues.get(position).getBody();
+
+                Pattern pattern = Patterns.WEB_URL;
+                Matcher matcher = pattern.matcher(body);
+
+                ArrayList links = new ArrayList();
+
+                while(matcher.find()) {
+
+                    String urlStr = matcher.group();
+
+                    urlStr = urlStr.substring(0, urlStr.length());
+
+                    links.add(urlStr);
+                }
+
+                String extractedUrl = links.get(0).toString(); // get first url
+
+                //System.out.println("links.get(0).toString() = " + links.get(0).toString());
+
+                // open extractedUrl in a web browser
+                Intent intent = new Intent(mContext, WebViewActivity.class);
+                intent.putExtra("SOURCE", extractedUrl);
+
+                mContext.startActivity(intent);
+
+
+                //System.out.println("body = " + body);
 
                 /*
                 String commentAuthor = commentNode.getComment().getAuthor();

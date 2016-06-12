@@ -21,6 +21,8 @@ import com.squareup.picasso.Picasso;
  */
 public class PostDetailActivity extends AppCompatActivity implements PostDetailFragment.OnCommentsLoadedListener {
 
+    private ImageView mHeaderImageView;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -28,6 +30,8 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
         Toolbar toolbar = (Toolbar) findViewById(R.id.detail_toolbar);
         //toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
+
+        mHeaderImageView = (ImageView) findViewById(R.id.header_imageview);
 
         /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -87,7 +91,6 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
         ((TextView) findViewById(R.id.source_textview)).setText(getIntent().getStringExtra("DOMAIN"));
         (findViewById(R.id.source_textview)).setContentDescription(getIntent().getStringExtra("DOMAIN"));
 
-
         // image loading logic here for detail view
         // if the source is an image load it with picasso
         // otherwise load a placeholder
@@ -110,31 +113,59 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
         }
 
         if (extension.equals("jpg")) {
+
+            System.out.println("JPG MATCH");
+
+
+            android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
+            layoutParams.height = 400;
+            mHeaderImageView.setLayoutParams(layoutParams);
+
             Picasso.with(getBaseContext())
                     .load(sourceUrl)
                     .resize(400, 200)
-                    .centerCrop()
-                    .into((ImageView) findViewById(R.id.header_imageview));
+                    .centerInside()
+                    .into(mHeaderImageView);
 
         } else if (sourceUrl.contains("imgur.com")) {
+
+            System.out.println("IMGUR MATCH");
+
+            android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
+            layoutParams.height = 400;
+            mHeaderImageView.setLayoutParams(layoutParams);
+
             // we need to add .jpg to the url to load it properly
             String modifiedUrl = sourceUrl.concat(".jpg");
 
             Picasso.with(getBaseContext())
                     .load(modifiedUrl)
-                    .resize(400, 200)
-                    .centerCrop()
-                    .into((ImageView) findViewById(R.id.header_imageview));
+                    .fit()
+                    .into(mHeaderImageView);
 
         }  else if (getIntent().getStringExtra("THUMBNAIL") == null) {
-            //System.out.println("NULL THUMBNAIL");
+
+            System.out.println("NULL THUMBNAIL MATCH");
+
+
+            // change the height of the imageview to fit just the subreddit title
+            android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
+            layoutParams.height = 200;
+            mHeaderImageView.setLayoutParams(layoutParams);
+
         } else if (!getIntent().getStringExtra("THUMBNAIL").isEmpty()) {
+
+            System.out.println("EMPTY THUMBNAIL MATCH");
+
+            android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
+            layoutParams.height = 400;
+            mHeaderImageView.setLayoutParams(layoutParams);
 
             Picasso.with(getBaseContext())
                     .load(getIntent().getStringExtra("THUMBNAIL"))
                     .resize(400, 200)
-                    .centerCrop()
-                    .into((ImageView) findViewById(R.id.header_imageview));
+                    .centerInside()
+                    .into(mHeaderImageView);
         }
     }
 
@@ -155,6 +186,10 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
                 // get fragment
                 PostDetailFragment postDetailFragment = (PostDetailFragment) getSupportFragmentManager().findFragmentById(R.id.post_detail_container);
                 postDetailFragment.refreshComments();
+                return true;
+            case R.id.action_get_more_comments:
+                //getMoreComments()
+                //System.out.println("GET MORE COMMENTS");
                 return true;
         }
 

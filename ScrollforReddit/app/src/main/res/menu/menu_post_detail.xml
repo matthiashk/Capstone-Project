@@ -8,4 +8,11 @@
         android:orderInCategory="100"
         app:showAsAction="ifRoom" />
 
+    <item android:id="@+id/action_get_more_comments"
+        android:icon="@drawable/ic_arrow_downward_white_24dp"
+        android:title="@string/action_get_more_comments"
+        android:orderInCategory="99"
+        app:showAsAction="ifRoom"
+        />
+
 </menu>

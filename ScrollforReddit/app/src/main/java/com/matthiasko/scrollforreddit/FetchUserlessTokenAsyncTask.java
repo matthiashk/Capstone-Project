@@ -84,7 +84,7 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
 
         mHandler = new DBHandler(mContext);
 
-        SubredditPaginator paginator;
+        //SubredditPaginator paginator;
 
         // check here if database exists, if yes we need to add to existing database
         if (mHandler.getPostCount() == 0) {
@@ -105,7 +105,9 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
             }
             */
 
-            paginator = new SubredditPaginator(redditClient);
+            // TODO: save and reuse this paginator...
+
+            SubredditPaginator paginator = new SubredditPaginator(redditClient);
 
             Listing<Submission> submissions = paginator.next();
 

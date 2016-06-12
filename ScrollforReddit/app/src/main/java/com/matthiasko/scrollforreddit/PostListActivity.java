@@ -247,7 +247,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     break;
             }
 
-        } else { // do we need to populate posts in userless mode here???
+        } else {
 
             if (mHandler.getPostCount() == 0)
 
@@ -259,7 +259,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     @Override
                     public void onSubredditNotFound() {}
                 }).execute();
-
         }
 
         getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
@@ -649,6 +648,9 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             case R.id.action_refresh:
                 refreshPosts();
                 return true;
+            case R.id.action_get_more_posts:
+                getMorePosts();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -693,25 +695,28 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     private void refreshPosts() {
 
+        SharedPreferences appSharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+
+        int refreshCounter = 2; // set to 2 so we can get the next page of posts using fetchmoreposts
+
+        SharedPreferences.Editor edit = appSharedPrefs.edit();
+        edit.putInt("com.matthiasko.scrollforreddit.REFRESH_COUNTER", refreshCounter);
+        edit.commit();
+
         mTracker.send(new HitBuilders.EventBuilder()
                 .setCategory("Action")
                 .setAction("Refresh Posts")
                 .build());
 
-        // we need to remove posts from the database
         if (mSelectedSubredditName == null) {
             mSelectedSubredditName = "Frontpage";
         }
+        findViewById(R.id.loadingPanel).bringToFront();
         // show loader
         findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
 
-        //delete database entries
-        DBHandler dbHandler = new DBHandler(this);
-        SQLiteDatabase db = dbHandler.getWritableDatabase();
-        db.execSQL("delete from "+ PostEntry.TABLE_NAME);
-        mRecyclerView.setVisibility(View.GONE);
-
         if (mUserlessMode) {
+            // remove existing posts from db, and fetch new posts
             new FetchUserlessPostsAsyncTask(this, new FetchUserlessTokenListener() {
                 @Override
                 public void onUserlessTokenFetched() {
@@ -731,6 +736,26 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 Log.e(LOG_TAG, e.getMessage());
             }
         }
+    }
+
+    private void getMorePosts() {
+
+        if (mSelectedSubredditName == null) {
+            mSelectedSubredditName = "Frontpage";
+        }
+        findViewById(R.id.loadingPanel).bringToFront();
+        // show loader
+        findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
+
+        new FetchMorePostsAsyncTask(this, new FetchUserlessTokenListener() {
+            @Override
+            public void onUserlessTokenFetched() {
+                findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+                mRecyclerView.setVisibility(View.VISIBLE);
+            }
+            @Override
+            public void onSubredditNotFound() {}
+        }).execute(mSelectedSubredditName);
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
