@@ -4,6 +4,8 @@
     <string name="action_refresh">Refresh</string>
     <string name="action_get_more_posts">Get More Posts</string>
     <string name="action_get_more_comments">Get More Comments</string>
+    <string name="action_comment">Post Comment</string>
+    <string name="action_submit_post">Submit Post</string>
 
     <string name="imageview1">Image Viewer</string>
     <string name="comment_body">comment body</string>
@@ -38,6 +40,12 @@
 
     <string name="posts_adapter_points">%1$d points</string>
     <string name="posts_adapter_comments">%1$d comments</string>
+
+    <string name="add_post_edit_text_hint">Submission text</string>
+    <string name="add_post_title_edit_text_hint">Submission title</string>
+    <string name="captcha_edit_text_hint">Enter captcha</string>
+
+
 
 
 </resources>

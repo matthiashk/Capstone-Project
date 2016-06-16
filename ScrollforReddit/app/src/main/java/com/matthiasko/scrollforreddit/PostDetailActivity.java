@@ -178,18 +178,23 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
 
+        PostDetailFragment postDetailFragment = (PostDetailFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.post_detail_container);
+
         switch (item.getItemId()) {
             case android.R.id.home:
                 navigateUpTo(new Intent(this, PostListActivity.class));
                 return false;
             case R.id.action_refresh:
                 // get fragment
-                PostDetailFragment postDetailFragment = (PostDetailFragment) getSupportFragmentManager().findFragmentById(R.id.post_detail_container);
                 postDetailFragment.refreshComments();
                 return true;
             case R.id.action_get_more_comments:
                 //getMoreComments()
                 //System.out.println("GET MORE COMMENTS");
+                return true;
+            case R.id.action_comment:
+                postDetailFragment.postComment();
                 return true;
         }
 

@@ -10,6 +10,8 @@ import android.content.Loader;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -30,6 +32,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.ads.AdRequest;
@@ -47,11 +50,14 @@ import net.dean.jraw.auth.AuthenticationManager;
 import net.dean.jraw.auth.AuthenticationState;
 import net.dean.jraw.auth.NoSuchTokenException;
 import net.dean.jraw.auth.RefreshTokenHandler;
+import net.dean.jraw.http.NetworkException;
 import net.dean.jraw.http.oauth.Credentials;
 import net.dean.jraw.http.oauth.OAuthData;
 import net.dean.jraw.http.oauth.OAuthException;
 import net.dean.jraw.http.oauth.OAuthHelper;
 import net.dean.jraw.managers.AccountManager;
+import net.dean.jraw.managers.CaptchaHelper;
+import net.dean.jraw.models.Captcha;
 import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
 import net.dean.jraw.models.Subreddit;
@@ -59,27 +65,18 @@ import net.dean.jraw.models.VoteDirection;
 import net.dean.jraw.paginators.SubredditPaginator;
 import net.dean.jraw.paginators.SubredditSearchPaginator;
 
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-/**
- * An activity representing a list of Posts. This activity
- * has different presentations for handset and tablet-size devices. On
- * handsets, the activity presents a list of items, which when touched,
- * lead to a {@link PostDetailActivity} representing
- * item details. On tablets, the activity presents the list of items and
- * item details side-by-side using two vertical panes.
- */
 public class PostListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
-    /**
-     * Whether or not the activity is in two-pane mode, i.e. running on a tablet
-     * device.
-     */
+
     private boolean mTwoPane;
 
     public static boolean mUserlessMode;
@@ -436,8 +433,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             editText.setSelection(editText.getText().length());
             editText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
 
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(
-                    this);
+            AlertDialog.Builder alertDialogBuilder =
+                    new AlertDialog.Builder(this, R.style.AppCompatAlertDialogStyle);
 
             alertDialogBuilder
                     .setView(dialogLayout)
@@ -488,6 +485,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                                     }
                                 }).execute(editText.getText().toString());
                             } else {
+                                mSelectedSubredditName = editText.getText().toString();
+                                mActionBar.setTitle("r/" + mSelectedSubredditName);
                                 // read token
                                 AndroidTokenStore store = new AndroidTokenStore(getApplicationContext());
                                 try {
@@ -651,6 +650,9 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             case R.id.action_get_more_posts:
                 getMorePosts();
                 return true;
+            case R.id.action_submit_post:
+                submitPost();
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -703,6 +705,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         edit.putInt("com.matthiasko.scrollforreddit.REFRESH_COUNTER", refreshCounter);
         edit.commit();
 
+        // for google analytics
         mTracker.send(new HitBuilders.EventBuilder()
                 .setCategory("Action")
                 .setAction("Refresh Posts")
@@ -758,8 +761,324 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         }).execute(mSelectedSubredditName);
     }
 
+    private void submitPost() {
+
+        if (mUserlessMode) {
+
+            new AlertDialog.Builder(this)
+                    .setTitle("Error posting submission")
+                    .setMessage("Please login to post a submission.")
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+        } else {
+            // show text entry dialog
+            // when user presses 'submit' then we call the asynctask
+            LayoutInflater layoutInflater = LayoutInflater.from(this);
+            View dialogView = layoutInflater.inflate(R.layout.edit_text_submit_post, null);
+
+            AlertDialog.Builder alertDialogBuilder =
+                    new AlertDialog.Builder(this, R.style.AppCompatAlertDialogStyle);
+
+            alertDialogBuilder.setView(dialogView);
+
+            final EditText title = (EditText) dialogView.findViewById(R.id.add_post_title_edit_text);
+            final EditText input = (EditText) dialogView.findViewById(R.id.add_post_edit_text);
+            //final EditText captchaEditText = (EditText) dialogView.findViewById(R.id.captcha_edit_text);
+
+            //ImageView captchaImageView = (ImageView) dialogView.findViewById(R.id.captcha_imageview);
+
+            //final Captcha captcha = new Captcha("scrollforreddit");
+
+            //URL captchaUrl = captcha.getImageUrl();
+
+            // TODO: submit post logic
+            // first try and submit post without captcha
+            // if that fails, we need to get a captcha, show to user, and get user input
+            // then resubmit post with captcha data
+
+            if (mSelectedSubredditName == null) {
+                mSelectedSubredditName = "Frontpage";
+            }
+
+            alertDialogBuilder
+                    .setTitle("Post Submission")
+                    .setCancelable(false)
+                    .setPositiveButton("OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog,int id) {
+
+                                    // TODO: if fields are blank, abort
+
+                                    System.out.println("title.getText().toString() = " + title.getText().toString());
+
+                                    System.out.println("input.getText().toString() = " + input.getText().toString());
+
+                                    System.out.println("mSelectedSubredditName = " + mSelectedSubredditName);
+
+                                    new PostSubmissionAsyncTask(
+                                            title.getText().toString(),
+                                            input.getText().toString(),
+                                            null,
+                                            null
+                                    ).execute();
+                                }
+                            })
+                    .setNegativeButton("Cancel",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog,int id) {
+                                    dialog.cancel();
+                                }
+                            });
+
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+        }
+    }
+
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
         recyclerView.setAdapter(adapter);
+    }
+
+    private class CaptchaAsyncTask extends AsyncTask<String, Void, Wrapper> {
+
+        final RedditClient redditClient = new AndroidRedditClient(PostListActivity.this);
+
+        final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
+
+        final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
+
+        AndroidTokenStore store = new AndroidTokenStore(PostListActivity.this);
+
+        protected Wrapper doInBackground(String... params) {
+
+
+            String title = params[0];
+
+            String userInput = params[1];
+
+            String selectedSubredditName = params[2];
+
+            Wrapper wrapper = new Wrapper();
+
+            wrapper.setTitle(title);
+            wrapper.setUserInput(userInput);
+            wrapper.setSelectedSubredditName(selectedSubredditName);
+
+
+
+            try {
+                String refreshToken = store.readToken("USER_TOKEN");
+                oAuthHelper.setRefreshToken(refreshToken);
+
+                try {
+                    OAuthData finalData = oAuthHelper.refreshToken(credentials);
+                    redditClient.authenticate(finalData);
+
+                } catch (OAuthException e) {
+                    e.printStackTrace();
+                }
+                CaptchaHelper captchaHelper = new CaptchaHelper(redditClient);
+
+                if (captchaHelper.isNecessary()) {
+                    Captcha captcha = captchaHelper.getNew();
+                    //URL captchaUrl = mCaptcha.getImageUrl();
+                    //wrapper.setCaptchaUrl(captchaUrl);
+                    wrapper.setCaptcha(captcha);
+                }
+            } catch (NoSuchTokenException e) {
+                e.printStackTrace();
+            } catch (ApiException e) {
+                e.printStackTrace();
+            }
+            return wrapper;
+        }
+
+        protected void onPostExecute(Wrapper wrapper) {
+
+            final Captcha captcha = wrapper.getCaptcha();
+
+            URL captchaUrl = captcha.getImageUrl();
+
+            final String title = wrapper.getTitle();
+            final String userInput = wrapper.getUserInput();
+            String selectedSubredditName = wrapper.getSelectedSubredditName();
+
+            if (captchaUrl != null) {
+
+                LayoutInflater layoutInflater = LayoutInflater.from(PostListActivity.this);
+                View dialogView = layoutInflater.inflate(R.layout.dialog_catpcha, null);
+
+                AlertDialog.Builder alertDialogBuilder =
+                        new AlertDialog.Builder(PostListActivity.this, R.style.AppCompatAlertDialogStyle);
+
+                alertDialogBuilder.setView(dialogView);
+
+                final EditText captchaText = (EditText) dialogView.findViewById(R.id.captcha_edit_text);
+
+                ImageView captchaImageView = (ImageView) dialogView.findViewById(R.id.captcha_imageview);
+
+                try {
+                    new DownloadImageTask(captchaImageView).execute(captchaUrl.toString());
+                } catch (NetworkException e) {
+                    e.printStackTrace();
+                }
+
+                alertDialogBuilder
+                        .setTitle("Captcha")
+                        .setCancelable(false)
+                        .setPositiveButton("OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,int id) {
+
+                                        // TODO: if fields are blank, abort or show error
+
+                                        System.out.println("mSelectedSubredditName = " + mSelectedSubredditName);
+
+
+                                        new PostSubmissionAsyncTask(
+                                                title,
+                                                userInput,
+                                                captchaText.getText().toString(),
+                                                captcha
+                                        ).execute();
+
+
+                                    }
+                                })
+                        .setNegativeButton("Cancel",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,int id) {
+                                        dialog.cancel();
+                                    }
+                                });
+
+                AlertDialog alertDialog = alertDialogBuilder.create();
+                alertDialog.show();
+            }
+        }
+    }
+
+    // download image code from
+    // http://stackoverflow.com/questions/2471935/how-to-load-an-imageview-by-url-in-android
+    private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
+        ImageView bmImage;
+
+        public DownloadImageTask(ImageView bmImage) {
+            this.bmImage = bmImage;
+        }
+
+        protected Bitmap doInBackground(String... urls) {
+            String urldisplay = urls[0];
+            Bitmap mIcon11 = null;
+            try {
+                InputStream in = new java.net.URL(urldisplay).openStream();
+                mIcon11 = BitmapFactory.decodeStream(in);
+            } catch (Exception e) {
+                Log.e("Error", e.getMessage());
+                e.printStackTrace();
+            }
+            return mIcon11;
+        }
+
+        protected void onPostExecute(Bitmap result) {
+            bmImage.setImageBitmap(result);
+        }
+    }
+
+    public class PostSubmissionAsyncTask extends AsyncTask<String, Void, Boolean> {
+
+        String title;
+        String userInput;
+        String captchaText;
+        Captcha captcha;
+
+        public PostSubmissionAsyncTask(String title, String userInput, String captchaText, Captcha captcha) {
+
+            this.title = title;
+            this.userInput = userInput;
+            this.captchaText = captchaText;
+            this.captcha = captcha;
+        }
+
+        @Override
+        protected Boolean doInBackground(String... params) { // send postId and user comment text as var
+
+            final RedditClient redditClient = new AndroidRedditClient(PostListActivity.this);
+
+            final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
+
+            final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
+
+            AndroidTokenStore store = new AndroidTokenStore(PostListActivity.this);
+
+            Boolean NEEDS_CAPTCHA = false;
+
+            try {
+                String refreshToken = store.readToken("USER_TOKEN");
+
+                oAuthHelper.setRefreshToken(refreshToken);
+
+                try {
+
+                    OAuthData finalData = oAuthHelper.refreshToken(credentials);
+
+                    redditClient.authenticate(finalData);
+
+                    AccountManager accountManager = new AccountManager(redditClient);
+
+                    if (captcha == null) {
+
+                        try {
+                            AccountManager.SubmissionBuilder submissionBuilder =
+                                    new AccountManager.SubmissionBuilder(userInput, mSelectedSubredditName, title);
+                            accountManager.submit(submissionBuilder);
+
+                        } catch (ApiException e) {
+                            if (e.getMessage().contains("BAD_CAPTCHA")) {
+                                NEEDS_CAPTCHA = true;
+                            }
+                            Log.e(LOG_TAG, e.getMessage());
+                        }
+
+                    } else {
+
+                        try {
+                            AccountManager.SubmissionBuilder submissionBuilder =
+                                    new AccountManager.SubmissionBuilder(userInput, mSelectedSubredditName, title);
+                            accountManager.submit(submissionBuilder, captcha, captchaText);
+
+                        } catch (ApiException e) {
+                            if (e.getMessage().contains("BAD_CAPTCHA")) {
+                                NEEDS_CAPTCHA = true;
+                            }
+                            Log.e(LOG_TAG, e.getMessage());
+                        }
+                    }
+
+                } catch (OAuthException e) {
+                    e.printStackTrace();
+                }
+            } catch (NoSuchTokenException e) {
+                Log.e(LOG_TAG, e.getMessage());
+            }
+            return NEEDS_CAPTCHA;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean NEEDS_CAPTCHA) {
+
+            if (NEEDS_CAPTCHA) {
+                new CaptchaAsyncTask().execute(title, userInput, mSelectedSubredditName);
+            } else {
+                // TODO: refresh posts here
+
+                // swap cursor???
+            }
+        }
     }
 
     /*

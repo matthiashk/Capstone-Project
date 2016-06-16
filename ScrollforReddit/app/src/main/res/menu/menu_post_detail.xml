@@ -15,4 +15,11 @@
         app:showAsAction="ifRoom"
         />
 
+    <item android:id="@+id/action_comment"
+        android:icon="@drawable/ic_reply_white_24dp"
+        android:title="@string/action_comment"
+        android:orderInCategory="98"
+        app:showAsAction="ifRoom"
+        />
+
 </menu>

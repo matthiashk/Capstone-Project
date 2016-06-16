@@ -1,19 +1,23 @@
 package com.matthiasko.scrollforreddit;
 
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 
+import net.dean.jraw.ApiException;
 import net.dean.jraw.RedditClient;
 import net.dean.jraw.android.AndroidRedditClient;
 import net.dean.jraw.android.AndroidTokenStore;
@@ -22,6 +26,7 @@ import net.dean.jraw.http.oauth.Credentials;
 import net.dean.jraw.http.oauth.OAuthData;
 import net.dean.jraw.http.oauth.OAuthException;
 import net.dean.jraw.http.oauth.OAuthHelper;
+import net.dean.jraw.managers.AccountManager;
 import net.dean.jraw.models.Comment;
 import net.dean.jraw.models.CommentNode;
 import net.dean.jraw.models.Submission;
@@ -166,22 +171,12 @@ public class PostDetailFragment extends Fragment {
             cce.printStackTrace();
         }
 
-        // remove specific post comments 1st
-        if (mCommentsDBHandler.getCommentsCount(mPostId) > 0) {
-
-            //System.out.println("REMOVING PREVIOUS COMMENTS");
-
-            String sql = "DELETE FROM comments WHERE post_id = ?";
-
-            CommentsDBHandler dbHandler = new CommentsDBHandler(getContext());
-            SQLiteDatabase db = dbHandler.getWritableDatabase();
-            db.execSQL(sql, new String[] {mPostId});
-
-            db.close();
-
-            // should be 0 here...
-            //System.out.println("dbHandler.getCommentsCount(mPostId) = " + dbHandler.getCommentsCount(mPostId));
-        }
+        // remove comments from db
+        String sql = "DELETE FROM comments WHERE post_id = ?";
+        CommentsDBHandler dbHandler = new CommentsDBHandler(getContext());
+        SQLiteDatabase db = dbHandler.getWritableDatabase();
+        db.execSQL(sql, new String[] {mPostId});
+        db.close();
 
         mArrayOfComments.clear();
 
@@ -220,13 +215,121 @@ public class PostDetailFragment extends Fragment {
     }
 
     // TODO: implement
-
     public void getMoreComments() {
-
         // call asynctask to get more comments
-
-
     }
+
+    public void postComment() {
+        // if not logged in, send a message and dont start asynctask
+        if (mUserlessMode) {
+
+            new AlertDialog.Builder(getContext())
+                    .setTitle("Error posting comment")
+                    .setMessage("Please login to post a comment.")
+                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    })
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .show();
+        } else {
+            // show text entry dialog
+            // when user presses 'submit' then we call the asynctask
+            LayoutInflater layoutInflater = LayoutInflater.from(getContext());
+            View dialogView = layoutInflater.inflate(R.layout.edit_text_add_comment, null);
+
+            AlertDialog.Builder alertDialogBuilder =
+                    new AlertDialog.Builder(getContext(), R.style.AppCompatAlertDialogStyle);
+
+            alertDialogBuilder.setView(dialogView);
+
+            final EditText input = (EditText) dialogView.findViewById(R.id.add_comment_edit_text);
+
+            alertDialogBuilder
+                    .setTitle("Post Comment")
+                    .setCancelable(false)
+                    .setPositiveButton("OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog,int id) {
+                                    new PostCommentAsyncTask().execute(mPostId, input.getText().toString());
+                                }
+                            })
+                    .setNegativeButton("Cancel",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog,int id) {
+                                    dialog.cancel();
+                                }
+                            });
+
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+        }
+    }
+
+    private class PostCommentAsyncTask extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected Void doInBackground(String... params) { // send postId and user comment text as var
+
+            final RedditClient redditClient = new AndroidRedditClient(getContext());
+
+            final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
+
+            final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
+
+            AndroidTokenStore store = new AndroidTokenStore(getContext());
+
+            try {
+                String refreshToken = store.readToken("USER_TOKEN");
+
+                oAuthHelper.setRefreshToken(refreshToken);
+
+                try {
+
+                    OAuthData finalData = oAuthHelper.refreshToken(credentials);
+
+                    redditClient.authenticate(finalData);
+
+                    String postId = params[0];
+
+                    String userInput = params[1];
+
+                    AccountManager accountManager = new AccountManager(redditClient);
+
+                    Submission submission = redditClient.getSubmission(postId);
+
+                    try {
+                        accountManager.reply(submission, userInput);
+                    } catch (ApiException e) {
+                        Log.e(LOG_TAG, e.getMessage());
+                    }
+
+                } catch (OAuthException e) {
+                    e.printStackTrace();
+                }
+            } catch (NoSuchTokenException e) {
+                Log.e(LOG_TAG, e.getMessage());
+            }
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            //adapter.notifyDataSetChanged();
+
+            // TODO: refresh comments here?
+            // how do we show the comment just posted?
+            refreshComments();
+        }
+    }
+
+
+
+
+
+
 
 
 
@@ -450,7 +553,7 @@ public class PostDetailFragment extends Fragment {
                 Submission specificSubmission = mRedditClient.getSubmission(mPostId);
 
                 CommentNode commentNode = specificSubmission.getComments();
-                Iterable<CommentNode> iterable = commentNode.walkTree();
+                Iterable<CommentNode> iterable = commentNode.walkTree().limit(25);
 
                 // if depth is more than 5
                 // create new cell with 'load more' label...
