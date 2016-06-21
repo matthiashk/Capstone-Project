@@ -6,6 +6,7 @@
     <string name="action_get_more_comments">Get More Comments</string>
     <string name="action_comment">Post Comment</string>
     <string name="action_submit_post">Submit Post</string>
+    <string name="action_reply">Reply</string>
 
     <string name="imageview1">Image Viewer</string>
     <string name="comment_body">comment body</string>

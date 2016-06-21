@@ -383,7 +383,7 @@ public class PostDetailFragment extends Fragment {
                     for (CommentNode node : iterable) {
                         Comment comment = node.getComment();
                         ScrollComment scrollComment = new ScrollComment(comment.getBody(),
-                                comment.getAuthor(), comment.getScore(), node.getDepth(), mPostId);
+                                comment.getAuthor(), comment.getScore(), node.getDepth(), mPostId, comment.getId(), comment.getDataNode());
                         //System.out.println("comment.getBody() = " + comment.getBody());
 
                         mCommentsDBHandler.addComment(scrollComment); // adding to comments database
@@ -462,7 +462,7 @@ public class PostDetailFragment extends Fragment {
                 for (CommentNode node : iterable) {
                     Comment comment = node.getComment();
                     ScrollComment scrollComment = new ScrollComment(comment.getBody(),
-                            comment.getAuthor(), comment.getScore(), node.getDepth(), mPostId);
+                            comment.getAuthor(), comment.getScore(), node.getDepth(), mPostId, comment.getId(), comment.getDataNode());
                     //System.out.println("comment.getBody() = " + comment.getBody());
 
                     mCommentsDBHandler.addComment(scrollComment); // adding to comments database
@@ -562,7 +562,7 @@ public class PostDetailFragment extends Fragment {
                 for (CommentNode node : iterable) {
                     Comment comment = node.getComment();
                     ScrollComment scrollComment = new ScrollComment(comment.getBody(),
-                            comment.getAuthor(), comment.getScore(), node.getDepth(), mPostId);
+                            comment.getAuthor(), comment.getScore(), node.getDepth(), mPostId, comment.getId(), null);
                     //System.out.println("comment.getBody() = " + comment.getBody());
 
                     mCommentsDBHandler.addComment(scrollComment); // adding to comments database

@@ -775,6 +775,15 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .show();
         } else {
+
+            if (mSelectedSubredditName == null) {
+                mSelectedSubredditName = "Frontpage";
+            }
+
+            // first try and submit post without captcha
+            // if that fails, we need to get a captcha, show to user, and get user input
+            // then resubmit post with captcha data
+
             // show text entry dialog
             // when user presses 'submit' then we call the asynctask
             LayoutInflater layoutInflater = LayoutInflater.from(this);
@@ -787,22 +796,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
             final EditText title = (EditText) dialogView.findViewById(R.id.add_post_title_edit_text);
             final EditText input = (EditText) dialogView.findViewById(R.id.add_post_edit_text);
-            //final EditText captchaEditText = (EditText) dialogView.findViewById(R.id.captcha_edit_text);
-
-            //ImageView captchaImageView = (ImageView) dialogView.findViewById(R.id.captcha_imageview);
-
-            //final Captcha captcha = new Captcha("scrollforreddit");
-
-            //URL captchaUrl = captcha.getImageUrl();
-
-            // TODO: submit post logic
-            // first try and submit post without captcha
-            // if that fails, we need to get a captcha, show to user, and get user input
-            // then resubmit post with captcha data
-
-            if (mSelectedSubredditName == null) {
-                mSelectedSubredditName = "Frontpage";
-            }
 
             alertDialogBuilder
                     .setTitle("Post Submission")
@@ -812,12 +805,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                                 public void onClick(DialogInterface dialog,int id) {
 
                                     // TODO: if fields are blank, abort
-
-                                    System.out.println("title.getText().toString() = " + title.getText().toString());
-
-                                    System.out.println("input.getText().toString() = " + input.getText().toString());
-
-                                    System.out.println("mSelectedSubredditName = " + mSelectedSubredditName);
 
                                     new PostSubmissionAsyncTask(
                                             title.getText().toString(),
@@ -855,7 +842,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
         protected Wrapper doInBackground(String... params) {
 
-
             String title = params[0];
 
             String userInput = params[1];
@@ -867,8 +853,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             wrapper.setTitle(title);
             wrapper.setUserInput(userInput);
             wrapper.setSelectedSubredditName(selectedSubredditName);
-
-
 
             try {
                 String refreshToken = store.readToken("USER_TOKEN");
@@ -936,17 +920,12 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
                                         // TODO: if fields are blank, abort or show error
 
-                                        System.out.println("mSelectedSubredditName = " + mSelectedSubredditName);
-
-
                                         new PostSubmissionAsyncTask(
                                                 title,
                                                 userInput,
                                                 captchaText.getText().toString(),
                                                 captcha
                                         ).execute();
-
-
                                     }
                                 })
                         .setNegativeButton("Cancel",
@@ -962,8 +941,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         }
     }
 
-    // download image code from
-    // http://stackoverflow.com/questions/2471935/how-to-load-an-imageview-by-url-in-android
+    // DownloadImageTask is used to download the captcha image and create a bitmap to display
+    // code is based on http://stackoverflow.com/questions/2471935/how-to-load-an-imageview-by-url-in-android
     private class DownloadImageTask extends AsyncTask<String, Void, Bitmap> {
         ImageView bmImage;
 

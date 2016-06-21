@@ -1,5 +1,7 @@
 package com.matthiasko.scrollforreddit;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 /**
  * Created by matthiasko on 4/5/16.
  */
@@ -10,18 +12,37 @@ public class ScrollComment {
     public int score;
     public int depth;
     public String postId;
+    public String id;
+    public JsonNode dataNode;
 
+    public JsonNode getDataNode() {
+        return dataNode;
+    }
+
+    public void setDataNode(JsonNode dataNode) {
+        this.dataNode = dataNode;
+    }
     // TODO: add date/time
 
     public ScrollComment(){}
 
-    public ScrollComment(String body, String author, int score, int depth, String postId) {
+    public ScrollComment(String body, String author, int score, int depth, String postId, String id, JsonNode dataNode) {
 
         this.body = body;
         this.author = author;
         this.score = score;
         this.depth = depth;
         this.postId = postId;
+        this.id = id;
+        this.dataNode = dataNode;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getAuthor() {

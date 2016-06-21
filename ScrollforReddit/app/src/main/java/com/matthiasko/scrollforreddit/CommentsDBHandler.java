@@ -28,8 +28,10 @@ public class CommentsDBHandler extends SQLiteOpenHelper {
     public static final String COLUMN_DEPTH = "depth";
     public static final String COLUMN_POST_ID = "post_id";
     public static final String COLUMN_DATE_ADDED = "date_added";
+    public static final String COLUMN_COMMENT_ID = "comment_id";
 
 
+    // note the placement of the commas here
     private static final String DATABASE_CREATE = "create table "
             + TABLE_NAME + "(" +
             COLUMN_ID + " integer primary key autoincrement, " +
@@ -38,7 +40,8 @@ public class CommentsDBHandler extends SQLiteOpenHelper {
             COLUMN_SCORE + " integer," +
             COLUMN_DEPTH + " integer," +
             COLUMN_POST_ID + " text not null," +
-            COLUMN_DATE_ADDED + " datetime" +
+            COLUMN_DATE_ADDED + " datetime," +
+            COLUMN_COMMENT_ID + " text not null" +
             ");";
 
     public CommentsDBHandler(Context context) {
@@ -75,6 +78,7 @@ public class CommentsDBHandler extends SQLiteOpenHelper {
             values.put(COLUMN_DEPTH, comment.getDepth());
             values.put(COLUMN_POST_ID, comment.getPostId());
             values.put(COLUMN_DATE_ADDED, getDateTime());
+            values.put(COLUMN_COMMENT_ID, comment.getId());
 
             db.insert(TABLE_NAME, null, values);
             db.close();
@@ -101,6 +105,8 @@ public class CommentsDBHandler extends SQLiteOpenHelper {
                     comment.setScore(cursor.getInt(3));
                     comment.setDepth(cursor.getInt(4));
                     comment.setPostId(cursor.getString(5));
+                    // date not used yet
+                    comment.setId(cursor.getString(7));
 
                     commentsList.add(comment);
                 }
