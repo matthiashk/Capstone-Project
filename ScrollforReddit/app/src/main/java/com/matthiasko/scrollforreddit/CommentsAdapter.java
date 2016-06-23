@@ -154,7 +154,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
                 }
 
-                // TODO: how should we handle urls in comments?
+                // how should we handle urls in comments?
 
                 /*
                 // match url in body of comment text, so user can follow link

@@ -143,6 +143,8 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
 
             Picasso.with(context)
                     .load(thumbnail)
+                    .resize(400, 200)
+                    .centerCrop()
                     .into(holder.thumbnail);
 
             holder.thumbnail.setOnClickListener(new View.OnClickListener() {

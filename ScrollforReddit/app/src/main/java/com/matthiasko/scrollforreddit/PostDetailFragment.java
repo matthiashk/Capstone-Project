@@ -453,7 +453,7 @@ public class PostDetailFragment extends Fragment {
                 Submission specificSubmission = redditClient.getSubmission(mPostId);
 
                 CommentNode commentNode = specificSubmission.getComments();
-                Iterable<CommentNode> iterable = commentNode.walkTree();
+                Iterable<CommentNode> iterable = commentNode.walkTree().limit(50);
 
                 // if depth is more than 5
                 // create new cell with 'load more' label...
@@ -553,7 +553,7 @@ public class PostDetailFragment extends Fragment {
                 Submission specificSubmission = mRedditClient.getSubmission(mPostId);
 
                 CommentNode commentNode = specificSubmission.getComments();
-                Iterable<CommentNode> iterable = commentNode.walkTree().limit(25);
+                Iterable<CommentNode> iterable = commentNode.walkTree().limit(50);
 
                 // if depth is more than 5
                 // create new cell with 'load more' label...

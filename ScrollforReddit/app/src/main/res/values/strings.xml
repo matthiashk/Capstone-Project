@@ -30,7 +30,7 @@
 
     <string name="nav_item_login">Login</string>
     <string name="nav_item_logout">Logout</string>
-    <string name="nav_item_subreddits">Subreddits</string>
+    <string name="nav_item_subreddits">Change Subreddit</string>
     <string name="nav_item_frontpage">Frontpage</string>
     <string name="nav_item_settings">Settings</string>
 
@@ -46,7 +46,10 @@
     <string name="add_post_title_edit_text_hint">Submission title</string>
     <string name="captcha_edit_text_hint">Enter captcha</string>
 
+    <string name="nav_menu_title_userless">Scroll for Reddit (Not Logged In)</string>
+    <string name="nav_menu_title_logged_in">Scroll for Reddit (Logged In)</string>
 
+    <string name="item_post_imageview">Submission Thumbnail Image</string>
 
 
 </resources>

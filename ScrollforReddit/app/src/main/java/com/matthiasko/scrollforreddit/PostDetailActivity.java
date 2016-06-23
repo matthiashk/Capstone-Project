@@ -118,13 +118,13 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
 
 
             android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
-            layoutParams.height = 400;
+            layoutParams.height = 800;
             mHeaderImageView.setLayoutParams(layoutParams);
 
             Picasso.with(getBaseContext())
                     .load(sourceUrl)
-                    .resize(400, 200)
-                    .centerInside()
+                    .resize(layoutParams.width, layoutParams.height)
+                    .centerCrop()
                     .into(mHeaderImageView);
 
         } else if (sourceUrl.contains("imgur.com")) {
@@ -132,7 +132,7 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
             System.out.println("IMGUR MATCH");
 
             android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
-            layoutParams.height = 400;
+            layoutParams.height = 800;
             mHeaderImageView.setLayoutParams(layoutParams);
 
             // we need to add .jpg to the url to load it properly
@@ -140,7 +140,8 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
 
             Picasso.with(getBaseContext())
                     .load(modifiedUrl)
-                    .fit()
+                    .resize(layoutParams.width, layoutParams.height)
+                    .centerCrop()
                     .into(mHeaderImageView);
 
         }  else if (getIntent().getStringExtra("THUMBNAIL") == null) {
@@ -158,13 +159,13 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
             System.out.println("EMPTY THUMBNAIL MATCH");
 
             android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
-            layoutParams.height = 400;
+            layoutParams.height = 800;
             mHeaderImageView.setLayoutParams(layoutParams);
 
             Picasso.with(getBaseContext())
                     .load(getIntent().getStringExtra("THUMBNAIL"))
-                    .resize(400, 200)
-                    .centerInside()
+                    .resize(layoutParams.width, layoutParams.height)
+                    .centerCrop()
                     .into(mHeaderImageView);
         }
     }

@@ -330,7 +330,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         // check if we are in userless mode
         if (mUserlessMode) {
 
-            navHeaderTextView.setText("Scroll for Reddit (Userless)");
+            navHeaderTextView.setText(R.string.nav_menu_title_userless);
 
             // navigation menu logic setup when in 'userless' mode
             if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USERLESS_SUBREDDITS")) {
@@ -373,7 +373,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             }
         // navigation menu logic setup when logged in
         } else if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USERSUBREDDITS")) {
-            navHeaderTextView.setText("Scroll for Reddit (Logged In)");
+            navHeaderTextView.setText(R.string.nav_menu_title_logged_in);
             // load from sharedprefs
             Set<String> set = appSharedPrefs.getStringSet("com.matthiasko.scrollforreddit.USERSUBREDDITS", null);
             List<String> userSubredditsList = new ArrayList<>(set);
@@ -418,7 +418,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     public void selectedNavMenuItem(CharSequence menuTitle) {
 
-        if (menuTitle.equals("Subreddits")) {
+        if (menuTitle.equals("Change Subreddit")) {
 
             // show keyboard
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
