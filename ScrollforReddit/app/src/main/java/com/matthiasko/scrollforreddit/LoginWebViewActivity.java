@@ -52,7 +52,7 @@ public class LoginWebViewActivity extends Activity {
 
         final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
 
-        String[] scopes = {"identity", "read", "vote", "save", "mysubreddits", "submit"};
+        String[] scopes = {"identity", "read", "vote", "save", "mysubreddits", "submit", "subscribe"};
 
         boolean permanent = true;
 

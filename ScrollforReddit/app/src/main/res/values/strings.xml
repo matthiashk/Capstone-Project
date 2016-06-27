@@ -51,5 +51,7 @@
 
     <string name="item_post_imageview">Submission Thumbnail Image</string>
 
+    <string name="subreddit_checkbox">Subscribe to Subreddit</string>
+
 
 </resources>

@@ -31,6 +31,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -113,6 +114,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     private ActionBar mActionBar;
 
     private Tracker mTracker;
+
+    private CheckBox subscribeCheckBox;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -384,9 +387,11 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             menu.add(R.id.group1, R.id.inbox, 1, "Frontpage");
             for (String item : userSubredditsList) { // create the menu items based on arraylist
                 menu.add(R.id.group1, Menu.NONE, 1, item);
+
+                //System.out.println("item = " + item);
             }
         } else {
-            navHeaderTextView.setText("Scroll for Reddit (Logged In)");
+            navHeaderTextView.setText(R.string.nav_menu_title_logged_in);
             // populate menu programatically based on user subreddits
             // get arraylist of subreddits
             FetchSubsAsyncTask task = new FetchSubsAsyncTask(this);
@@ -409,12 +414,73 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     menu.add(R.id.group1, R.id.inbox, 1, "Frontpage");
                     for (String item : arrayList) { // create the menu items based on arraylist
                         menu.add(R.id.group1, Menu.NONE, 1, item);
+
+                        //System.out.println("item = " + item);
                     }
                 }
             });
             task.execute();
         }
     }
+
+    public void forceRefreshNavigationView() {
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        // dont highlight 'subreddits', only allow highlight on other menu items
+                        if (menuItem.getTitle().equals("subreddits")) {
+                            menuItem.setCheckable(false);
+                            menuItem.setChecked(false);
+                        } else {
+                            menuItem.setCheckable(true);
+                            menuItem.setChecked(true);
+                        }
+
+                        System.out.println("menuItem.getTitle() = " + menuItem.getTitle());
+                        /*
+
+                        if (mPreviousMenuItem != null) {
+                            mPreviousMenuItem.setChecked(false);
+                        }
+                        mPreviousMenuItem = menuItem;
+                        */
+                        drawerLayout.closeDrawers();
+                        selectedNavMenuItem(menuItem.getTitle());
+                        return true;
+                    }
+                });
+
+
+        View header = navigationView.getHeaderView(0);
+        TextView navHeaderTextView = (TextView) header.findViewById(R.id.nav_header_textview);
+        navHeaderTextView.setText(R.string.nav_menu_title_logged_in);
+
+        FetchSubsAsyncTask task = new FetchSubsAsyncTask(this);
+        task.setAsyncListener(new AsyncListener() {
+            @Override
+            public void createNavMenuItems(ArrayList<String> arrayList) {
+                // put list into sharedprefs
+                SharedPreferences appSharedPrefs = PreferenceManager
+                        .getDefaultSharedPreferences(getApplicationContext());
+                SharedPreferences.Editor edit = appSharedPrefs.edit();
+
+                Set<String> set = new HashSet<>();
+                set.addAll(arrayList);
+                edit.putStringSet("com.matthiasko.scrollforreddit.USERSUBREDDITS", set);
+                edit.commit();
+
+                Menu menu = navigationView.getMenu(); // get the default menu from xml
+                menu.removeGroup(R.id.group1);
+                menu.add(R.id.group1, R.id.inbox, 1, "Frontpage");
+                for (String item : arrayList) { // create the menu items based on arraylist
+                    menu.add(R.id.group1, Menu.NONE, 1, item);
+                }
+            }
+        });
+        task.execute();
+    }
+
 
     public void selectedNavMenuItem(CharSequence menuTitle) {
 
@@ -433,6 +499,14 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             editText.setSelection(editText.getText().length());
             editText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
 
+            // setup checkbox to subscribe to subreddit, only if user is logged in
+            if (!mUserlessMode) {
+
+                subscribeCheckBox = (CheckBox) dialogLayout.findViewById(R.id.subreddit_checkbox);
+                subscribeCheckBox.setVisibility(View.VISIBLE);
+
+            }
+
             AlertDialog.Builder alertDialogBuilder =
                     new AlertDialog.Builder(this, R.style.AppCompatAlertDialogStyle);
 
@@ -448,6 +522,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                             mRecyclerView.setVisibility(View.GONE);
 
                             if (mUserlessMode) {
+
                                 new FetchUserlessPostsAsyncTask(getApplicationContext(), new FetchUserlessTokenListener() {
                                     @Override
                                     public void onUserlessTokenFetched() {
@@ -485,13 +560,23 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                                     }
                                 }).execute(editText.getText().toString());
                             } else {
+
                                 mSelectedSubredditName = editText.getText().toString();
                                 mActionBar.setTitle("r/" + mSelectedSubredditName);
+
+                                // TODO: implement
+                                if (subscribeCheckBox.isChecked()) {
+
+                                    new SubscribeAsyncTask().execute(mSelectedSubredditName);
+
+                                }
+
+
                                 // read token
                                 AndroidTokenStore store = new AndroidTokenStore(getApplicationContext());
                                 try {
                                     String refreshToken = store.readToken("USER_TOKEN");
-                                    new RefreshTokenAsync().execute(refreshToken, editText.getText().toString());
+                                    new RefreshTokenAsync().execute(refreshToken, mSelectedSubredditName);
                                 } catch (NoSuchTokenException e) {
                                     Log.e(LOG_TAG, e.getMessage());
                                 }
@@ -662,6 +747,11 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         // result from loginwebviewactivity here
         if (requestCode == LOGIN_REQUEST) {
             if (resultCode == RESULT_OK) {
+
+                mUserlessMode = false;
+
+                //navigationView.getMenu().clear();
+                setupNavigationView();
 
                 // show spinner and hide list
                 findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
@@ -1282,6 +1372,61 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             adapter.notifyDataSetChanged();
+        }
+    }
+
+    private class SubscribeAsyncTask extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected Void doInBackground(String... params) {
+
+            // we need to check authentication to get submission info and vote
+            final RedditClient redditClient = new AndroidRedditClient(PostListActivity.this);
+
+            final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
+
+            final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
+
+            AndroidTokenStore store = new AndroidTokenStore(PostListActivity.this);
+
+            try {
+                String refreshToken = store.readToken("USER_TOKEN");
+
+                oAuthHelper.setRefreshToken(refreshToken);
+
+                try {
+
+                    OAuthData finalData = oAuthHelper.refreshToken(credentials);
+
+                    redditClient.authenticate(finalData);
+
+                    String subredditMenuName = params[0];
+
+                    AccountManager accountManager = new AccountManager(redditClient);
+
+                    Subreddit subreddit = redditClient.getSubreddit(subredditMenuName);
+
+                    try {
+                        accountManager.subscribe(subreddit);
+                    } catch (NetworkException e) {
+                        e.printStackTrace();
+                    }
+
+                } catch (OAuthException e) {
+                    e.printStackTrace();
+                }
+            } catch (NoSuchTokenException e) {
+                Log.e(LOG_TAG, e.getMessage());
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            // refresh navigation menu
+            forceRefreshNavigationView();
         }
     }
 

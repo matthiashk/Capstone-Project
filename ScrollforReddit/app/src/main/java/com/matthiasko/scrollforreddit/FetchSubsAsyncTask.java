@@ -14,12 +14,11 @@ import net.dean.jraw.http.oauth.Credentials;
 import net.dean.jraw.http.oauth.OAuthData;
 import net.dean.jraw.http.oauth.OAuthException;
 import net.dean.jraw.http.oauth.OAuthHelper;
-import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Subreddit;
 import net.dean.jraw.paginators.UserSubredditsPaginator;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.List;
 
 /**
  * Created by matthiasko on 4/22/16.
@@ -70,16 +69,13 @@ public class FetchSubsAsyncTask extends AsyncTask<String, Void, ArrayList> {
 
                 UserSubredditsPaginator userSubredditsPaginator = new UserSubredditsPaginator(redditClient, "subscriber");
 
-                Listing<Subreddit> subreddits = userSubredditsPaginator.next();
+                List<Subreddit> subreddits = userSubredditsPaginator.accumulateMergedAllSorted();
 
                 ArrayList<String> subredditNames = new ArrayList<>();
 
-                // put into array, sort array alphabetically, send array back to postlistactivity, populate menu
                 for (Subreddit subreddit : subreddits) {
                     subredditNames.add(subreddit.getDisplayName());
                 }
-                // sort list alphabetically
-                Collections.sort(subredditNames, String.CASE_INSENSITIVE_ORDER);
                 return subredditNames;
 
             } catch (OAuthException e) {

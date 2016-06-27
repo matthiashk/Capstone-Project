@@ -190,10 +190,10 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
                 // get fragment
                 postDetailFragment.refreshComments();
                 return true;
-            case R.id.action_get_more_comments:
+          /*  case R.id.action_get_more_comments: // temp disabled
                 //getMoreComments()
                 //System.out.println("GET MORE COMMENTS");
-                return true;
+                return true; */
             case R.id.action_comment:
                 postDetailFragment.postComment();
                 return true;

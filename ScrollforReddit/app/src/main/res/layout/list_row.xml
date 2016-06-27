@@ -42,8 +42,6 @@
         android:textSize="14sp"
         android:text="@string/widget_subreddit"/>
 
-
-
     <TextView
         android:id="@+id/author"
         android:layout_width="wrap_content"
@@ -75,6 +73,5 @@
         android:layout_toEndOf="@id/score"
         android:textSize="14sp"
         android:text="@string/widget_number_of_comments"/>
-
 
 </RelativeLayout>

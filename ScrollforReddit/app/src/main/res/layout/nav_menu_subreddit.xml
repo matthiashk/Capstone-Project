@@ -8,4 +8,15 @@
         android:layout_height="wrap_content"
         android:textColor="@android:color/black"
         />
+
+    <CheckBox
+        android:id="@+id/subreddit_checkbox"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_below="@+id/subreddit_edittext"
+        android:visibility="gone"
+        android:buttonTint="@android:color/black"
+        android:text="@string/subreddit_checkbox"
+        android:textColor="@android:color/black"
+        />
 </RelativeLayout>
