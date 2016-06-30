@@ -17,7 +17,7 @@ public class WebViewActivity extends Activity {
 
         String url = getIntent().getStringExtra("SOURCE");
 
-        System.out.println("url = " + url);
+        System.out.println("WebViewActivity - url = " + url);
 
         webView = (WebView) findViewById(R.id.webView1);
         webView.getSettings().setJavaScriptEnabled(true);
@@ -42,7 +42,12 @@ public class WebViewActivity extends Activity {
 
         // exit the activity,
         // otherwise a blank view will be displayed when the user returns from the url
-        finish();
+
+        if (url.contains("imgur")) {
+
+            finish();
+        }
+        //finish();
 
         //String imgSrcHtml = "<html><img src='" + url + "' /></html>";
         //webView.loadData(imgSrcHtml, "text/html", "UTF-8");

@@ -6,7 +6,8 @@
     <ImageView
         android:id="@+id/captcha_imageview"
         android:layout_width="240dp"
-        android:layout_height="100dp" />
+        android:layout_height="100dp"
+        android:contentDescription="@string/captcha_imageview"/>
 
     <EditText
         android:id="@+id/captcha_edit_text"

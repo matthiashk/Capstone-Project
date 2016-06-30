@@ -72,7 +72,7 @@ public class PostDetailFragment extends Fragment {
 
         mCommentsDBHandler = new CommentsDBHandler(getContext());
 
-        mUserlessMode = PostListActivity.mUserlessMode;
+        mUserlessMode = PostListActivity.userlessMode;
 
         if (getArguments().containsKey("POST_TITLE")) {
             // Load the dummy content specified by the fragment
@@ -84,9 +84,9 @@ public class PostDetailFragment extends Fragment {
             mPostTitle = getArguments().getString("POST_TITLE");
             mPostId = getArguments().getString("POST_ID");
             mPostFullName = getArguments().getString("FULLNAME");
-            //mUserlessMode = getArguments().getBoolean("USERLESS_MODE");
+            //userlessMode = getArguments().getBoolean("USERLESS_MODE");
 
-            //System.out.println("PostDetailFragment - mUserlessMode = " + mUserlessMode);
+            //System.out.println("PostDetailFragment - userlessMode = " + userlessMode);
             //System.out.println("mPostFullName = " + mPostFullName);
             //System.out.println("mPostId = " + mPostId);
             //mCommentAuthor = getArguments().getString("COMMENT_AUTHOR");
@@ -182,7 +182,7 @@ public class PostDetailFragment extends Fragment {
 
         mCommentsAdapter.notifyDataSetChanged();
 
-        mUserlessMode = PostListActivity.mUserlessMode;
+        mUserlessMode = PostListActivity.userlessMode;
 
         if (mUserlessMode) {
 
@@ -214,7 +214,6 @@ public class PostDetailFragment extends Fragment {
         }
     }
 
-    // TODO: implement
     public void getMoreComments() {
         // call asynctask to get more comments
     }
@@ -317,36 +316,21 @@ public class PostDetailFragment extends Fragment {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            //adapter.notifyDataSetChanged();
-
-            // TODO: refresh comments here?
-            // how do we show the comment just posted?
             refreshComments();
         }
     }
 
 
-
-
-
-
-
-
-
     private class RetrieveMoreComments extends AsyncTask<String, Void, Void> {
 
         final RedditClient redditClient = new AndroidRedditClient(getContext());
-
         final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
-
         final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
 
         @Override
         protected Void doInBackground(String... params) {
 
             if (mUserlessMode) {
-
-
             } else {
 
                 String refreshToken = params[0];
@@ -362,10 +346,7 @@ public class PostDetailFragment extends Fragment {
                     e.printStackTrace();
                 }
 
-
-                // TODO: fix below
-                //
-
+                // fix below
 
                 if (mCommentsDBHandler.getCommentsCount(mPostId) == 0) { // fetch comments
 
@@ -385,9 +366,7 @@ public class PostDetailFragment extends Fragment {
                         ScrollComment scrollComment = new ScrollComment(comment.getBody(),
                                 comment.getAuthor(), comment.getScore(), node.getDepth(), mPostId, comment.getId(), comment.getDataNode());
                         //System.out.println("comment.getBody() = " + comment.getBody());
-
                         mCommentsDBHandler.addComment(scrollComment); // adding to comments database
-
                         mArrayOfComments.add(scrollComment);
                     }
 
@@ -395,11 +374,7 @@ public class PostDetailFragment extends Fragment {
                     // note: have to use addAll, not just set the arraylist
                     mArrayOfComments.addAll(mCommentsDBHandler.getAllComments(mPostId));
                 }
-
             }
-
-
-
             return null;
         }
 
@@ -417,8 +392,6 @@ public class PostDetailFragment extends Fragment {
             }
         }
     }
-
-
 
     private class RetrieveComments extends AsyncTask<String, Void, Void> {
 
@@ -466,7 +439,6 @@ public class PostDetailFragment extends Fragment {
                     //System.out.println("comment.getBody() = " + comment.getBody());
 
                     mCommentsDBHandler.addComment(scrollComment); // adding to comments database
-
                     mArrayOfComments.add(scrollComment);
                 }
 
@@ -474,7 +446,6 @@ public class PostDetailFragment extends Fragment {
                 // note: have to use addAll, not just set the arraylist
                 mArrayOfComments.addAll(mCommentsDBHandler.getAllComments(mPostId));
             }
-
             return null;
         }
 

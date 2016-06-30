@@ -4,16 +4,19 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/card_view"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     card_view:cardCornerRadius="4dp"
-    android:layout_margin="4dp">
+    card_view:cardBackgroundColor="@android:color/white"
+    android:layout_margin="4dp"
+    >
 
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:focusable="true">
+    android:layout_height="wrap_content"
+    android:focusable="true"
+    >
 
     <ImageView
         android:id="@+id/thumbnail"
@@ -62,8 +65,6 @@
         android:layout_height="wrap_content"
         android:layout_toEndOf="@+id/downButton"
         android:layout_below="@+id/postSubreddit"
-
-        android:layout_alignParentBottom="true"
         android:layout_margin="5dp"
         android:text="@string/post_points" />
 
@@ -71,9 +72,9 @@
         android:id="@+id/postNumberOfComments"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/postSubreddit"
         android:layout_toEndOf="@+id/postPoints"
         android:layout_margin="5dp"
-        android:layout_alignParentBottom="true"
         android:layout_marginStart="10dp"
         android:text="@string/post_number_of_comments" />
 
@@ -83,10 +84,7 @@
         android:layout_width="18dp"
         android:layout_height="18dp"
         android:layout_margin="8dp"
-        android:layout_below="@+id/postSource"
-
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/postSubreddit"
         android:layout_marginStart="18dp"
         />
 
@@ -96,9 +94,8 @@
         android:layout_width="18dp"
         android:layout_height="18dp"
         android:layout_margin="8dp"
+        android:layout_below="@+id/postSubreddit"
         android:layout_toEndOf="@+id/upButton"
-        android:layout_below="@+id/postSource"
-        android:layout_alignParentBottom="true"
         android:layout_marginStart="18dp"
         />
 

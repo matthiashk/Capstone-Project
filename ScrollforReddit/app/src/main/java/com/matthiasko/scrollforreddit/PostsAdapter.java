@@ -49,11 +49,11 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
             cursor.registerDataSetObserver(dataSetObserver);
         }
 
-        //mUserlessMode = PostListActivity.mUserlessMode;
+        //userlessMode = PostListActivity.userlessMode;
 
-        //System.out.println("PostListActivity.mUserlessMode = " + PostListActivity.mUserlessMode);
+        //System.out.println("PostListActivity.userlessMode = " + PostListActivity.userlessMode);
 
-        //mUserlessMode = userlessMode;
+        //userlessMode = userlessMode;
     }
 
     public Cursor getCursor() {
@@ -89,8 +89,6 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_post, parent, false);
-
-
 
         return new ViewHolder(view);
     }
@@ -215,7 +213,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                     arguments.putString("DOMAIN", domain);
                     arguments.putString("FULLNAME", fullName);
 
-                    //arguments.putBoolean("USERLESS_MODE", mUserlessMode);
+                    //arguments.putBoolean("USERLESS_MODE", userlessMode);
 
                     //arguments.putString("COMMENT_AUTHOR", commentAuthor);
 
@@ -241,7 +239,7 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                     intent.putExtra("DOMAIN", domain);
                     intent.putExtra("FULLNAME", fullName);
 
-                    //intent.putExtra("USERLESS_MODE", mUserlessMode);
+                    //intent.putExtra("USERLESS_MODE", userlessMode);
 
                     //intent.putExtra("COMMENT_AUTHOR", commentAuthor);
 

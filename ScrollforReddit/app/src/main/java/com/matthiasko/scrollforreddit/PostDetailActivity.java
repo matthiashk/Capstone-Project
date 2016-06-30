@@ -13,12 +13,6 @@ import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
-/**
- * An activity representing a single Post detail screen. This
- * activity is only used narrow width devices. On tablet-size devices,
- * item details are presented side-by-side with a list of items
- * in a {@link PostListActivity}.
- */
 public class PostDetailActivity extends AppCompatActivity implements PostDetailFragment.OnCommentsLoadedListener {
 
     private ImageView mHeaderImageView;
@@ -44,27 +38,16 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
         });
         */
 
-        // Show the Up button in the action bar.
+        // Show the 'home' button in the action bar.
         ActionBar actionBar = getSupportActionBar();
 
         if (actionBar != null) {
-
             actionBar.setDisplayHomeAsUpEnabled(true);
             actionBar.setTitle(getIntent().getStringExtra("SUBREDDIT"));
         }
 
-        // savedInstanceState is non-null when there is fragment state
-        // saved from previous configurations of this activity
-        // (e.g. when rotating the screen from portrait to landscape).
-        // In this case, the fragment will automatically be re-added
-        // to its container so we don't need to manually add it.
-        // For more information, see the Fragments API guide at:
-        //
-        // http://developer.android.com/guide/components/fragments.html
-        //
         if (savedInstanceState == null) {
-            // Create the detail fragment and add it to the activity
-            // using a fragment transaction.
+            // Create the detail fragment and add it to the activity.
             Bundle arguments = new Bundle();
             arguments.putString("POST_TITLE", getIntent().getStringExtra("POST_TITLE"));
             arguments.putString("POST_ID", getIntent().getStringExtra("POST_ID"));
@@ -96,26 +79,23 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
         // otherwise load a placeholder
 
         // extension code will detect .com
-        // imgur files may not have an extension -> detect hostname
+        // imgur files may not have an extension so we should detect hostname
+
         // animated gifs on imgur have extension .gifv?
         // youtube
         // twitter
 
         String sourceUrl = getIntent().getStringExtra("SOURCE");
-
         String extension = "";
-
         int i = sourceUrl.lastIndexOf('.');
 
         if (i > 0) {
-
             extension = sourceUrl.substring(i + 1);
         }
 
         if (extension.equals("jpg")) {
 
             System.out.println("JPG MATCH");
-
 
             android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
             layoutParams.height = 800;
@@ -148,7 +128,6 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
 
             System.out.println("NULL THUMBNAIL MATCH");
 
-
             // change the height of the imageview to fit just the subreddit title
             android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
             layoutParams.height = 200;
@@ -158,6 +137,12 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
 
             System.out.println("EMPTY THUMBNAIL MATCH");
 
+            // change the height of the imageview to fit just the subreddit title
+            android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
+            layoutParams.height = 200;
+            mHeaderImageView.setLayoutParams(layoutParams);
+
+            /*
             android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
             layoutParams.height = 800;
             mHeaderImageView.setLayoutParams(layoutParams);
@@ -167,6 +152,7 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
                     .resize(layoutParams.width, layoutParams.height)
                     .centerCrop()
                     .into(mHeaderImageView);
+            */
         }
     }
 

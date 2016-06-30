@@ -60,7 +60,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.comments_card_view, parent, false);
 
-        mUserlessMode = PostListActivity.mUserlessMode;
+        mUserlessMode = PostListActivity.userlessMode;
 
         return new ViewHolder(view);
     }
