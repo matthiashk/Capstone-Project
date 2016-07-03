@@ -16,6 +16,7 @@ import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -72,6 +73,8 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -127,6 +130,10 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mNavigationView = (NavigationView) findViewById(R.id.navigation);
 
+        // get device id, needed to test with google adwords
+        String android_id = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
+        String deviceId = md5(android_id).toUpperCase();
+
         mHandler = new DBHandler(this);
 
         RedditClient redditClient = new AndroidRedditClient(this);
@@ -161,8 +168,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         //AdRequest adRequest = new AdRequest.Builder().build();
 
         AdRequest request = new AdRequest.Builder()
-                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)        // All emulators
-                .addTestDevice("939A21019B69A9BB56EB6EF8C371161A")  // An example device ID
+                .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
+                .addTestDevice(deviceId)
                 .build();
 
         mAdView.loadAd(request);
@@ -443,6 +450,27 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             });
             task.execute();
         }
+    }
+
+    // get device id needed to use with google adwords
+    // code from http://stackoverflow.com/a/24652614/1079883
+    public String md5(String s) {
+        try {
+            // Create MD5 Hash
+            MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
+            digest.update(s.getBytes());
+            byte messageDigest[] = digest.digest();
+
+            // Create Hex String
+            StringBuffer hexString = new StringBuffer();
+            for (int i=0; i<messageDigest.length; i++)
+                hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
+            return hexString.toString();
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     public void forceRefreshNavigationView() {
