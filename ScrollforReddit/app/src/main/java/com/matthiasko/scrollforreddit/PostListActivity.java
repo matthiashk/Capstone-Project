@@ -24,6 +24,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
@@ -123,6 +124,10 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     private CheckBox mSubscribeCheckBox;
 
     private String mScreenLayoutSize;
+
+    private StaggeredGridLayoutManager mGridLayoutManager;
+
+    private LinearLayoutManager mLinearLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -583,6 +588,14 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                                         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                                         mRecyclerView.setVisibility(View.VISIBLE);
 
+
+                                        if (mScreenLayoutSize.contains("Large")) {
+                                            mGridLayoutManager.scrollToPosition(0);
+                                        } else {
+                                            mLinearLayoutManager.scrollToPosition(0);
+                                        }
+
+
                                         mSelectedSubredditName = editText.getText().toString();
                                         mActionBar.setTitle("r/" + mSelectedSubredditName);
 
@@ -615,7 +628,12 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                                 mSelectedSubredditName = editText.getText().toString();
                                 mActionBar.setTitle("r/" + mSelectedSubredditName);
 
-                                // TODO: implement
+                                if (mScreenLayoutSize.contains("Large")) {
+                                    mGridLayoutManager.scrollToPosition(0);
+                                } else {
+                                    mLinearLayoutManager.scrollToPosition(0);
+                                }
+
                                 if (mSubscribeCheckBox.isChecked()) {
                                     new SubscribeAsyncTask().execute(mSelectedSubredditName);
                                 }
@@ -655,6 +673,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             //startActivity(intent);
             startActivityForResult(intent, LOGIN_REQUEST);
 
+            mActionBar.setTitle("r/" + "Frontpage");
+
         } else if (menuTitle.equals("Logout")) {
 
             // set userless mode to true
@@ -687,6 +707,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             setupNavigationView();
 
             // notify user?
+
+            mActionBar.setTitle("r/" + "Frontpage");
 
         } else if (menuTitle.equals(("Edit Subreddits"))) {
 
@@ -983,17 +1005,15 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
         recyclerView.setAdapter(mPostsAdapter);
-
-        // TODO: detect tablet mode and only use staggerd layout in tablet mode...
-
+        // detect tablet mode and only use staggerd layout in tablet mode...
         if (mScreenLayoutSize.contains("Large")) {
+            mGridLayoutManager = new StaggeredGridLayoutManager(2,1);
+            recyclerView.setLayoutManager(mGridLayoutManager);
+        } else {
 
-            StaggeredGridLayoutManager gridLayoutManager = new StaggeredGridLayoutManager(2,1);
-
-            recyclerView.setLayoutManager(gridLayoutManager);
+            mLinearLayoutManager = new LinearLayoutManager(this);
+            recyclerView.setLayoutManager(mLinearLayoutManager);
         }
-
-
     }
 
     private class CaptchaAsyncTask extends AsyncTask<String, Void, Wrapper> {
