@@ -17,6 +17,10 @@
             android:id="@+id/edit"
             android:title="@string/nav_item_subreddits"
             />
+        <item
+            android:id="@+id/manage_subreddits"
+            android:title="@string/nav_item_manage_subreddits"
+            />
     </group>
 
     <group android:id="@+id/group1">

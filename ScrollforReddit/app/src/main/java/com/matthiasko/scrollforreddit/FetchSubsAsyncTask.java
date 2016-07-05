@@ -7,7 +7,6 @@ import net.dean.jraw.RedditClient;
 import net.dean.jraw.android.AndroidRedditClient;
 import net.dean.jraw.android.AndroidTokenStore;
 import net.dean.jraw.auth.AuthenticationManager;
-import net.dean.jraw.auth.AuthenticationState;
 import net.dean.jraw.auth.NoSuchTokenException;
 import net.dean.jraw.auth.RefreshTokenHandler;
 import net.dean.jraw.http.oauth.Credentials;
@@ -53,9 +52,6 @@ public class FetchSubsAsyncTask extends AsyncTask<String, Void, ArrayList> {
         RefreshTokenHandler handler = new RefreshTokenHandler(new AndroidTokenStore(mContext), redditClient);
 
         AuthenticationManager.get().init(redditClient, handler);
-
-        // check the authentication state of user
-        AuthenticationState authState =  AuthenticationManager.get().checkAuthState();
 
         AndroidTokenStore store = new AndroidTokenStore(mContext);
 

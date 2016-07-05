@@ -33,6 +33,7 @@
     <string name="nav_item_subreddits">Change Subreddit</string>
     <string name="nav_item_frontpage">Frontpage</string>
     <string name="nav_item_settings">Settings</string>
+    <string name="nav_item_manage_subreddits">Edit Subreddits</string>
 
     <string name="post_header_imageview">Header Imageview</string>
     <string name="list_row_imageview">Thumbnail Imageview</string>

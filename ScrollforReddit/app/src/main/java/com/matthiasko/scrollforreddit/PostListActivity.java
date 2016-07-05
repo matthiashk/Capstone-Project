@@ -99,6 +99,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
     static final int LOGIN_REQUEST = 1;
 
+    static final int EDIT_SUBREDDITS_RESULT = 99;
+
     private static final String DATABASE_NAME = "posts.db";
 
     private static final String COMMENTS_DB_NAME = "comments.db";
@@ -416,7 +418,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             menu.add(R.id.group1, R.id.inbox, 1, "Frontpage");
             for (String item : userSubredditsList) { // create the menu items based on arraylist
                 menu.add(R.id.group1, Menu.NONE, 1, item);
-
                 //System.out.println("item = " + item);
             }
         } else {
@@ -616,12 +617,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
                                 // TODO: implement
                                 if (mSubscribeCheckBox.isChecked()) {
-
                                     new SubscribeAsyncTask().execute(mSelectedSubredditName);
-
                                 }
-
-
                                 // read token
                                 AndroidTokenStore store = new AndroidTokenStore(getApplicationContext());
                                 try {
@@ -690,6 +687,19 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             setupNavigationView();
 
             // notify user?
+
+        } else if (menuTitle.equals(("Edit Subreddits"))) {
+
+            // TODO: if userless mode -> show error dialog
+
+
+
+            Intent intent = new Intent(this, EditSubredditsActivity.class);
+            startActivityForResult(intent, EDIT_SUBREDDITS_RESULT);
+
+
+
+
 
         } else { // this should match the subreddit names
             // show loader
@@ -817,7 +827,12 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     Log.e(LOG_TAG, e.getMessage());
                 }
             }
+        } else if (requestCode == EDIT_SUBREDDITS_RESULT) {
+            // refresh nav menu
+            // load from shared prefs
+            setupNavigationView();
         }
+
     }
 
     @Override

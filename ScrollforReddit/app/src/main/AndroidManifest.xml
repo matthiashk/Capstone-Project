@@ -61,6 +61,15 @@
                 android:value="com.matthiasko.scrollforreddit.PostListActivity" />
         </activity>
 
+        <activity
+            android:name="com.matthiasko.scrollforreddit.EditSubredditsActivity"
+            android:label="EditSubredditsActivity"
+            android:parentActivityName="com.matthiasko.scrollforreddit.PostListActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.matthiasko.scrollforreddit.PostListActivity" />
+        </activity>
+
         <receiver android:name="com.matthiasko.scrollforreddit.ScrollWidget" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
