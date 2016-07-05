@@ -15,7 +15,7 @@
         android:theme="@style/AppTheme"
         android:name=".AnalyticsApplication">
         <activity
-            android:name=".PostListActivity"
+            android:name=".activities.PostListActivity"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -25,52 +25,52 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".PostDetailActivity"
+            android:name=".activities.PostDetailActivity"
             android:label="@string/title_post_detail"
-            android:parentActivityName=".PostListActivity"
+            android:parentActivityName=".activities.PostListActivity"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.matthiasko.scrollforreddit.PostListActivity" />
+                android:value=".activities.PostListActivity" />
         </activity>
 
         <activity
-            android:name="com.matthiasko.scrollforreddit.LoginWebViewActivity"
+            android:name=".activities.LoginWebViewActivity"
             android:label="LoginWebViewActivity"
-            android:parentActivityName="com.matthiasko.scrollforreddit.PostListActivity" >
+            android:parentActivityName=".activities.PostListActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.matthiasko.scrollforreddit.PostListActivity" />
+                android:value=".activities.PostListActivity" />
         </activity>
 
         <activity
-            android:name="com.matthiasko.scrollforreddit.WebViewActivity"
+            android:name=".activities.WebViewActivity"
             android:label="WebViewActivity"
-            android:parentActivityName="com.matthiasko.scrollforreddit.PostListActivity" >
+            android:parentActivityName=".activities.PostListActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.matthiasko.scrollforreddit.PostListActivity" />
+                android:value=".activities.PostListActivity" />
         </activity>
 
         <activity
-            android:name="com.matthiasko.scrollforreddit.ImageViewActivity"
+            android:name=".activities.ImageViewActivity"
             android:label="ImageViewActivity"
-            android:parentActivityName="com.matthiasko.scrollforreddit.PostListActivity" >
+            android:parentActivityName=".activities.PostListActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.matthiasko.scrollforreddit.PostListActivity" />
+                android:value=".activities.PostListActivity" />
         </activity>
 
         <activity
-            android:name="com.matthiasko.scrollforreddit.EditSubredditsActivity"
+            android:name=".activities.EditSubredditsActivity"
             android:label="EditSubredditsActivity"
-            android:parentActivityName="com.matthiasko.scrollforreddit.PostListActivity" >
+            android:parentActivityName=".activities.PostListActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.matthiasko.scrollforreddit.PostListActivity" />
+                android:value=".activities.PostListActivity" />
         </activity>
 
-        <receiver android:name="com.matthiasko.scrollforreddit.ScrollWidget" >
+        <receiver android:name=".widget.ScrollWidget" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -81,7 +81,7 @@
         </receiver>
 
         <service
-            android:name=".ScrollWidgetService"
+            android:name=".widget.ScrollWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
 
         <!-- Optionally, register AnalyticsReceiver and AnalyticsService to support background
@@ -109,8 +109,8 @@
         <meta-data android:name="net.dean.jraw.REDDIT_USERNAME" android:value="(strafeon)" />
 
         <provider
-            android:authorities="com.matthiasko.scrollforreddit.PostProvider"
-            android:name=".PostProvider" >
+            android:authorities="com.matthiasko.scrollforreddit.data.PostProvider"
+            android:name=".data.PostProvider" >
         </provider>
 
     </application>

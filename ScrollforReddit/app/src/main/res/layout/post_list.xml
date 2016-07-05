@@ -10,5 +10,5 @@
     android:layout_marginLeft="8dp"
     android:layout_marginRight="8dp"
     android:scrollbars="vertical"
-    tools:context="com.matthiasko.scrollforreddit.PostListActivity"
+    tools:context=".activities.PostListActivity"
     />
