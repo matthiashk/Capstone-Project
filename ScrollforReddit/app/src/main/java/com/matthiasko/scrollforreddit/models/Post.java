@@ -2,6 +2,8 @@ package com.matthiasko.scrollforreddit.models;
 
 /**
  * Created by matthiasko on 4/1/16.
+ * The Post object that contains data related to a reddit post
+ *
  */
 public class Post {
 
@@ -32,7 +34,6 @@ public class Post {
         this.postNumberOfComments = postNumberOfComments;
         this.postId = postId;
         this.postDomain = postDomain;
-
         this.postFullName = postFullName;
 
     }

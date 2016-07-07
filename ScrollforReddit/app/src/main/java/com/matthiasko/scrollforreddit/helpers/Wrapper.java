@@ -4,6 +4,8 @@ import net.dean.jraw.models.Captcha;
 
 /**
  * Created by matthiasko on 6/16/16.
+ * Helper object so we can send multiple data types using asynctask
+ *
  */
 public class Wrapper {
     public Captcha captcha;

@@ -20,17 +20,14 @@ import java.util.UUID;
 
 /**
  * Created by matthiasko on 5/1/16.
+ * Unused AsyncTask, may be used in the future
+ *
  */
 public class SubredditSearchAsyncTask extends AsyncTask<String, Void, Void> {
 
     private Context mContext;
-
     private final String LOG_TAG = SubredditSearchAsyncTask.class.getSimpleName();
-
-    private static RedditClient redditClient;
-
     private static final String CLIENT_ID = "cAizcZuXu-Mn9w";
-
     private UUID mDeviceId;
 
     public SubredditSearchAsyncTask(Context context) {
@@ -42,15 +39,14 @@ public class SubredditSearchAsyncTask extends AsyncTask<String, Void, Void> {
 
         String searchName = params[0];
 
-        SharedPreferences appSharedPrefs = PreferenceManager
-                .getDefaultSharedPreferences(mContext);
+        SharedPreferences appSharedPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
 
         if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.UUID")) {
             String uuidString = appSharedPrefs.getString("com.matthiasko.scrollforreddit.UUID", null);
             mDeviceId = UUID.fromString(uuidString);
         }
 
-        redditClient = new AndroidRedditClient(mContext);
+        RedditClient redditClient = new AndroidRedditClient(mContext);
 
         final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
 
@@ -67,24 +63,14 @@ public class SubredditSearchAsyncTask extends AsyncTask<String, Void, Void> {
             e.printStackTrace();
         }
 
-
         SubredditSearchPaginator subredditSearchPaginator =
                 new SubredditSearchPaginator(redditClient, searchName);
 
         Listing<Subreddit> subreddits = subredditSearchPaginator.next();
 
-        System.out.println("subreddits.size() = " + subreddits.size());
-
-
-        //ArrayList<String> subredditNames = new ArrayList<>();
-
-
         for (Subreddit subreddit : subreddits) {
-            System.out.println("subreddit.getDisplayName() = " + subreddit.getDisplayName());
+            //System.out.println("subreddit.getDisplayName() = " + subreddit.getDisplayName());
         }
-
-
-
         return null;
     }
 }

@@ -7,13 +7,13 @@ import android.provider.BaseColumns;
 
 /**
  * Created by matthiasko on 4/19/16.
+ * Contract for the content provider
+ *
  */
 public class PostContract {
 
     public static final String CONTENT_AUTHORITY = "com.matthiasko.scrollforreddit.data.PostProvider";
-
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
-
     public static final String PATH_POST = "post";
 
     public static final class PostEntry implements BaseColumns {
@@ -28,9 +28,7 @@ public class PostContract {
                 ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_POST;
 
         public static final String TABLE_NAME = "posts";
-
         public static final String COLUMN_TITLE = "title";
-
         public static final String COLUMN_SUBREDDIT = "subreddit";
         public static final String COLUMN_AUTHOR = "author";
         public static final String COLUMN_SOURCE = "source";

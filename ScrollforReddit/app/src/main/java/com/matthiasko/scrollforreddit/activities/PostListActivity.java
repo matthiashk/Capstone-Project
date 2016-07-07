@@ -95,52 +95,31 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
+/*
+ * Activity that displays posts to user using a recyclerview/cardview
+ * also sets up and handles navigation menu, submitting posts, authentication, voting, and
+ * subscribing to new subreddits using the navigation menu
+ *
+ */
 public class PostListActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    private boolean mTwoPane;
-
     public static boolean userlessMode;
-
     private static final String LOG_TAG = PostListActivity.class.getSimpleName();
-
     private static final String CLIENT_ID = "cAizcZuXu-Mn9w";
-
     private static final String REDIRECT_URL = "http://scroll-for-reddit.com/oauthresponse";
-
-    private PostsAdapter mPostsAdapter;
-
-    private DBHandler mHandler;
-
-    static final int LOGIN_REQUEST = 1;
-
-    static final int EDIT_SUBREDDITS_RESULT = 99;
-
-    private static final String DATABASE_NAME = "posts.db";
-
-    private static final String COMMENTS_DB_NAME = "comments.db";
-
     private static final int CURSOR_LOADER_ID = 0;
-
-    private Cursor mCursor;
-
+    static final int LOGIN_REQUEST = 1;
+    static final int EDIT_SUBREDDITS_RESULT = 99;
+    private PostsAdapter mPostsAdapter;
     private DrawerLayout mDrawerLayout;
     private NavigationView mNavigationView;
-
     private String mSelectedSubredditName;
-
     private View mRecyclerView;
-
     private ActionBar mActionBar;
-
     private Tracker mTracker;
-
     private CheckBox mSubscribeCheckBox;
-
     private String mScreenLayoutSize;
-
     private StaggeredGridLayoutManager mGridLayoutManager;
-
     private LinearLayoutManager mLinearLayoutManager;
 
     @Override
@@ -155,16 +134,14 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         String android_id = Settings.Secure.getString(this.getContentResolver(), Settings.Secure.ANDROID_ID);
         String deviceId = md5(android_id).toUpperCase();
 
-        mHandler = new DBHandler(this);
+        DBHandler mHandler = new DBHandler(this);
 
         RedditClient redditClient = new AndroidRedditClient(this);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        //toolbar.setTitle(getTitle());
 
         mActionBar = getSupportActionBar();
-
         if (mActionBar != null) {
             mActionBar.setHomeAsUpIndicator(R.drawable.ic_menu_white_24dp);
             mActionBar.setDisplayHomeAsUpEnabled(true);
@@ -178,21 +155,17 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         db.execSQL(sql);
         db.close();
 
-        // Obtain the shared Tracker instance.
+        // Obtain the shared Tracker instance for Google Analytics
         AnalyticsApplication analyticsApplication = (AnalyticsApplication) getApplication();
         mTracker = analyticsApplication.getDefaultTracker();
 
         // setup google mobile ads
         MobileAds.initialize(getApplicationContext(), "ca-app-pub-3940256099942544~3347511713");
-
         AdView mAdView = (AdView) findViewById(R.id.adView);
-        //AdRequest adRequest = new AdRequest.Builder().build();
-
         AdRequest request = new AdRequest.Builder()
                 .addTestDevice(AdRequest.DEVICE_ID_EMULATOR)
                 .addTestDevice(deviceId)
                 .build();
-
         mAdView.loadAd(request);
 
         /*
@@ -206,9 +179,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         });
         */
 
-        // how should we handle start up/credential checking?
-        // should we save the mode in preferences?
-
         // check preferences before checking authentication state
         // if there is no saved usermode in preferences, create default of userlessmode
         // when the user logs in, change the preference to usermode
@@ -216,16 +186,12 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 .getDefaultSharedPreferences(getApplicationContext());
 
         if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USERLESS_MODE")) {
-
             userlessMode = appSharedPrefs.getBoolean("com.matthiasko.scrollforreddit.USERLESS_MODE", true);
-
         } else {
-
             userlessMode = true; // set default mode as userless mode
-
         }
 
-        Log.e(LOG_TAG, "userlessMode = " + userlessMode);
+        //Log.e(LOG_TAG, "userlessMode = " + userlessMode);
 
         if (!userlessMode) { // if mUserless mode is false, we are in logged in mode, so check our credentials
 
@@ -237,14 +203,13 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
             switch (authState) {
                 case NONE:
-                    System.out.println("NO CREDENTIALS, GETTING USERLESS AUTHENTICATION");
+                    //System.out.println("NO CREDENTIALS, GETTING USERLESS AUTHENTICATION");
 
                     userlessMode = true;
 
                     // skip userless authentication if there are posts in database
-                    // mCursor will load existing posts
+                    // cursor will load existing posts
                     if (mHandler.getPostCount() == 0)
-
                         new FetchUserlessTokenAsyncTask(this, new FetchUserlessTokenListener() {
                             @Override
                             public void onUserlessTokenFetched() {
@@ -257,11 +222,10 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
                 case NEED_REFRESH:
 
-                    System.out.println("NEED_REFRESH"); // only for logged in mode, userless mode does not get a refresh token
+                    //System.out.println("NEED_REFRESH"); // only for logged in mode, userless mode does not get a refresh token
                     // get the token from shared prefs using store
 
                     userlessMode = false;
-
                     AndroidTokenStore store = new AndroidTokenStore(this);
 
                     try {
@@ -273,14 +237,11 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     break;
 
                 case READY:
-                    System.out.println("READY");
+                    //System.out.println("READY");
                     break;
             }
-
         } else {
-
             if (mHandler.getPostCount() == 0)
-
                 new FetchUserlessTokenAsyncTask(this, new FetchUserlessTokenListener() {
                     @Override
                     public void onUserlessTokenFetched() {
@@ -291,6 +252,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 }).execute();
         }
 
+        // used to setup either a staggered grid layout for tablets or linear layout for smaller devices.
         // detect screen size from
         // http://stackoverflow.com/questions/11252067/how-do-i-get-the-screensize-programmatically-in-android
         int screenSize = getResources().getConfiguration().screenLayout &
@@ -311,39 +273,16 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         }
 
         getLoaderManager().initLoader(CURSOR_LOADER_ID, null, this);
-
         mPostsAdapter = new PostsAdapter(this, null);
-
         mRecyclerView = findViewById(R.id.post_list);
         assert mRecyclerView != null;
-
         setupRecyclerView((RecyclerView) mRecyclerView);
 
-        //RecyclerView.ItemDecoration itemDecoration = new DividerItemDecoration(this, DividerItemDecoration.VERTICAL_LIST);
-        //mRecyclerView.addItemDecoration(itemDecoration);
-
-        if (findViewById(R.id.post_detail_container) != null) {
-            // The detail container view will be present only in the
-            // large-screen layouts (res/values-w900dp).
-            // If this view is present, then the
-            // activity should be in two-pane mode.
-            mTwoPane = true;
-        }
         // check if the spinner is visible
         if (mHandler.getPostCount() > 0) {
             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
         }
         setupNavigationView();
-
-        /*
-        // get and set selected subreddit menu item if it exists
-
-        if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT")) {
-            // load from sharedprefs
-            mSelectedSubredditName = appSharedPrefs.getString("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT", null);
-            mActionBar.setTitle("r/" + mSelectedSubredditName);
-        }
-        */
     }
 
     private void setupNavigationView() {
@@ -359,10 +298,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                             menuItem.setCheckable(true);
                             menuItem.setChecked(true);
                         }
-
-                        System.out.println("menuItem.getTitle() = " + menuItem.getTitle());
+                        //System.out.println("menuItem.getTitle() = " + menuItem.getTitle());
                         /*
-
                         if (mPreviousMenuItem != null) {
                             mPreviousMenuItem.setChecked(false);
                         }
@@ -374,17 +311,14 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     }
                 });
 
-        SharedPreferences appSharedPrefs = PreferenceManager
-                .getDefaultSharedPreferences(getApplicationContext());
+        SharedPreferences appSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         View header = mNavigationView.getHeaderView(0);
         TextView navHeaderTextView = (TextView) header.findViewById(R.id.nav_header_textview);
 
         // check if we are in userless mode
         if (userlessMode) {
-
             navHeaderTextView.setText(R.string.nav_menu_title_userless);
-
             // navigation menu logic setup when in 'userless' mode
             if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.USERLESS_SUBREDDITS")) {
                 // load from sharedprefs
@@ -444,7 +378,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             // populate menu programatically based on user subreddits
             // get arraylist of subreddits
             FetchSubsAsyncTask task = new FetchSubsAsyncTask(this);
-
             task.setAsyncListener(new AsyncListener() {
                 @Override
                 public void createNavMenuItems(ArrayList<String> arrayList) {
@@ -452,7 +385,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     SharedPreferences appSharedPrefs = PreferenceManager
                             .getDefaultSharedPreferences(getApplicationContext());
                     SharedPreferences.Editor edit = appSharedPrefs.edit();
-
                     Set<String> set = new HashSet<>();
                     set.addAll(arrayList);
                     edit.putStringSet("com.matthiasko.scrollforreddit.USERSUBREDDITS", set);
@@ -463,8 +395,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     menu.add(R.id.group1, R.id.inbox, 1, "Frontpage");
                     for (String item : arrayList) { // create the menu items based on arraylist
                         menu.add(R.id.group1, Menu.NONE, 1, item);
-
-                        //System.out.println("item = " + item);
                     }
                 }
             });
@@ -473,6 +403,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     }
 
     // get device id needed to use with google adwords
+    // will get device id automatically, so we can test with multiple devices
     // code from http://stackoverflow.com/a/24652614/1079883
     public String md5(String s) {
         try {
@@ -480,13 +411,11 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             MessageDigest digest = java.security.MessageDigest.getInstance("MD5");
             digest.update(s.getBytes());
             byte messageDigest[] = digest.digest();
-
             // Create Hex String
             StringBuffer hexString = new StringBuffer();
             for (int i=0; i<messageDigest.length; i++)
                 hexString.append(Integer.toHexString(0xFF & messageDigest[i]));
             return hexString.toString();
-
         } catch (NoSuchAlgorithmException e) {
             e.printStackTrace();
         }
@@ -506,10 +435,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                             menuItem.setCheckable(true);
                             menuItem.setChecked(true);
                         }
-
-                        System.out.println("menuItem.getTitle() = " + menuItem.getTitle());
                         /*
-
                         if (mPreviousMenuItem != null) {
                             mPreviousMenuItem.setChecked(false);
                         }
@@ -520,7 +446,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                         return true;
                     }
                 });
-
 
         View header = mNavigationView.getHeaderView(0);
         TextView navHeaderTextView = (TextView) header.findViewById(R.id.nav_header_textview);
@@ -571,10 +496,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
             // setup checkbox to subscribe to subreddit, only if user is logged in
             if (!userlessMode) {
-
                 mSubscribeCheckBox = (CheckBox) dialogLayout.findViewById(R.id.subreddit_checkbox);
                 mSubscribeCheckBox.setVisibility(View.VISIBLE);
-
             }
 
             AlertDialog.Builder alertDialogBuilder =
@@ -602,13 +525,11 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                                         findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                                         mRecyclerView.setVisibility(View.VISIBLE);
 
-
                                         if (mScreenLayoutSize.contains("Large")) {
                                             mGridLayoutManager.scrollToPosition(0);
                                         } else {
                                             mLinearLayoutManager.scrollToPosition(0);
                                         }
-
 
                                         mSelectedSubredditName = editText.getText().toString();
                                         mActionBar.setTitle("r/" + mSelectedSubredditName);
@@ -677,16 +598,12 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             AlertDialog alertDialog = alertDialogBuilder.create();
             alertDialog.show();
 
-        } else if (menuTitle.equals("Settings")) {
-            //Intent intent = new Intent(this, PreferencesActivity.class);
-            //startActivityForResult(intent, UPDATE_THEME);
         } else if (menuTitle.equals("Login")) {
 
             // load webview activity to login and authenticate user
             Intent intent = new Intent(this, LoginWebViewActivity.class);
             //startActivity(intent);
             startActivityForResult(intent, LOGIN_REQUEST);
-
             mActionBar.setTitle("r/" + "Frontpage");
 
         } else if (menuTitle.equals("Logout")) {
@@ -719,30 +636,18 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
             // change subreddits in the navigation menu
             setupNavigationView();
-
-            // notify user?
-
             mActionBar.setTitle("r/" + "Frontpage");
 
         } else if (menuTitle.equals(("Edit Subreddits"))) {
 
-            // TODO: if userless mode -> show error dialog
-
-
-
             Intent intent = new Intent(this, EditSubredditsActivity.class);
             startActivityForResult(intent, EDIT_SUBREDDITS_RESULT);
-
-
-
-
 
         } else { // this should match the subreddit names
             // show loader
             findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
 
             mSelectedSubredditName = menuTitle.toString();
-
             mActionBar.setTitle("r/" + mSelectedSubredditName);
 
             // save selected menu item to prefs so we can load later, on start, etc.
@@ -780,20 +685,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 }
             }
         }
-        /*
-        // show selected list
-        DSLVFragment dragFragment = (DSLVFragment) getSupportFragmentManager()
-                .findFragmentByTag("dslvTag");
-
-        dragFragment.changeListAdapter(newTitle);
-
-        // change title of toolbar to selected list
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-
-            actionBar.setTitle(menuTitle);
-        }
-        */
     }
 
     public void onVote (String postId, long id, String voteDirection) {
@@ -843,17 +734,13 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         // result from loginwebviewactivity here
         if (requestCode == LOGIN_REQUEST) {
             if (resultCode == RESULT_OK) {
-
                 userlessMode = false;
-
-                //mNavigationView.getMenu().clear();
                 setupNavigationView();
 
                 // show spinner and hide list
                 findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
                 mRecyclerView.setVisibility(View.GONE);
 
-                // coming from loginwebviewactivity after logging in
                 // fetch posts
                 AndroidTokenStore store = new AndroidTokenStore(this);
                 try {
@@ -868,22 +755,16 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             // load from shared prefs
             setupNavigationView();
         }
-
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
-
-
         // google analytics code
         String name = "PostListActivity";
         mTracker.setScreenName(name);
         mTracker.send(new HitBuilders.ScreenViewBuilder().build());
-
-
-        //System.out.println("mSelectedSubredditName = " + mSelectedSubredditName);
     }
 
     private void refreshPosts() {
@@ -995,8 +876,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                             new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog,int id) {
 
-                                    // TODO: if fields are blank, abort
-
                                     new PostSubmissionAsyncTask(
                                             title.getText().toString(),
                                             input.getText().toString(),
@@ -1024,7 +903,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
             mGridLayoutManager = new StaggeredGridLayoutManager(2,1);
             recyclerView.setLayoutManager(mGridLayoutManager);
         } else {
-
             mLinearLayoutManager = new LinearLayoutManager(this);
             recyclerView.setLayoutManager(mLinearLayoutManager);
         }
@@ -1033,23 +911,16 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     private class CaptchaAsyncTask extends AsyncTask<String, Void, Wrapper> {
 
         final RedditClient redditClient = new AndroidRedditClient(PostListActivity.this);
-
         final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
-
         final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
-
         AndroidTokenStore store = new AndroidTokenStore(PostListActivity.this);
 
         protected Wrapper doInBackground(String... params) {
 
             String title = params[0];
-
             String userInput = params[1];
-
             String selectedSubredditName = params[2];
-
             Wrapper wrapper = new Wrapper();
-
             wrapper.setTitle(title);
             wrapper.setUserInput(userInput);
             wrapper.setSelectedSubredditName(selectedSubredditName);
@@ -1084,12 +955,11 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         protected void onPostExecute(Wrapper wrapper) {
 
             final Captcha captcha = wrapper.getCaptcha();
-
-            URL captchaUrl = captcha.getImageUrl();
-
             final String title = wrapper.getTitle();
             final String userInput = wrapper.getUserInput();
-            String selectedSubredditName = wrapper.getSelectedSubredditName();
+            URL captchaUrl = captcha.getImageUrl();
+
+            //String selectedSubredditName = wrapper.getSelectedSubredditName();
 
             if (captchaUrl != null) {
 
@@ -1117,8 +987,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                         .setPositiveButton("OK",
                                 new DialogInterface.OnClickListener() {
                                     public void onClick(DialogInterface dialog,int id) {
-
-                                        // TODO: if fields are blank, abort or show error
 
                                         new PostSubmissionAsyncTask(
                                                 title,
@@ -1184,29 +1052,23 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         }
 
         @Override
-        protected Boolean doInBackground(String... params) { // send postId and user comment text as var
+        protected Boolean doInBackground(String... params) {
+            // send postId and user comment text as var
 
             final RedditClient redditClient = new AndroidRedditClient(PostListActivity.this);
-
             final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
-
             final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
-
             AndroidTokenStore store = new AndroidTokenStore(PostListActivity.this);
-
             Boolean NEEDS_CAPTCHA = false;
 
             try {
                 String refreshToken = store.readToken("USER_TOKEN");
-
                 oAuthHelper.setRefreshToken(refreshToken);
 
                 try {
 
                     OAuthData finalData = oAuthHelper.refreshToken(credentials);
-
                     redditClient.authenticate(finalData);
-
                     AccountManager accountManager = new AccountManager(redditClient);
 
                     if (captcha == null) {
@@ -1252,35 +1114,25 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
             if (NEEDS_CAPTCHA) {
                 new CaptchaAsyncTask().execute(title, userInput, mSelectedSubredditName);
-            } else {
-                // TODO: refresh posts here
-
-                // swap mCursor???
             }
         }
     }
 
-    /*
-        here we use RefreshTokenAsync to authenticate with our token in the background
-        and update our UI in onPostExecute
-    */
+    /* here we use RefreshTokenAsync to authenticate with our token in the background
+     * and update our UI in onPostExecute
+     */
     private class RefreshTokenAsync extends AsyncTask<String, Void, Boolean> {
 
         final RedditClient redditClient = new AndroidRedditClient(PostListActivity.this);
-
         final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
-
         final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
 
         @Override
         protected Boolean doInBackground(String... params) {
 
             String refreshToken = params[0];
-
             String subredditMenuName = params[1];
-
             SubredditPaginator paginator;
-
             oAuthHelper.setRefreshToken(refreshToken);
 
             try {
@@ -1300,8 +1152,6 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                     new SubredditSearchPaginator(redditClient, subredditMenuName);
 
             Listing<Subreddit> subreddits = subredditSearchPaginator.next();
-
-            //System.out.println("subreddits.size() = " + subreddits.size());
 
             if (subreddits.size() == 0) { // subreddit not found
                 // notify user, no subreddit found matching 'name'
@@ -1335,11 +1185,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 String title = submission.getTitle();
                 // store fullname so we can get the specific post later...
                 String subreddit = submission.getSubredditName();
-
                 String username = submission.getAuthor();
-
                 String source = submission.getUrl();
-
                 // shorten source url by extracting domain name and send as string
                 String domain = "";
 
@@ -1351,9 +1198,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 }
 
                 int points = submission.getScore();
-
                 int numberOfComments = submission.getCommentCount();
-
                 String thumbnail = submission.getThumbnail();
 
                 // we need to add this to the post item data so we can retrieve the commentnode in details view
@@ -1423,32 +1268,22 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
             // we need to check authentication to get submission info and vote
             final RedditClient redditClient = new AndroidRedditClient(PostListActivity.this);
-
             final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
-
             final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
-
             AndroidTokenStore store = new AndroidTokenStore(PostListActivity.this);
 
             try {
                 String refreshToken = store.readToken("USER_TOKEN");
-
                 oAuthHelper.setRefreshToken(refreshToken);
 
                 try {
 
                     OAuthData finalData = oAuthHelper.refreshToken(credentials);
-
                     redditClient.authenticate(finalData);
-
                     String postId = params[0];
-
                     String voteDirection = params[2];
-
                     AccountManager accountManager = new AccountManager(redditClient);
-
                     Submission submission = redditClient.getSubmission(postId);
-
                     int score = submission.getScore();
 
                     try {
@@ -1492,28 +1327,20 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
             // we need to check authentication to get submission info and vote
             final RedditClient redditClient = new AndroidRedditClient(PostListActivity.this);
-
             final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
-
             final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
-
             AndroidTokenStore store = new AndroidTokenStore(PostListActivity.this);
 
             try {
                 String refreshToken = store.readToken("USER_TOKEN");
-
                 oAuthHelper.setRefreshToken(refreshToken);
 
                 try {
 
                     OAuthData finalData = oAuthHelper.refreshToken(credentials);
-
                     redditClient.authenticate(finalData);
-
                     String subredditMenuName = params[0];
-
                     AccountManager accountManager = new AccountManager(redditClient);
-
                     Subreddit subreddit = redditClient.getSubreddit(subredditMenuName);
 
                     try {
@@ -1534,14 +1361,13 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-
             // refresh navigation menu
             forceRefreshNavigationView();
         }
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args){
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(this, PostEntry.CONTENT_URI,
                 new String[]{ PostEntry._ID, PostEntry.COLUMN_TITLE, PostEntry.COLUMN_SUBREDDIT,
                         PostEntry.COLUMN_AUTHOR, PostEntry.COLUMN_SOURCE, PostEntry.COLUMN_THUMBNAIL,
@@ -1553,9 +1379,8 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data){
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mPostsAdapter.swapCursor(data);
-        mCursor = data;
     }
 
     @Override

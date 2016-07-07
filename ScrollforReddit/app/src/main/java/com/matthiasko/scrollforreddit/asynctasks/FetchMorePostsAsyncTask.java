@@ -25,22 +25,17 @@ import java.util.UUID;
 
 /**
  * Created by matthiasko on 6/1/16.
+ * AsyncTask to get more posts from reddit
+ *
  */
 public class FetchMorePostsAsyncTask extends AsyncTask<String, Void, Boolean> {
 
     private Context mContext;
-
     private final String LOG_TAG = FetchMorePostsAsyncTask.class.getSimpleName();
-
     private FetchUserlessTokenListener mListener;
-
     private static final String CLIENT_ID = "cAizcZuXu-Mn9w";
-
-    private static RedditClient redditClient;
-
     private UUID mDeviceId;
-
-    private SubredditPaginator paginator;
+    private SubredditPaginator mPaginator;
 
     public FetchMorePostsAsyncTask(Context context, FetchUserlessTokenListener listener) {
         this.mContext = context;
@@ -63,7 +58,7 @@ public class FetchMorePostsAsyncTask extends AsyncTask<String, Void, Boolean> {
             mDeviceId = UUID.fromString(uuidString);
         }
 
-        redditClient = new AndroidRedditClient(mContext);
+        RedditClient redditClient = new AndroidRedditClient(mContext);
         redditClient.setLoggingMode(LoggingMode.ALWAYS);
 
         final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
@@ -81,12 +76,12 @@ public class FetchMorePostsAsyncTask extends AsyncTask<String, Void, Boolean> {
             e.printStackTrace();
         }
 
-        if (paginator == null) {
+        if (mPaginator == null) {
 
             if (subredditMenuName.equals("Frontpage")) {
-                paginator = new SubredditPaginator(redditClient);
+                mPaginator = new SubredditPaginator(redditClient);
             } else {
-                paginator = new SubredditPaginator(redditClient, subredditMenuName);
+                mPaginator = new SubredditPaginator(redditClient, subredditMenuName);
             }
         }
 
@@ -102,13 +97,10 @@ public class FetchMorePostsAsyncTask extends AsyncTask<String, Void, Boolean> {
             edit.commit();
         }
 
-        //System.out.println("refreshCounter = " + refreshCounter);
-
         // store counter in prefs and check for counter before loop
         for (int i = 0; i < refreshCounter; i++) {
 
-            List<Submission> next = paginator.iterator().next().getChildren(); // this is calling the api?
-
+            List<Submission> next = mPaginator.iterator().next().getChildren();
             if (refreshCounter - 1 == i) {
 
                 for (Submission submission : next) { // insert posts into database
@@ -116,22 +108,15 @@ public class FetchMorePostsAsyncTask extends AsyncTask<String, Void, Boolean> {
                     String title = submission.getTitle();
                     // store fullname so we can get the specific post later...
                     String subreddit = submission.getSubredditName();
-
                     String username = submission.getAuthor();
-
                     String source = submission.getUrl();
-
                     String domain = submission.getDomain();
-
                     int points = submission.getScore();
-
                     int numberOfComments = submission.getCommentCount();
-
                     String thumbnail = submission.getThumbnail();
 
                     // we need to add this to the post item data so we can retrieve the commentnode in details view
                     String postId = submission.getId();
-
                     String fullName = submission.getFullName();
 
                     // add post data to database
@@ -152,7 +137,6 @@ public class FetchMorePostsAsyncTask extends AsyncTask<String, Void, Boolean> {
                 }
             }
         }
-
         refreshCounter++;
         SharedPreferences.Editor edit = appSharedPrefs.edit();
         edit.putInt("com.matthiasko.scrollforreddit.REFRESH_COUNTER", refreshCounter);

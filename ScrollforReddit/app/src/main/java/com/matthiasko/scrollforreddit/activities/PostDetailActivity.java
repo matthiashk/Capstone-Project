@@ -14,10 +14,12 @@ import android.widget.TextView;
 import com.matthiasko.scrollforreddit.fragments.PostDetailFragment;
 import com.matthiasko.scrollforreddit.R;
 import com.squareup.picasso.Picasso;
-
+/*
+ * Sets up Post details and appbarlayout header
+ * Calls PostDetailFragment to show comments about the post
+ *
+ */
 public class PostDetailActivity extends AppCompatActivity implements PostDetailFragment.OnCommentsLoadedListener {
-
-    private ImageView mHeaderImageView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +29,7 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
         //toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
 
-        mHeaderImageView = (ImageView) findViewById(R.id.header_imageview);
+        ImageView headerImageView = (ImageView) findViewById(R.id.header_imageview);
 
         /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -54,7 +56,6 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
             arguments.putString("POST_TITLE", getIntent().getStringExtra("POST_TITLE"));
             arguments.putString("POST_ID", getIntent().getStringExtra("POST_ID"));
             arguments.putString("FULLNAME", getIntent().getStringExtra("FULLNAME"));
-            //arguments.putBoolean("USERLESS_MODE", getIntent().getBooleanExtra("USERLESS_MODE", false));
 
             PostDetailFragment postDetailFragment = new PostDetailFragment();
             postDetailFragment.setArguments(arguments);
@@ -76,16 +77,12 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
         ((TextView) findViewById(R.id.source_textview)).setText(getIntent().getStringExtra("DOMAIN"));
         (findViewById(R.id.source_textview)).setContentDescription(getIntent().getStringExtra("DOMAIN"));
 
-        // image loading logic here for detail view
-        // if the source is an image load it with picasso
-        // otherwise load a placeholder
-
-        // extension code will detect .com
-        // imgur files may not have an extension so we should detect hostname
-
-        // animated gifs on imgur have extension .gifv?
-        // youtube
-        // twitter
+        /* image loading logic here for detail view
+         * if the source is an image load it with picasso
+         * otherwise load a placeholder
+         * extension code will detect .com
+         * imgur files may not have an extension so we should detect hostname
+         */
 
         String sourceUrl = getIntent().getStringExtra("SOURCE");
         String extension = "";
@@ -97,25 +94,23 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
 
         if (extension.equals("jpg")) {
 
-            System.out.println("JPG MATCH");
-
-            android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
+            //System.out.println("JPG MATCH");
+            android.view.ViewGroup.LayoutParams layoutParams = headerImageView.getLayoutParams();
             layoutParams.height = 800;
-            mHeaderImageView.setLayoutParams(layoutParams);
+            headerImageView.setLayoutParams(layoutParams);
 
             Picasso.with(getBaseContext())
                     .load(sourceUrl)
                     .resize(layoutParams.width, layoutParams.height)
                     .centerCrop()
-                    .into(mHeaderImageView);
+                    .into(headerImageView);
 
         } else if (sourceUrl.contains("imgur.com")) {
 
-            System.out.println("IMGUR MATCH");
-
-            android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
+            //System.out.println("IMGUR MATCH");
+            android.view.ViewGroup.LayoutParams layoutParams = headerImageView.getLayoutParams();
             layoutParams.height = 800;
-            mHeaderImageView.setLayoutParams(layoutParams);
+            headerImageView.setLayoutParams(layoutParams);
 
             // we need to add .jpg to the url to load it properly
             String modifiedUrl = sourceUrl.concat(".jpg");
@@ -124,37 +119,23 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
                     .load(modifiedUrl)
                     .resize(layoutParams.width, layoutParams.height)
                     .centerCrop()
-                    .into(mHeaderImageView);
+                    .into(headerImageView);
 
         }  else if (getIntent().getStringExtra("THUMBNAIL") == null) {
 
-            System.out.println("NULL THUMBNAIL MATCH");
-
+            //System.out.println("NULL THUMBNAIL MATCH");
             // change the height of the imageview to fit just the subreddit title
-            android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
+            android.view.ViewGroup.LayoutParams layoutParams = headerImageView.getLayoutParams();
             layoutParams.height = 200;
-            mHeaderImageView.setLayoutParams(layoutParams);
+            headerImageView.setLayoutParams(layoutParams);
 
         } else if (!getIntent().getStringExtra("THUMBNAIL").isEmpty()) {
 
-            System.out.println("EMPTY THUMBNAIL MATCH");
-
+            //System.out.println("EMPTY THUMBNAIL MATCH");
             // change the height of the imageview to fit just the subreddit title
-            android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
+            android.view.ViewGroup.LayoutParams layoutParams = headerImageView.getLayoutParams();
             layoutParams.height = 200;
-            mHeaderImageView.setLayoutParams(layoutParams);
-
-            /*
-            android.view.ViewGroup.LayoutParams layoutParams = mHeaderImageView.getLayoutParams();
-            layoutParams.height = 800;
-            mHeaderImageView.setLayoutParams(layoutParams);
-
-            Picasso.with(getBaseContext())
-                    .load(getIntent().getStringExtra("THUMBNAIL"))
-                    .resize(layoutParams.width, layoutParams.height)
-                    .centerCrop()
-                    .into(mHeaderImageView);
-            */
+            headerImageView.setLayoutParams(layoutParams);
         }
     }
 

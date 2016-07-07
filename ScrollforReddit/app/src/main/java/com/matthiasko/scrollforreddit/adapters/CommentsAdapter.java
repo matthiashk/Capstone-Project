@@ -35,22 +35,17 @@ import java.util.ArrayList;
 
 /**
  * Created by matthiasko on 4/4/16.
+ * Handles comments for PostDetailFragment
+ *
  */
 public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHolder> {
 
     private boolean mUserlessMode;
-
-    private boolean mTwoPane;
-
     private final ArrayList<ScrollComment> mValues;
-
     private Context mContext;
-
     private Toolbar mToolbar;
-
     private static final String CLIENT_ID = "cAizcZuXu-Mn9w";
     private static final String REDIRECT_URL = "http://scroll-for-reddit.com/oauthresponse";
-
     private static final String LOG_TAG = CommentsAdapter.class.getSimpleName();
 
     public CommentsAdapter(Context context, ArrayList<ScrollComment> items) {
@@ -64,33 +59,20 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
                 .inflate(R.layout.comments_card_view, parent, false);
 
         mUserlessMode = PostListActivity.userlessMode;
-
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
 
-        holder.mItem = mValues.get(position);
+        holder.item = mValues.get(position);
 
         int commentDepth = mValues.get(position).getDepth();
-
-        //System.out.println("commentDepth = " + commentDepth);
 
         if (commentDepth > 1) {
 
             // set new indentation by multiplying comment depth
             int indentedMarginSize = commentDepth * 10;
-
-            //System.out.println("commentDepth = " + commentDepth);
-
-            //int bodyCharCount = mValues.get(position).getBody().length();
-
-            //int totalIndent = bodyCharCount + commentDepth;
-
-            //String indentedComment = mValues.get(position).getBody().replaceAll("(?m)^", "\t");
-
-            //String indentedComment = String.format("%" + totalIndent + "s", mValues.get(position).getBody());
 
             holder.commentBody.setText(mValues.get(position).getBody());
             holder.commentBody.setContentDescription(mValues.get(position).getBody());
@@ -118,7 +100,7 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
         holder.commentPoints.setText(String.valueOf(mValues.get(position).getScore()));
         holder.commentPoints.setContentDescription(String.valueOf(mValues.get(position).getScore()));
 
-        holder.mView.setOnClickListener(new View.OnClickListener() {
+        holder.view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -136,29 +118,21 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
                     mToolbar = (Toolbar) v.findViewById(R.id.comments_toolbar);
                     mToolbar.inflateMenu(R.menu.menu_comments);
                     mToolbar.setBackgroundColor(mContext.getResources().getColor(R.color.colorPrimary));
-
-
-
-
                     mToolbar.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
                         @Override
                         public boolean onMenuItemClick(MenuItem menuItem) {
                             switch (menuItem.getItemId()) {
                                 case R.id.action_reply:
-                                    JsonNode dataNode = holder.mItem.getDataNode();
+                                    JsonNode dataNode = holder.item.getDataNode();
                                     postComment(dataNode);
-
                                     return true;
                             }
                             return true;
                         }
                     });
                     mToolbar.setVisibility(View.VISIBLE); // set to View.GONE in xml
-
                 }
-
                 // how should we handle urls in comments?
-
                 /*
                 // match url in body of comment text, so user can follow link
                 String body = mValues.get(position).getBody();
@@ -238,21 +212,20 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
 
     @Override
     public int getItemCount() {
-
         return mValues.size();
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        public final View mView;
-        public ScrollComment mItem;
+        public final View view;
+        public ScrollComment item;
         TextView commentBody;
         TextView commentAuthor;
         TextView commentPoints;
 
         public ViewHolder(View view) {
             super(view);
-            mView = view;
+            this.view = view;
 
             commentBody = (TextView) view.findViewById(R.id.comment_body);
             commentAuthor = (TextView) view.findViewById(R.id.comment_author);
@@ -263,7 +236,6 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
     private class PostCommentAsyncTask extends AsyncTask<String, Void, Void> {
 
         private JsonNode dataNode;
-
         public PostCommentAsyncTask (JsonNode dataNode) {
             this.dataNode = dataNode;
         }
@@ -272,28 +244,19 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
         protected Void doInBackground(String... params) { // send postId and user comment text as var
 
             final RedditClient redditClient = new AndroidRedditClient(mContext);
-
             final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
-
             final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
-
             AndroidTokenStore store = new AndroidTokenStore(mContext);
 
             try {
                 String refreshToken = store.readToken("USER_TOKEN");
-
                 oAuthHelper.setRefreshToken(refreshToken);
 
                 try {
-
                     OAuthData finalData = oAuthHelper.refreshToken(credentials);
-
                     redditClient.authenticate(finalData);
-
                     String userInput = params[0];
-
                     AccountManager accountManager = new AccountManager(redditClient);
-
                     Comment comment = new Comment(dataNode);
 
                     try {
@@ -301,25 +264,18 @@ public class CommentsAdapter extends RecyclerView.Adapter<CommentsAdapter.ViewHo
                     } catch (ApiException e) {
                         Log.e(LOG_TAG, e.getMessage());
                     }
-
                 } catch (OAuthException e) {
                     e.printStackTrace();
                 }
             } catch (NoSuchTokenException e) {
                 Log.e(LOG_TAG, e.getMessage());
             }
-
             return null;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            //adapter.notifyDataSetChanged();
-
-            // TODO: refresh comments here?
-            // how do we show the comment just posted?
-            //refreshComments();
         }
     }
 }

@@ -15,7 +15,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.matthiasko.scrollforreddit.R;
 import com.matthiasko.scrollforreddit.activities.PostDetailActivity;
@@ -42,28 +41,23 @@ import java.util.ArrayList;
 import java.util.UUID;
 
 /**
- * A fragment representing a single Post detail screen.
- * This fragment is either contained in a {@link PostListActivity}
- * in two-pane mode (on tablets) or a {@link PostDetailActivity}
- * on handsets.
+ * A fragment containing detailed information about a Post object
+ *
  */
 public class PostDetailFragment extends Fragment {
 
     private boolean mUserlessMode;
-    private String mPostTitle;
-    private String mCommentAuthor;
+    //private String mPostTitle;
+    //private String mCommentAuthor;
     private String mPostId;
-    private String mPostFullName;
+    //private String mPostFullName;
     private static final String LOG_TAG = PostDetailFragment.class.getSimpleName();
     private static final String CLIENT_ID = "cAizcZuXu-Mn9w";
     private static final String REDIRECT_URL = "http://scroll-for-reddit.com/oauthresponse";
-    private TextView mCommentTextView;
+    //private TextView mCommentTextView;
     private CommentsAdapter mCommentsAdapter;
     private ArrayList<ScrollComment> mArrayOfComments;
     private RedditClient mRedditClient;
-    private UUID mDeviceId;
-    private String mSelectedSubreddit;
-
     private CommentsDBHandler mCommentsDBHandler;
 
     /**
@@ -82,27 +76,17 @@ public class PostDetailFragment extends Fragment {
         mUserlessMode = PostListActivity.userlessMode;
 
         if (getArguments().containsKey("POST_TITLE")) {
-            // Load the dummy content specified by the fragment
-            // arguments. In a real-world scenario, use a Loader
-            // to load content from a content provider.
-            //mItem = DummyContent.ITEM_MAP.get(getArguments().getString(ARG_ITEM_ID));
-            //mItem.mPostTitle = getArguments().getString("POST_TITLE");
 
-            mPostTitle = getArguments().getString("POST_TITLE");
+            //mPostTitle = getArguments().getString("POST_TITLE");
             mPostId = getArguments().getString("POST_ID");
-            mPostFullName = getArguments().getString("FULLNAME");
+            //mPostFullName = getArguments().getString("FULLNAME");
             //userlessMode = getArguments().getBoolean("USERLESS_MODE");
 
-            //System.out.println("PostDetailFragment - userlessMode = " + userlessMode);
-            //System.out.println("mPostFullName = " + mPostFullName);
-            //System.out.println("mPostId = " + mPostId);
-            //mCommentAuthor = getArguments().getString("COMMENT_AUTHOR");
-            //System.out.println("mPostTitle = " + mPostTitle);
         }
         // fetch userless token if in userless mode
         if (mUserlessMode) {
 
-            Log.e(LOG_TAG, "***** USERLESS MODE *****");
+            //Log.e(LOG_TAG, "***** USERLESS MODE *****");
 
             mRedditClient = new AndroidRedditClient(getContext());
             // get access token
@@ -117,7 +101,7 @@ public class PostDetailFragment extends Fragment {
             }
 
         } else {
-            Log.e(LOG_TAG, "***** NOT USERLESS MODE *****");
+            //Log.e(LOG_TAG, "***** NOT USERLESS MODE *****");
             // get access token
             AndroidTokenStore store = new AndroidTokenStore(getContext());
 
@@ -142,30 +126,11 @@ public class PostDetailFragment extends Fragment {
         layoutManager.setOrientation(LinearLayoutManager.VERTICAL);
         commentsRecyclerView.setLayoutManager(layoutManager);
 
-        //LinearLayoutManager llm = new LinearLayoutManager(getActivity());
-        //llm.setOrientation(LinearLayoutManager.VERTICAL);
-        //commentsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-
         mArrayOfComments = new ArrayList<>();
         // Create the mCommentsAdapter to convert the array to views
         mCommentsAdapter = new CommentsAdapter(getContext(), mArrayOfComments);
 
-        //View commentsRecyclerView = rootView.findViewById(R.id.commentsList);
-
-        //commentsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false));
-
-        //assert commentsRecyclerView != null;
-        //setupRecyclerView((RecyclerView) commentsRecyclerView);
-
         commentsRecyclerView.setAdapter(mCommentsAdapter);
-
-        //((TextView) rootView.findViewById(R.id.post_detail)).setText(mPostTitle);
-
-        // setup our textview so we can set it in onpostexecute after getting comments
-
-        //mCommentTextView = (TextView) rootView.findViewById(R.id.comment_author);
-
-        //((TextView) rootView.findViewById(R.id.comment_author)).setText(mCommentAuthor);
 
         return rootView;
     }
@@ -193,8 +158,7 @@ public class PostDetailFragment extends Fragment {
 
         if (mUserlessMode) {
 
-            Log.e(LOG_TAG, "***** USERLESS MODE *****");
-
+            //Log.e(LOG_TAG, "***** USERLESS MODE *****");
             mRedditClient = new AndroidRedditClient(getContext());
             // get access token
             AndroidTokenStore store = new AndroidTokenStore(getContext());
@@ -208,7 +172,7 @@ public class PostDetailFragment extends Fragment {
             }
 
         } else {
-            Log.e(LOG_TAG, "***** NOT USERLESS MODE *****");
+            //Log.e(LOG_TAG, "***** NOT USERLESS MODE *****");
             // get access token
             AndroidTokenStore store = new AndroidTokenStore(getContext());
 
@@ -226,7 +190,7 @@ public class PostDetailFragment extends Fragment {
     }
 
     public void postComment() {
-        // if not logged in, send a message and dont start asynctask
+        // if not logged in, send a message and don't start asynctask
         if (mUserlessMode) {
 
             new AlertDialog.Builder(getContext())
@@ -287,21 +251,15 @@ public class PostDetailFragment extends Fragment {
 
             try {
                 String refreshToken = store.readToken("USER_TOKEN");
-
                 oAuthHelper.setRefreshToken(refreshToken);
 
                 try {
 
                     OAuthData finalData = oAuthHelper.refreshToken(credentials);
-
                     redditClient.authenticate(finalData);
-
                     String postId = params[0];
-
                     String userInput = params[1];
-
                     AccountManager accountManager = new AccountManager(redditClient);
-
                     Submission submission = redditClient.getSubmission(postId);
 
                     try {
@@ -316,7 +274,6 @@ public class PostDetailFragment extends Fragment {
             } catch (NoSuchTokenException e) {
                 Log.e(LOG_TAG, e.getMessage());
             }
-
             return null;
         }
 
@@ -327,7 +284,7 @@ public class PostDetailFragment extends Fragment {
         }
     }
 
-
+    // not implemented yet
     private class RetrieveMoreComments extends AsyncTask<String, Void, Void> {
 
         final RedditClient redditClient = new AndroidRedditClient(getContext());
@@ -354,7 +311,6 @@ public class PostDetailFragment extends Fragment {
                 }
 
                 // fix below
-
                 if (mCommentsDBHandler.getCommentsCount(mPostId) == 0) { // fetch comments
 
                     // use getSubmission instead of paginator to get the specific post + comments,
@@ -403,9 +359,7 @@ public class PostDetailFragment extends Fragment {
     private class RetrieveComments extends AsyncTask<String, Void, Void> {
 
         final RedditClient redditClient = new AndroidRedditClient(getContext());
-
         final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
-
         final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
 
         @Override
@@ -426,8 +380,7 @@ public class PostDetailFragment extends Fragment {
 
             if (mCommentsDBHandler.getCommentsCount(mPostId) == 0) { // fetch comments
 
-                Log.e(LOG_TAG, "comments count == 0");
-
+                //Log.e(LOG_TAG, "comments count == 0");
                 // use getSubmission instead of paginator to get the specific post + comments,
                 // otherwise the post will not be found in the paginator after some time has passed
                 Submission specificSubmission = redditClient.getSubmission(mPostId);
@@ -435,15 +388,10 @@ public class PostDetailFragment extends Fragment {
                 CommentNode commentNode = specificSubmission.getComments();
                 Iterable<CommentNode> iterable = commentNode.walkTree().limit(50);
 
-                // if depth is more than 5
-                // create new cell with 'load more' label...
-                // OR just limit the amount of comments fetched...
-
                 for (CommentNode node : iterable) {
                     Comment comment = node.getComment();
                     ScrollComment scrollComment = new ScrollComment(comment.getBody(),
                             comment.getAuthor(), comment.getScore(), node.getDepth(), mPostId, comment.getId(), comment.getDataNode());
-                    //System.out.println("comment.getBody() = " + comment.getBody());
 
                     mCommentsDBHandler.addComment(scrollComment); // adding to comments database
                     mArrayOfComments.add(scrollComment);
@@ -480,17 +428,19 @@ public class PostDetailFragment extends Fragment {
         @Override
         protected Void doInBackground(String... params) {
 
+            UUID deviceId;
+            String mSelectedSubreddit;
+
             // get uuid from shared prefs
-            SharedPreferences appSharedPrefs = PreferenceManager
-                    .getDefaultSharedPreferences(getContext());
+            SharedPreferences appSharedPrefs = PreferenceManager.getDefaultSharedPreferences(getContext());
 
             if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.UUID")) {
                 Log.e(LOG_TAG, "UUID FOUND IN PREFS");
                 String uuidString = appSharedPrefs.getString("com.matthiasko.scrollforreddit.UUID", null);
-                mDeviceId = UUID.fromString(uuidString);
+                deviceId = UUID.fromString(uuidString);
             } else {
                 Log.e(LOG_TAG, "UUID NOT FOUND IN PREFS, CREATING");
-                mDeviceId = UUID.randomUUID();
+                deviceId = UUID.randomUUID();
             }
 
             if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.SELECTED_SUBREDDIT")) {
@@ -506,7 +456,7 @@ public class PostDetailFragment extends Fragment {
             final OAuthHelper oAuthHelper = mRedditClient.getOAuthHelper();
 
             // note 'userlessApp' used here instead of 'installedApp'
-            final Credentials credentials = Credentials.userlessApp(CLIENT_ID, mDeviceId);
+            final Credentials credentials = Credentials.userlessApp(CLIENT_ID, deviceId);
 
             try {
                 OAuthData finalData = oAuthHelper.easyAuth(credentials);
@@ -521,21 +471,15 @@ public class PostDetailFragment extends Fragment {
             // we need to check if comments are in the database here
             // check if the post id exists in the database
             // if yes, filter comments by post id
-
             if (mCommentsDBHandler.getCommentsCount(mPostId) == 0) { // fetch comments
 
-                Log.e(LOG_TAG, "comments count == 0");
-
+                //Log.e(LOG_TAG, "comments count == 0");
                 // use getSubmission instead of paginator to get the specific post + comments,
                 // otherwise the post will not be found in the paginator after some time has passed
                 Submission specificSubmission = mRedditClient.getSubmission(mPostId);
 
                 CommentNode commentNode = specificSubmission.getComments();
                 Iterable<CommentNode> iterable = commentNode.walkTree().limit(50);
-
-                // if depth is more than 5
-                // create new cell with 'load more' label...
-                // OR just limit the amount of comments fetched...
 
                 for (CommentNode node : iterable) {
                     Comment comment = node.getComment();
@@ -544,7 +488,6 @@ public class PostDetailFragment extends Fragment {
                     //System.out.println("comment.getBody() = " + comment.getBody());
 
                     mCommentsDBHandler.addComment(scrollComment); // adding to comments database
-
                     mArrayOfComments.add(scrollComment);
                 }
 
@@ -552,7 +495,6 @@ public class PostDetailFragment extends Fragment {
                 // note: have to use addAll, not just set the arraylist
                 mArrayOfComments.addAll(mCommentsDBHandler.getAllComments(mPostId));
             }
-
             return null;
         }
 

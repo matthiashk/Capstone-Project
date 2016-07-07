@@ -9,22 +9,19 @@ import com.squareup.picasso.Picasso;
 
 /**
  * Created by matthiasko on 5/17/16.
+ *
+ * Unused class for viewing images, may be used in the future
+ *
  */
 public class ImageViewActivity extends Activity {
-
-    ImageView image;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_imageview);
-
-        image = (ImageView) findViewById(R.id.imageView1);
-
+        ImageView image = (ImageView) findViewById(R.id.imageView1);
         String url = getIntent().getStringExtra("SOURCE");
-
         Picasso.with(getApplicationContext()).load(url).fit().centerCrop().into(image);
-
     }
 }

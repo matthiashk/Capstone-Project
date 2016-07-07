@@ -16,6 +16,8 @@ import java.util.Locale;
 
 /**
  * Created by matthiasko on 5/11/16.
+ * Database handler for comments items
+ *
  */
 public class CommentsDBHandler extends SQLiteOpenHelper {
 
@@ -31,7 +33,6 @@ public class CommentsDBHandler extends SQLiteOpenHelper {
     public static final String COLUMN_POST_ID = "post_id";
     public static final String COLUMN_DATE_ADDED = "date_added";
     public static final String COLUMN_COMMENT_ID = "comment_id";
-
 
     // note the placement of the commas here
     private static final String DATABASE_CREATE = "create table "
@@ -124,7 +125,6 @@ public class CommentsDBHandler extends SQLiteOpenHelper {
         int num = 0;
         SQLiteDatabase db = this.getReadableDatabase();
         try{
-
             //String QUERY = "SELECT * FROM "+TABLE_NAME + "WHERE post_id=" + postId;
             String[] columns = {"body", "author", "score", "depth", "post_id"};
             Cursor cursor = db.query(TABLE_NAME, columns, "post_id=?", new String[]{postId}, null, null, null);
@@ -136,5 +136,4 @@ public class CommentsDBHandler extends SQLiteOpenHelper {
         }
         return 0;
     }
-
 }

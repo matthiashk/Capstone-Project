@@ -23,15 +23,14 @@ import java.util.List;
 
 /**
  * Created by matthiasko on 4/22/16.
+ * AsyncTask to get subreddits that user is subscribed to
+ *
  */
-public class FetchSubsAsyncTask extends AsyncTask<String, Void, ArrayList> {
+public class FetchSubsAsyncTask extends AsyncTask<String, Void, ArrayList<String>> {
 
     private static final String CLIENT_ID = "cAizcZuXu-Mn9w";
-
     private static final String REDIRECT_URL = "http://scroll-for-reddit.com/oauthresponse";
-
     private Context mContext;
-
     private AsyncListener mAsyncListener;
 
     public FetchSubsAsyncTask(Context context) {
@@ -43,18 +42,13 @@ public class FetchSubsAsyncTask extends AsyncTask<String, Void, ArrayList> {
     }
 
     @Override
-    protected ArrayList doInBackground(String... params) {
+    protected ArrayList<String> doInBackground(String... params) {
 
         RedditClient redditClient = new AndroidRedditClient(mContext);
-
         final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
-
         final Credentials credentials = Credentials.installedApp(CLIENT_ID, REDIRECT_URL);
-
         RefreshTokenHandler handler = new RefreshTokenHandler(new AndroidTokenStore(mContext), redditClient);
-
         AuthenticationManager.get().init(redditClient, handler);
-
         AndroidTokenStore store = new AndroidTokenStore(mContext);
 
         try {
@@ -62,13 +56,9 @@ public class FetchSubsAsyncTask extends AsyncTask<String, Void, ArrayList> {
             oAuthHelper.setRefreshToken(refreshToken);
             try {
                 OAuthData finalData = oAuthHelper.refreshToken(credentials);
-
                 redditClient.authenticate(finalData);
-
                 UserSubredditsPaginator userSubredditsPaginator = new UserSubredditsPaginator(redditClient, "subscriber");
-
                 List<Subreddit> subreddits = userSubredditsPaginator.accumulateMergedAllSorted();
-
                 ArrayList<String> subredditNames = new ArrayList<>();
 
                 for (Subreddit subreddit : subreddits) {
@@ -86,7 +76,7 @@ public class FetchSubsAsyncTask extends AsyncTask<String, Void, ArrayList> {
     }
 
     @Override
-    protected void onPostExecute(ArrayList arrayList) {
+    protected void onPostExecute(ArrayList<String> arrayList) {
         super.onPostExecute(arrayList);
         if (mAsyncListener != null ) {
             mAsyncListener.createNavMenuItems(arrayList);

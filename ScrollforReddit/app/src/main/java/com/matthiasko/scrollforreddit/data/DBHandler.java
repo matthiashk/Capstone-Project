@@ -13,6 +13,8 @@ import java.util.ArrayList;
 
 /**
  * Created by matthiasko on 4/13/16.
+ * Main database handler
+ *
  */
 public class DBHandler extends SQLiteOpenHelper {
 
@@ -50,7 +52,6 @@ public class DBHandler extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-
     public void addPost(Post post) {
         SQLiteDatabase db = this.getWritableDatabase();
         try{
@@ -71,7 +72,6 @@ public class DBHandler extends SQLiteOpenHelper {
             Log.e("problem", e + "");
         }
     }
-
 
     public ArrayList<Post> getAllPosts() {
         SQLiteDatabase db = this.getReadableDatabase();
@@ -106,7 +106,6 @@ public class DBHandler extends SQLiteOpenHelper {
         return postsArrayList;
     }
 
-
     public int getPostCount() {
         int num = 0;
         SQLiteDatabase db = this.getReadableDatabase();
@@ -121,5 +120,4 @@ public class DBHandler extends SQLiteOpenHelper {
         }
         return 0;
     }
-
 }

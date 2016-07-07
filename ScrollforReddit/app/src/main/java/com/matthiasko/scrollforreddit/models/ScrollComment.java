@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * Created by matthiasko on 4/5/16.
+ * The ScrollComment object holds information related to a reddit Comment
+ *
  */
 public class ScrollComment {
 
@@ -22,7 +24,6 @@ public class ScrollComment {
     public void setDataNode(JsonNode dataNode) {
         this.dataNode = dataNode;
     }
-    // TODO: add date/time
 
     public ScrollComment(){}
 

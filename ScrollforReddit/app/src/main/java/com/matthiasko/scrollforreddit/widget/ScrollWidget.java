@@ -11,6 +11,9 @@ import com.matthiasko.scrollforreddit.R;
 
 /**
  * Created by matthiasko on 5/17/16.
+ *
+ * widget based on https://laaptu.wordpress.com/2013/07/19/android-app-widget-with-listview/
+ * and my own app 'details to do list' available in the google play store
  */
 public class ScrollWidget extends AppWidgetProvider {
 

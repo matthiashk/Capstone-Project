@@ -26,21 +26,16 @@ import java.util.UUID;
 
 /**
  * Created by matthiasko on 4/23/16.
+ * AsyncTask to get access token for userless mode
+ *
  */
 public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
 
     private Context mContext;
     private final String LOG_TAG = FetchUserlessTokenAsyncTask.class.getSimpleName();
-
     private FetchUserlessTokenListener mListener;
-
     private static final String CLIENT_ID = "cAizcZuXu-Mn9w";
-
-    private DBHandler mHandler;
-
     private static RedditClient redditClient;
-
-    private UUID mDeviceId;
 
     public FetchUserlessTokenAsyncTask(Context context, FetchUserlessTokenListener listener) {
         this.mContext = context;
@@ -50,23 +45,24 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
     @Override
     protected Void doInBackground(String... params) {
 
+        UUID deviceId;
         // check if uuid is in sharedprefs before creating a new uuid
         SharedPreferences appSharedPrefs = PreferenceManager
                 .getDefaultSharedPreferences(mContext);
         if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.UUID")) {
             // load from sharedprefs
             String uuidString = appSharedPrefs.getString("com.matthiasko.scrollforreddit.UUID", null);
-            mDeviceId = UUID.fromString(uuidString);
+            deviceId = UUID.fromString(uuidString);
         } else {
             // no UUID found in sharedPrefs, create new uuid
-            mDeviceId = UUID.randomUUID();
+            deviceId = UUID.randomUUID();
         }
 
         // we need to store the uuid after we create it and reuse it
         // generate random uuid -> needed to request api access
         // store uuid in shared prefs as a string, we need to convert back to uuid to use
         SharedPreferences.Editor sharedPrefsEditor = appSharedPrefs.edit();
-        sharedPrefsEditor.putString("com.matthiasko.scrollforreddit.UUID", mDeviceId.toString());;
+        sharedPrefsEditor.putString("com.matthiasko.scrollforreddit.UUID", deviceId.toString());;
         sharedPrefsEditor.commit();
 
         redditClient = new AndroidRedditClient(mContext);
@@ -74,7 +70,7 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
         final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
 
         // note 'userlessApp' used here instead of 'installedApp'
-        final Credentials credentials = Credentials.userlessApp(CLIENT_ID, mDeviceId);
+        final Credentials credentials = Credentials.userlessApp(CLIENT_ID, deviceId);
 
         try {
             OAuthData finalData = oAuthHelper.easyAuth(credentials);
@@ -86,56 +82,29 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
             e.printStackTrace();
         }
 
-        mHandler = new DBHandler(mContext);
-
-        //SubredditPaginator paginator;
+        DBHandler dbHandler = new DBHandler(mContext);
 
         // check here if database exists, if yes we need to add to existing database
-        if (mHandler.getPostCount() == 0) {
-
-            Log.e(LOG_TAG, "POST COUNT IS 0");
-
-            /*
-
-            // TODO: re-enable...
-
-            if (subredditMenuName.equals("Frontpage")) {
-
-                paginator = new SubredditPaginator(redditClient);
-
-            } else {
-
-                paginator = new SubredditPaginator(redditClient, subredditMenuName);
-            }
-            */
-
-            // TODO: save and reuse this paginator...
+        if (dbHandler.getPostCount() == 0) {
 
             SubredditPaginator paginator = new SubredditPaginator(redditClient);
-
             Listing<Submission> submissions = paginator.next();
 
             for (Submission submission : submissions) {
 
                 String title = submission.getTitle();
+
                 // store fullname so we can get the specific post later...
                 String subreddit = submission.getSubredditName();
-
                 String username = submission.getAuthor();
-
                 String source = submission.getUrl();
-
                 String domain = submission.getDomain();
-
                 int points = submission.getScore();
-
                 int numberOfComments = submission.getCommentCount();
-
                 String thumbnail = submission.getThumbnail();
 
                 // we need to add this to the post item data so we can retrieve the commentnode in details view
                 String postId = submission.getId();
-
                 String fullName = submission.getFullName();
 
                 // add post data to database
@@ -154,8 +123,6 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
 
                 mContext.getContentResolver().insert(PostContract.PostEntry.CONTENT_URI, postValues);
             }
-        } else {
-            System.out.println("PostListActivity - loading from database");
         }
         return null;
     }
@@ -165,12 +132,9 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
         super.onPostExecute(aVoid);
         // hide the spinner in PostListActivity
         mListener.onUserlessTokenFetched();
-
         // store access token
         String accessToken = redditClient.getOAuthData().getAccessToken();
-
         AndroidTokenStore store = new AndroidTokenStore(mContext);
-
         store.writeToken("USERLESS_TOKEN", accessToken);
     }
 }

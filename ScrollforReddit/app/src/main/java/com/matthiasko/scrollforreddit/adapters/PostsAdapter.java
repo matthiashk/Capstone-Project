@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.DataSetObserver;
-import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +13,6 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.matthiasko.scrollforreddit.fragments.PostDetailFragment;
 import com.matthiasko.scrollforreddit.R;
 import com.matthiasko.scrollforreddit.activities.PostDetailActivity;
 import com.matthiasko.scrollforreddit.activities.PostListActivity;
@@ -29,61 +27,42 @@ import com.squareup.picasso.Picasso;
 public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> {
 
     private static final String LOG_TAG = PostsAdapter.class.getSimpleName();
-
-    private boolean mTwoPane; // TODO: change this
-
-    private boolean mUserlessMode;
-
-    private Context context;
-
-    private Cursor cursor;
-
-    private boolean dataValid;
-
-    private int rowIdColumn;
-
-    private DataSetObserver dataSetObserver;
+    private Context mContext;
+    private Cursor mCursor;
+    private boolean mDataValid;
+    private int mRowIdColumn;
+    private DataSetObserver mDataSetObserver;
 
     public PostsAdapter(Context ctxt, Cursor crsr){
-        context = ctxt;
-        cursor = crsr;
-        dataValid = crsr != null;
-        rowIdColumn = dataValid ? cursor.getColumnIndex("_id") : -1;
-        dataSetObserver = new NotifyingDataSetObserver();
-        if (dataValid){
-            cursor.registerDataSetObserver(dataSetObserver);
+        mContext = ctxt;
+        mCursor = crsr;
+        mDataValid = crsr != null;
+        mRowIdColumn = mDataValid ? mCursor.getColumnIndex("_id") : -1;
+        mDataSetObserver = new NotifyingDataSetObserver();
+        if (mDataValid){
+            mCursor.registerDataSetObserver(mDataSetObserver);
         }
-
-        //userlessMode = PostListActivity.userlessMode;
-
-        //System.out.println("PostListActivity.userlessMode = " + PostListActivity.userlessMode);
-
-        //userlessMode = userlessMode;
-    }
-
-    public Cursor getCursor() {
-        return cursor;
     }
 
     public Cursor swapCursor(Cursor newCursor) {
-        if (newCursor == cursor) {
+        if (newCursor == mCursor) {
             return null;
         }
-        final Cursor oldCursor = cursor;
-        if (oldCursor != null && dataSetObserver != null) {
-            oldCursor.unregisterDataSetObserver(dataSetObserver);
+        final Cursor oldCursor = mCursor;
+        if (oldCursor != null && mDataSetObserver != null) {
+            oldCursor.unregisterDataSetObserver(mDataSetObserver);
         }
-        cursor = newCursor;
-        if (cursor != null) {
-            if (dataSetObserver != null) {
-                cursor.registerDataSetObserver(dataSetObserver);
+        mCursor = newCursor;
+        if (mCursor != null) {
+            if (mDataSetObserver != null) {
+                mCursor.registerDataSetObserver(mDataSetObserver);
             }
-            rowIdColumn = newCursor.getColumnIndexOrThrow("_id");
-            dataValid = true;
+            mRowIdColumn = newCursor.getColumnIndexOrThrow("_id");
+            mDataValid = true;
             notifyDataSetChanged();
         } else {
-            rowIdColumn = -1;
-            dataValid = false;
+            mRowIdColumn = -1;
+            mDataValid = false;
             notifyDataSetChanged();
             //There is no notifyDataSetInvalidated() method in RecyclerView.Adapter
         }
@@ -92,30 +71,28 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_post, parent, false);
-
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        cursor.moveToPosition(position);
+        mCursor.moveToPosition(position);
 
-        final long id = cursor.getLong(0);
-        final String title = cursor.getString(1);
-        final String subreddit = cursor.getString(2);
-        final String author = cursor.getString(3);
-        final String source = cursor.getString(4);
-        final String thumbnail = cursor.getString(5);
-        final String postId = cursor.getString(6);
-        final String domain = cursor.getString(7);
-        final String fullName = cursor.getString(8);
-        final int points = cursor.getInt(9);
-        final int numberOfComments = cursor.getInt(10);
+        final long id = mCursor.getLong(0);
+        final String title = mCursor.getString(1);
+        final String subreddit = mCursor.getString(2);
+        final String author = mCursor.getString(3);
+        final String source = mCursor.getString(4);
+        final String thumbnail = mCursor.getString(5);
+        final String postId = mCursor.getString(6);
+        final String domain = mCursor.getString(7);
+        final String fullName = mCursor.getString(8);
+        final int points = mCursor.getInt(9);
+        final int numberOfComments = mCursor.getInt(10);
 
-        Resources res = context.getResources();
+        Resources res = mContext.getResources();
         String points_text = String.format(res.getString(R.string.posts_adapter_points), points);
         String comments_text = String.format(res.getString(R.string.posts_adapter_comments), numberOfComments);
 
@@ -137,14 +114,9 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         holder.thumbnail.setVisibility(View.VISIBLE);
 
         if (thumbnail == null || thumbnail.isEmpty()) {
-
             holder.thumbnail.setVisibility(View.GONE);
-
         } else {
-
-            //System.out.println("thumbnail = " + thumbnail);
-
-            Picasso.with(context)
+            Picasso.with(mContext)
                     .load(thumbnail)
                     .resize(400, 200)
                     .centerCrop()
@@ -154,13 +126,9 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
 
                 @Override
                 public void onClick(View v) {
-
-                    //Log.e(LOG_TAG, "source = " + source);
-
-                    Intent intent = new Intent(context, WebViewActivity.class);
+                    Intent intent = new Intent(mContext, WebViewActivity.class);
                     intent.putExtra("SOURCE", source);
-
-                    context.startActivity(intent);
+                    mContext.startActivity(intent);
                 }
             });
         }
@@ -168,23 +136,16 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         holder.upButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                //System.out.println("OVERRIDE UP");
-
                 String voteDirection = "up";
-
-                ((PostListActivity) context).onVote(postId, id, voteDirection);
+                ((PostListActivity) mContext).onVote(postId, id, voteDirection);
             }
         });
 
         holder.downButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 String voteDirection = "down";
-
-                ((PostListActivity) context).onVote(postId, id, voteDirection);
-
+                ((PostListActivity) mContext).onVote(postId, id, voteDirection);
             }
         });
 
@@ -192,79 +153,33 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
             @Override
             public void onClick(View v) {
 
-                //String postId = values.get(position).postId;
-
-                //System.out.println("postId = " + postId);
-
-                //CommentNode commentNode = values.get(position).postCommentNode;
-
-                //System.out.println("commentNode.getTotalSize() = " + commentNode.getTotalSize());
-
-                //String testTitle = values.get(position).postTitle;
-
-                //System.out.println("testTitle = " + testTitle);
-
-                if (mTwoPane) { // this is for tablet mode
-                    Bundle arguments = new Bundle();
-
-                    arguments.putString("POST_TITLE", title);
-                    arguments.putString("SUBREDDIT", subreddit);
-                    arguments.putString("POST_ID", postId);
-                    arguments.putString("AUTHOR", author);
-                    arguments.putString("SOURCE", source);
-                    arguments.putString("THUMBNAIL", thumbnail);
-                    arguments.putInt("POINTS", points);
-                    arguments.putInt("NUMBER_OF_COMMENTS", numberOfComments);
-                    arguments.putString("DOMAIN", domain);
-                    arguments.putString("FULLNAME", fullName);
-
-                    //arguments.putBoolean("USERLESS_MODE", userlessMode);
-
-                    //arguments.putString("COMMENT_AUTHOR", commentAuthor);
-
-                    PostDetailFragment fragment = new PostDetailFragment();
-                    fragment.setArguments(arguments);
-
-                    //getSupportFragmentManager().beginTransaction().replace(R.id.post_detail_container, fragment).commit();
-
-                } else { // this is for phone mode
-
-                    //System.out.println("postId = " + postId);
-
-                    Context context = v.getContext();
-                    Intent intent = new Intent(context, PostDetailActivity.class);
-                    intent.putExtra("POST_TITLE", title);
-                    intent.putExtra("SUBREDDIT", subreddit);
-                    intent.putExtra("POST_ID", postId);
-                    intent.putExtra("AUTHOR", author);
-                    intent.putExtra("SOURCE", source);
-                    intent.putExtra("THUMBNAIL", thumbnail);
-                    intent.putExtra("POINTS", points);
-                    intent.putExtra("NUMBER_OF_COMMENTS", numberOfComments);
-                    intent.putExtra("DOMAIN", domain);
-                    intent.putExtra("FULLNAME", fullName);
-
-                    //intent.putExtra("USERLESS_MODE", userlessMode);
-
-                    //intent.putExtra("COMMENT_AUTHOR", commentAuthor);
-
-                    context.startActivity(intent);
-                }
+                Intent intent = new Intent(mContext, PostDetailActivity.class);
+                intent.putExtra("POST_TITLE", title);
+                intent.putExtra("SUBREDDIT", subreddit);
+                intent.putExtra("POST_ID", postId);
+                intent.putExtra("AUTHOR", author);
+                intent.putExtra("SOURCE", source);
+                intent.putExtra("THUMBNAIL", thumbnail);
+                intent.putExtra("POINTS", points);
+                intent.putExtra("NUMBER_OF_COMMENTS", numberOfComments);
+                intent.putExtra("DOMAIN", domain);
+                intent.putExtra("FULLNAME", fullName);
+                mContext.startActivity(intent);
             }
         });
     }
 
     @Override
     public int getItemCount() {
-        if (dataValid && cursor != null){
-            return cursor.getCount();
+        if (mDataValid && mCursor != null){
+            return mCursor.getCount();
         }
         return 0;
     }
 
     @Override public long getItemId(int position) {
-        if (dataValid && cursor != null && cursor.moveToPosition(position)){
-            return cursor.getLong(rowIdColumn);
+        if (mDataValid && mCursor != null && mCursor.moveToPosition(position)){
+            return mCursor.getLong(mRowIdColumn);
         }
         return 0;
     }
@@ -287,7 +202,6 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         Button downButton;
 
         public ViewHolder(View view) {
-
             super(view);
             mView = view;
             postTitle = (TextView) view.findViewById(R.id.postTitle);
@@ -299,27 +213,24 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
             thumbnail = (ImageView) view.findViewById(R.id.thumbnail);
             upButton = (Button) view.findViewById(R.id.upButton);
             downButton = (Button) view.findViewById(R.id.downButton);
-
             view.setOnClickListener(this);
         }
 
         @Override
         public void onClick(View v) {
-
-
         }
     }
 
     private class NotifyingDataSetObserver extends DataSetObserver{
         @Override public void onChanged() {
             super.onChanged();
-            dataValid = true;
+            mDataValid = true;
             notifyDataSetChanged();
         }
 
         @Override public void onInvalidated() {
             super.onInvalidated();
-            dataValid = false;
+            mDataValid = false;
             notifyDataSetChanged();
         }
     }

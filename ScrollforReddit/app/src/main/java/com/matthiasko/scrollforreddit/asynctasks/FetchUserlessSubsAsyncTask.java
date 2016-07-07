@@ -24,22 +24,15 @@ import java.util.UUID;
 
 /**
  * Created by matthiasko on 4/28/16.
+ * AsyncTask to get popular subreddits in userless mode
+ *
  */
-public class FetchUserlessSubsAsyncTask extends AsyncTask<String, Void, ArrayList> {
+public class FetchUserlessSubsAsyncTask extends AsyncTask<String, Void, ArrayList<String>> {
 
     private static final String LOG_TAG = FetchUserlessSubsAsyncTask.class.getSimpleName();
-
     private static final String CLIENT_ID = "cAizcZuXu-Mn9w";
-
-    private static final String REDIRECT_URL = "http://scroll-for-reddit.com/oauthresponse";
-
     private Context mContext;
-
     private AsyncListener mAsyncListener;
-
-    private UUID mDeviceId;
-
-    private RedditClient mRedditClient;
 
     public FetchUserlessSubsAsyncTask(Context context) {
         mContext = context;
@@ -50,13 +43,11 @@ public class FetchUserlessSubsAsyncTask extends AsyncTask<String, Void, ArrayLis
     }
 
     @Override
-    protected ArrayList doInBackground(String... params) {
+    protected ArrayList<String> doInBackground(String... params) {
 
-        mRedditClient = new AndroidRedditClient(mContext);
-
+        UUID mDeviceId;
         // get uuid from shared prefs
-        SharedPreferences appSharedPrefs = PreferenceManager
-                .getDefaultSharedPreferences(mContext);
+        SharedPreferences appSharedPrefs = PreferenceManager.getDefaultSharedPreferences(mContext);
 
         if (appSharedPrefs.contains("com.matthiasko.scrollforreddit.UUID")) {
             String uuidString = appSharedPrefs.getString("com.matthiasko.scrollforreddit.UUID", null);
@@ -67,23 +58,21 @@ public class FetchUserlessSubsAsyncTask extends AsyncTask<String, Void, ArrayLis
         }
 
         // check authentication
-        mRedditClient = new AndroidRedditClient(mContext);
-        final OAuthHelper oAuthHelper = mRedditClient.getOAuthHelper();
+        RedditClient redditClient = new AndroidRedditClient(mContext);
+        final OAuthHelper oAuthHelper = redditClient.getOAuthHelper();
 
         // note 'userlessApp' used here instead of 'installedApp'
         final Credentials credentials = Credentials.userlessApp(CLIENT_ID, mDeviceId);
 
         try {
             OAuthData finalData = oAuthHelper.easyAuth(credentials);
-            mRedditClient.authenticate(finalData);
-            if (mRedditClient.isAuthenticated()) {
+            redditClient.authenticate(finalData);
+            if (redditClient.isAuthenticated()) {
                 Log.v(LOG_TAG, "Authenticated");
             }
 
-            SubredditStream subredditStream = new SubredditStream(mRedditClient, "popular");
-
+            SubredditStream subredditStream = new SubredditStream(redditClient, "popular");
             Listing<Subreddit> subreddits = subredditStream.next();
-
             ArrayList<String> subredditNames = new ArrayList<>();
 
             // put into array, sort array alphabetically, send array back to postlistactivity, populate menu
@@ -101,7 +90,7 @@ public class FetchUserlessSubsAsyncTask extends AsyncTask<String, Void, ArrayLis
     }
 
     @Override
-    protected void onPostExecute(ArrayList arrayList) {
+    protected void onPostExecute(ArrayList<String> arrayList) {
         super.onPostExecute(arrayList);
         if (mAsyncListener != null ) {
             mAsyncListener.createNavMenuItems(arrayList);

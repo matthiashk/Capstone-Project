@@ -22,36 +22,35 @@ import java.util.ArrayList;
 
 /**
  * Created by matthiasko on 5/17/16.
+ *
+ * widget based on https://laaptu.wordpress.com/2013/07/19/android-app-widget-with-listview/
+ * and my own app 'details to do list' available in the google play store
+ *
  */
 public class ScrollWidgetViewsFactory implements RemoteViewsService.RemoteViewsFactory {
 
     private static final String LOG_TAG = ScrollWidgetViewsFactory.class.getSimpleName();
 
-
-    private Context context;
-    private int appWidgetId;
-    private ArrayList<Post> listItemList = new ArrayList<>();
-
-    private DBHandler dbHandler;
+    private Context mContext;
+    private int mAppWidgetId;
+    private ArrayList<Post> mListItemList = new ArrayList<>();
 
     public ScrollWidgetViewsFactory(Context context, Intent intent) {
-        this.context = context;
-        appWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
+        this.mContext = context;
+        mAppWidgetId = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID,
                 AppWidgetManager.INVALID_APPWIDGET_ID);
     }
 
-
-
     @Override
     public void onCreate() {
-        dbHandler = new DBHandler(context);
+        DBHandler dbHandler = new DBHandler(mContext);
         // populate an arraylist of post items to display
-        listItemList = dbHandler.getAllPosts();
+        mListItemList = dbHandler.getAllPosts();
     }
 
     @Override
     public int getCount() {
-        return listItemList.size();
+        return mListItemList.size();
     }
 
     @Override
@@ -65,8 +64,8 @@ public class ScrollWidgetViewsFactory implements RemoteViewsService.RemoteViewsF
     @Override
     public RemoteViews getViewAt(int position) {
 
-        final RemoteViews remoteView = new RemoteViews(context.getPackageName(), R.layout.list_row);
-        Post listItem = listItemList.get(position);
+        final RemoteViews remoteView = new RemoteViews(mContext.getPackageName(), R.layout.list_row);
+        Post listItem = mListItemList.get(position);
 
         remoteView.setTextViewText(R.id.title, listItem.postTitle);
         remoteView.setTextViewText(R.id.source, listItem.postSource);
@@ -77,16 +76,13 @@ public class ScrollWidgetViewsFactory implements RemoteViewsService.RemoteViewsF
         remoteView.setTextViewText(R.id.score, String.valueOf(listItem.postPoints));
         remoteView.setTextViewText(R.id.numberOfComments, String.valueOf(listItem.postNumberOfComments));
 
-
         // set bitmap using https://groups.google.com/forum/?fromgroups=#!topic/android-developers/jupslaeAEuo
         // tried using picasso to load image, but doesn't work in a widget listview yet
 
         if (listItem.postThumbnail != null) {
-
             remoteView.setImageViewBitmap(R.id.thumbnail, getImageBitmap(listItem.postThumbnail));
         } else {
-
-            remoteView.setImageViewBitmap(R.id.thumbnail, BitmapFactory.decodeResource(context.getResources(),
+            remoteView.setImageViewBitmap(R.id.thumbnail, BitmapFactory.decodeResource(mContext.getResources(),
                     R.drawable.transparent_pixel));
         }
         return remoteView;
