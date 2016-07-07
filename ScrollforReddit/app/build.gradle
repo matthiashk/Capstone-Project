@@ -4,17 +4,24 @@ android {
     compileSdkVersion 23
     buildToolsVersion "23.0.2"
 
+    signingConfigs {
+        release
+    }
+
     defaultConfig {
         applicationId "com.matthiasko.scrollforreddit"
         minSdkVersion 21
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
     }
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            zipAlignEnabled true
         }
     }
     packagingOptions {
@@ -37,6 +44,19 @@ dependencies {
     compile 'com.google.android.gms:play-services-analytics:9.0.0'
     compile 'com.google.firebase:firebase-ads:9.0.0'
     debugCompile 'org.slf4j:slf4j-android:1.+'
+    compile 'com.android.support:multidex:1.0.1'
 }
 
 apply plugin: 'com.google.gms.google-services'
+
+def props = new Properties()
+
+props.load(new FileInputStream(rootProject.file("release.properties")))
+
+android.signingConfigs.release.storeFile rootProject.file(props.keyStore)
+
+android.signingConfigs.release.storePassword props.keyStorePassword
+
+android.signingConfigs.release.keyAlias props.keyAlias
+
+android.signingConfigs.release.keyPassword props.keyAliasPassword
