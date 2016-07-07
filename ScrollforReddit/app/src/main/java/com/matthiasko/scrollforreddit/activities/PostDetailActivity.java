@@ -101,7 +101,7 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
 
             Picasso.with(getBaseContext())
                     .load(sourceUrl)
-                    .resize(layoutParams.width, layoutParams.height)
+                    .resize(1200, layoutParams.height)
                     .centerCrop()
                     .into(headerImageView);
 
@@ -117,7 +117,7 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
 
             Picasso.with(getBaseContext())
                     .load(modifiedUrl)
-                    .resize(layoutParams.width, layoutParams.height)
+                    .resize(1200, layoutParams.height)
                     .centerCrop()
                     .into(headerImageView);
 

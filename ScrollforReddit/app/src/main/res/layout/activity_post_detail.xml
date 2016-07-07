@@ -57,7 +57,7 @@
 
             <ImageView
                 android:id="@+id/header_imageview"
-                android:layout_width="400dp"
+                android:layout_width="match_parent"
                 android:layout_height="600dp"
                 android:layout_below="@+id/source_textview"
                 android:contentDescription="@string/post_header_imageview"/>
