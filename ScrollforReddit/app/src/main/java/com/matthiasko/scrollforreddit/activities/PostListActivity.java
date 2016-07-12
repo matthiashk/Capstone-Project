@@ -640,8 +640,20 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
         } else if (menuTitle.equals(("Edit Subreddits"))) {
 
-            Intent intent = new Intent(this, EditSubredditsActivity.class);
-            startActivityForResult(intent, EDIT_SUBREDDITS_RESULT);
+            if (userlessMode) {
+                new AlertDialog.Builder(PostListActivity.this)
+                        .setTitle("Unable to edit subreddits")
+                        .setMessage("Please login first and try again.")
+                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                            }
+                        })
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .show();
+            } else {
+                Intent intent = new Intent(this, EditSubredditsActivity.class);
+                startActivityForResult(intent, EDIT_SUBREDDITS_RESULT);
+            }
 
         } else { // this should match the subreddit names
             // show loader
