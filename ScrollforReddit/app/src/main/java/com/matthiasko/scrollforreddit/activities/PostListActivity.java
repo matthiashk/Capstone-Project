@@ -28,6 +28,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -80,6 +81,7 @@ import net.dean.jraw.models.Captcha;
 import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
 import net.dean.jraw.models.Subreddit;
+import net.dean.jraw.models.Thumbnails;
 import net.dean.jraw.models.VoteDirection;
 import net.dean.jraw.paginators.SubredditPaginator;
 import net.dean.jraw.paginators.SubredditSearchPaginator;
@@ -1211,7 +1213,28 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
                 int points = submission.getScore();
                 int numberOfComments = submission.getCommentCount();
-                String thumbnail = submission.getThumbnail();
+                String thumbnail = "";
+                String decodedUrl = "";
+
+                // get the thumbnails object that contains an image array of urls, it may also be null
+                Thumbnails thumbnails = submission.getThumbnails();
+
+                if (thumbnails != null) {
+
+                    Thumbnails.Image[] images = thumbnails.getVariations();
+
+                    if (images.length >= 3) {
+                        // we need to decode the url that is given
+                        decodedUrl = Html.fromHtml(images[2].getUrl()).toString(); // get the third variation of the thumbnail
+                    }
+                }
+
+                // use the default thumbnail if there is no higher quality version
+                if (decodedUrl.isEmpty()) {
+                    thumbnail = submission.getThumbnail();
+                } else {
+                    thumbnail = decodedUrl;
+                }
 
                 // we need to add this to the post item data so we can retrieve the commentnode in details view
                 String postId = submission.getId();

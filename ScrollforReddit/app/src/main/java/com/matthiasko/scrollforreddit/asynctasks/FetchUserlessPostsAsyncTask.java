@@ -6,11 +6,12 @@ import android.content.SharedPreferences;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.text.Html;
 import android.util.Log;
 
 import com.matthiasko.scrollforreddit.data.DBHandler;
-import com.matthiasko.scrollforreddit.interfaces.FetchUserlessTokenListener;
 import com.matthiasko.scrollforreddit.data.PostContract;
+import com.matthiasko.scrollforreddit.interfaces.FetchUserlessTokenListener;
 
 import net.dean.jraw.RedditClient;
 import net.dean.jraw.android.AndroidRedditClient;
@@ -21,6 +22,7 @@ import net.dean.jraw.http.oauth.OAuthHelper;
 import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
 import net.dean.jraw.models.Subreddit;
+import net.dean.jraw.models.Thumbnails;
 import net.dean.jraw.paginators.SubredditPaginator;
 import net.dean.jraw.paginators.SubredditSearchPaginator;
 
@@ -113,7 +115,30 @@ public class FetchUserlessPostsAsyncTask extends AsyncTask<String, Void, Boolean
             String domain = submission.getDomain();
             int points = submission.getScore();
             int numberOfComments = submission.getCommentCount();
-            String thumbnail = submission.getThumbnail();
+
+            String thumbnail = "";
+            String decodedUrl = "";
+
+            // get the thumbnails object that contains an image array of urls, it may also be null
+            Thumbnails thumbnails = submission.getThumbnails();
+
+            if (thumbnails != null) {
+
+                Thumbnails.Image[] images = thumbnails.getVariations();
+
+                if (images.length >= 3) {
+                    // we need to decode the url that is given
+                    decodedUrl = Html.fromHtml(images[2].getUrl()).toString(); // get the third variation of the thumbnail
+                }
+            }
+
+            // use the default thumbnail if there is no higher quality version
+            if (decodedUrl.isEmpty()) {
+                thumbnail = submission.getThumbnail();
+            } else {
+                thumbnail = decodedUrl;
+            }
+
             // we need to add this to the post item data so we can retrieve the commentnode in details view
             String postId = submission.getId();
             String fullName = submission.getFullName();
