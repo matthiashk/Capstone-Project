@@ -29,14 +29,20 @@
                 android:id="@+id/header_textview"
                 android:textColor="@android:color/white"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:text="title of post"
+                android:layout_marginStart="10dp"
+                android:layout_marginEnd="10dp"/>
 
             <TextView
                 android:id="@+id/subreddit_textview"
                 android:textColor="@android:color/white"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@+id/header_textview"/>
+                android:layout_below="@+id/header_textview"
+                android:text="subreddit"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="5dp"/>
 
             <TextView
                 android:id="@+id/author_textview"
@@ -45,7 +51,9 @@
                 android:layout_height="wrap_content"
                 android:layout_toEndOf="@+id/subreddit_textview"
                 android:layout_below="@+id/header_textview"
-                android:layout_marginStart="10dp"/>
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="5dp"
+                android:text="author"/>
 
             <TextView
                 android:id="@+id/source_textview"
@@ -53,7 +61,9 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@+id/subreddit_textview"
-                />
+                android:text="source"
+                android:layout_marginStart="10dp"
+                android:layout_marginTop="5dp"/>
 
             <ImageView
                 android:id="@+id/header_imageview"
