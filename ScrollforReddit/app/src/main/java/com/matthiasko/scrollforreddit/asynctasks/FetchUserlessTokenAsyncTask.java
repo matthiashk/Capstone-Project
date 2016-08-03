@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.text.Html;
 import android.util.Log;
 
 import com.matthiasko.scrollforreddit.data.DBHandler;
@@ -20,6 +21,7 @@ import net.dean.jraw.http.oauth.OAuthException;
 import net.dean.jraw.http.oauth.OAuthHelper;
 import net.dean.jraw.models.Listing;
 import net.dean.jraw.models.Submission;
+import net.dean.jraw.models.Thumbnails;
 import net.dean.jraw.paginators.SubredditPaginator;
 
 import java.util.UUID;
@@ -101,7 +103,28 @@ public class FetchUserlessTokenAsyncTask extends AsyncTask<String, Void, Void> {
                 String domain = submission.getDomain();
                 int points = submission.getScore();
                 int numberOfComments = submission.getCommentCount();
-                String thumbnail = submission.getThumbnail();
+                String thumbnail = "";
+                String decodedUrl = "";
+
+                // get the thumbnails object that contains an image array of urls, it may also be null
+                Thumbnails thumbnails = submission.getThumbnails();
+
+                if (thumbnails != null) {
+
+                    Thumbnails.Image[] images = thumbnails.getVariations();
+
+                    if (images.length >= 3) {
+                        // we need to decode the url that is given
+                        decodedUrl = Html.fromHtml(images[2].getUrl()).toString(); // get the third variation of the thumbnail
+                    }
+                }
+
+                // use the default thumbnail if there is no higher quality version
+                if (decodedUrl.isEmpty()) {
+                    thumbnail = submission.getThumbnail();
+                } else {
+                    thumbnail = decodedUrl;
+                }
 
                 // we need to add this to the post item data so we can retrieve the commentnode in details view
                 String postId = submission.getId();

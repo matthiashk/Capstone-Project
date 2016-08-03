@@ -411,11 +411,19 @@ public class PostDetailFragment extends Fragment {
             //System.out.println("string = " + s);
             //mCommentTextView.setText(s);
             mCommentsAdapter.notifyDataSetChanged();
+
+            if ((PostDetailActivity) getActivity() != null) {
+
+                ((PostDetailActivity) getActivity()).postDetailSpinner();
+            }
+
+            /*
             try {
                 ((PostDetailActivity) getActivity()).postDetailSpinner();
             } catch (ClassCastException cce) {
                 cce.printStackTrace();
             }
+            */
         }
     }
 

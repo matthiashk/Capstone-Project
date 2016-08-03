@@ -3,10 +3,14 @@ package com.matthiasko.scrollforreddit.asynctasks;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.text.Html;
 import android.util.Log;
 
+import com.matthiasko.scrollforreddit.data.DBHandler;
 import com.matthiasko.scrollforreddit.interfaces.FetchUserlessTokenListener;
 import com.matthiasko.scrollforreddit.data.PostContract;
 
@@ -18,6 +22,7 @@ import net.dean.jraw.http.oauth.OAuthData;
 import net.dean.jraw.http.oauth.OAuthException;
 import net.dean.jraw.http.oauth.OAuthHelper;
 import net.dean.jraw.models.Submission;
+import net.dean.jraw.models.Thumbnails;
 import net.dean.jraw.paginators.SubredditPaginator;
 
 import java.util.List;
@@ -36,6 +41,7 @@ public class FetchMorePostsAsyncTask extends AsyncTask<String, Void, Boolean> {
     private static final String CLIENT_ID = "cAizcZuXu-Mn9w";
     private UUID mDeviceId;
     private SubredditPaginator mPaginator;
+    public static final String TABLE_NAME = "posts";
 
     public FetchMorePostsAsyncTask(Context context, FetchUserlessTokenListener listener) {
         this.mContext = context;
@@ -97,6 +103,10 @@ public class FetchMorePostsAsyncTask extends AsyncTask<String, Void, Boolean> {
             edit.commit();
         }
 
+        DBHandler dbHandler = new DBHandler(mContext);
+        SQLiteDatabase db = dbHandler.getReadableDatabase();
+        int num;
+
         // store counter in prefs and check for counter before loop
         for (int i = 0; i < refreshCounter; i++) {
 
@@ -104,6 +114,25 @@ public class FetchMorePostsAsyncTask extends AsyncTask<String, Void, Boolean> {
             if (refreshCounter - 1 == i) {
 
                 for (Submission submission : next) { // insert posts into database
+
+                    // we need to add this to the post item data so we can retrieve the commentnode in details view
+                    String postId = submission.getId();
+
+                    // if postId already exists, dont add post
+                    // use continue here?
+
+
+                    String[] columns = {"post_id"};
+                    Cursor cursor = db.query(TABLE_NAME, columns, "post_id=?", new String[]{postId}, null, null, null);
+                    num = cursor.getCount();
+
+                    if (num == 1) {
+
+                        continue;
+                        //System.out.println("FOUND DUPLICATE POST");
+                    }
+
+
 
                     String title = submission.getTitle();
                     // store fullname so we can get the specific post later...
@@ -113,10 +142,30 @@ public class FetchMorePostsAsyncTask extends AsyncTask<String, Void, Boolean> {
                     String domain = submission.getDomain();
                     int points = submission.getScore();
                     int numberOfComments = submission.getCommentCount();
-                    String thumbnail = submission.getThumbnail();
+                    String thumbnail = "";
+                    String decodedUrl = "";
 
-                    // we need to add this to the post item data so we can retrieve the commentnode in details view
-                    String postId = submission.getId();
+                    // get the thumbnails object that contains an image array of urls, it may also be null
+                    Thumbnails thumbnails = submission.getThumbnails();
+
+                    if (thumbnails != null) {
+
+                        Thumbnails.Image[] images = thumbnails.getVariations();
+
+                        if (images.length >= 3) {
+                            // we need to decode the url that is given
+                            decodedUrl = Html.fromHtml(images[2].getUrl()).toString(); // get the third variation of the thumbnail
+                        }
+                    }
+
+                    // use the default thumbnail if there is no higher quality version
+                    if (decodedUrl.isEmpty()) {
+                        thumbnail = submission.getThumbnail();
+                    } else {
+                        thumbnail = decodedUrl;
+                    }
+
+
                     String fullName = submission.getFullName();
 
                     // add post data to database
@@ -137,6 +186,9 @@ public class FetchMorePostsAsyncTask extends AsyncTask<String, Void, Boolean> {
                 }
             }
         }
+
+        db.close();
+
         refreshCounter++;
         SharedPreferences.Editor edit = appSharedPrefs.edit();
         edit.putInt("com.matthiasko.scrollforreddit.REFRESH_COUNTER", refreshCounter);
