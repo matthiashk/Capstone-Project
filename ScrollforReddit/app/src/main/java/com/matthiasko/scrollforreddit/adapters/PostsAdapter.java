@@ -127,7 +127,31 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(mContext, WebViewActivity.class);
-                    intent.putExtra("SOURCE", source);
+
+                    String trimmedString;
+
+                    if (source.contains(".jpg")) {
+
+                        trimmedString = source.substring(0, source.lastIndexOf('.'));
+
+                        intent.putExtra("SOURCE", trimmedString);
+                    } else {
+
+                        intent.putExtra("SOURCE", source);
+                    }
+
+
+
+
+
+
+                    System.out.println("source = " + source);
+
+                    // remove extention? .jpg
+
+
+
+
                     mContext.startActivity(intent);
                 }
             });
