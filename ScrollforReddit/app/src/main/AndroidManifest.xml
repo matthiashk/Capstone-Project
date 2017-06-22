@@ -68,6 +68,15 @@
                 android:value=".activities.PostListActivity" />
         </activity>
 
+        <activity
+            android:name=".activities.PictureViewerActivity"
+            android:label="Picture Viewer"
+            android:parentActivityName=".activities.PostListActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".activities.PostListActivity" />
+        </activity>
+
         <receiver android:name=".widget.ScrollWidget" >
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />

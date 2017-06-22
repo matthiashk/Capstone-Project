@@ -122,9 +122,17 @@ public class FetchUserlessPostsAsyncTask extends AsyncTask<String, Void, Boolean
             // get the thumbnails object that contains an image array of urls, it may also be null
             Thumbnails thumbnails = submission.getThumbnails();
 
+
             if (thumbnails != null) {
 
                 Thumbnails.Image[] images = thumbnails.getVariations();
+
+                System.out.println("FETCHUSERLESSPOSTSASYNCTASK - images.length = " + images.length);
+
+                for (Thumbnails.Image thumbnailUrl : images) {
+
+                    System.out.println("thumbnailUrl = " + thumbnailUrl.getUrl().toString());
+                }
 
                 if (images.length >= 3) {
                     // we need to decode the url that is given
@@ -157,6 +165,8 @@ public class FetchUserlessPostsAsyncTask extends AsyncTask<String, Void, Boolean
             postValues.put(PostContract.PostEntry.COLUMN_POST_ID, postId);
             postValues.put(PostContract.PostEntry.COLUMN_SOURCE_DOMAIN, domain);
             postValues.put(PostContract.PostEntry.COLUMN_FULLNAME, fullName);
+
+            //System.out.println("FETCHUSERLESSPOSTSASYNCTASK - postId = " + postId);
 
             mContext.getContentResolver().insert(PostContract.PostEntry.CONTENT_URI, postValues);
         }

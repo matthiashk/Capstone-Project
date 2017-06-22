@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion '25.0.0'
 
     signingConfigs {
         release
@@ -45,6 +45,11 @@ dependencies {
     compile 'com.google.firebase:firebase-ads:9.0.0'
     debugCompile 'org.slf4j:slf4j-android:1.+'
     compile 'com.android.support:multidex:1.0.1'
+    compile 'com.squareup.retrofit2:retrofit:2.0.0-beta3'
+    compile 'com.squareup.okhttp3:okhttp:3.0.1'
+    compile 'com.google.code.gson:gson:2.4'
+    compile 'com.squareup.retrofit2:converter-gson:2.0.2'
+    compile 'com.squareup.okhttp3:logging-interceptor:3.3.1'
 }
 
 apply plugin: 'com.google.gms.google-services'

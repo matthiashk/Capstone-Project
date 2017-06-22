@@ -14,9 +14,9 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.matthiasko.scrollforreddit.R;
+import com.matthiasko.scrollforreddit.activities.PictureViewerActivity;
 import com.matthiasko.scrollforreddit.activities.PostDetailActivity;
 import com.matthiasko.scrollforreddit.activities.PostListActivity;
-import com.matthiasko.scrollforreddit.activities.WebViewActivity;
 import com.squareup.picasso.Picasso;
 
 /**
@@ -92,6 +92,10 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
         final int points = mCursor.getInt(9);
         final int numberOfComments = mCursor.getInt(10);
 
+
+        //System.out.println("POSTSADAPTER - postId = " + postId);
+
+
         Resources res = mContext.getResources();
         String points_text = String.format(res.getString(R.string.posts_adapter_points), points);
         String comments_text = String.format(res.getString(R.string.posts_adapter_comments), numberOfComments);
@@ -126,35 +130,37 @@ public class PostsAdapter extends RecyclerView.Adapter<PostsAdapter.ViewHolder> 
 
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(mContext, WebViewActivity.class);
+                    Intent intent = new Intent(mContext, PictureViewerActivity.class);
 
-                    String trimmedString;
+                    intent.putExtra("SOURCE", source); // <-- not working anymore?
 
-                    if (source.contains(".jpg")) {
+                    intent.putExtra("THUMBNAIL", thumbnail);
 
-                        trimmedString = source.substring(0, source.lastIndexOf('.'));
-
-                        intent.putExtra("SOURCE", trimmedString);
-                    } else {
-
-                        intent.putExtra("SOURCE", source);
-                    }
+                    intent.putExtra("POST_ID", postId);
 
 
-
-
-
-
-                    System.out.println("source = " + source);
-
-                    // remove extention? .jpg
-
-
-
-
+                    //System.out.println("POSTSADAPTER - source = " + source);
                     mContext.startActivity(intent);
                 }
             });
+
+
+//            holder.thumbnail.setOnClickListener(new View.OnClickListener() {
+//
+//                @Override
+//                public void onClick(View v) {
+//                    Intent intent = new Intent(mContext, WebViewActivity.class);
+//                    String trimmedString;
+//                    if (source.contains(".jpg")) {
+//                        trimmedString = source.substring(0, source.lastIndexOf('.'));
+//                        intent.putExtra("SOURCE", trimmedString);
+//                    } else {
+//                        intent.putExtra("SOURCE", source);
+//                    }
+//                    System.out.println("source = " + source);
+//                    mContext.startActivity(intent);
+//                }
+//            });
         }
 
         holder.upButton.setOnClickListener(new View.OnClickListener() {
