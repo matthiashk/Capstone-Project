@@ -157,6 +157,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         db.execSQL(sql);
         db.close();
 
+        /*
         // Obtain the shared Tracker instance for Google Analytics
         AnalyticsApplication analyticsApplication = (AnalyticsApplication) getApplication();
         mTracker = analyticsApplication.getDefaultTracker();
@@ -169,6 +170,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
                 .addTestDevice(deviceId)
                 .build();
         mAdView.loadAd(request);
+        */
 
         /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -677,6 +679,19 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
 
             mRecyclerView.setVisibility(View.GONE);
 
+            // scroll view to top for tablet or phone size
+            if (mScreenLayoutSize.contains("Large")) {
+                mGridLayoutManager.scrollToPosition(0);
+
+            } else {
+                mLinearLayoutManager.scrollToPosition(0);
+            }
+
+
+
+
+
+
             if (userlessMode) {
                 new FetchUserlessPostsAsyncTask(this, new FetchUserlessTokenListener() {
                     @Override
@@ -775,10 +790,12 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     protected void onResume() {
         super.onResume();
         getLoaderManager().restartLoader(CURSOR_LOADER_ID, null, this);
+        /*
         // google analytics code
         String name = "PostListActivity";
         mTracker.setScreenName(name);
         mTracker.send(new HitBuilders.ScreenViewBuilder().build());
+        */
     }
 
     private void refreshPosts() {
@@ -791,11 +808,13 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
         edit.putInt("com.matthiasko.scrollforreddit.REFRESH_COUNTER", refreshCounter);
         edit.commit();
 
+        /*
         // for google analytics
         mTracker.send(new HitBuilders.EventBuilder()
                 .setCategory("Action")
                 .setAction("Refresh Posts")
                 .build());
+        */
 
         if (mSelectedSubredditName == null) {
             mSelectedSubredditName = "Frontpage";
