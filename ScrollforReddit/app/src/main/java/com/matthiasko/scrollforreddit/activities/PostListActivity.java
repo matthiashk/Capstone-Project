@@ -41,12 +41,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
-import com.matthiasko.scrollforreddit.AnalyticsApplication;
 import com.matthiasko.scrollforreddit.interfaces.AsyncListener;
 import com.matthiasko.scrollforreddit.data.CommentsDBHandler;
 import com.matthiasko.scrollforreddit.data.DBHandler;
@@ -118,7 +112,7 @@ public class PostListActivity extends AppCompatActivity implements LoaderManager
     private String mSelectedSubredditName;
     private View mRecyclerView;
     private ActionBar mActionBar;
-    private Tracker mTracker;
+    //private Tracker mTracker;
     private CheckBox mSubscribeCheckBox;
     private String mScreenLayoutSize;
     private StaggeredGridLayoutManager mGridLayoutManager;
