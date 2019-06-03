@@ -29,7 +29,7 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
         //toolbar.setTitleTextColor(Color.WHITE);
         setSupportActionBar(toolbar);
 
-        ImageView headerImageView = (ImageView) findViewById(R.id.header_imageview);
+        //ImageView headerImageView = (ImageView) findViewById(R.id.header_imageview);
 
         /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -77,6 +77,13 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
         ((TextView) findViewById(R.id.source_textview)).setText(getIntent().getStringExtra("DOMAIN"));
         (findViewById(R.id.source_textview)).setContentDescription(getIntent().getStringExtra("DOMAIN"));
 
+
+
+
+
+
+
+
         /* image loading logic here for detail view
          * if the source is an image load it with picasso
          * otherwise load a placeholder
@@ -84,6 +91,7 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
          * imgur files may not have an extension so we should detect hostname
          */
 
+        /*
         String sourceUrl = getIntent().getStringExtra("SOURCE");
         String extension = "";
         int i = sourceUrl.lastIndexOf('.');
@@ -137,6 +145,9 @@ public class PostDetailActivity extends AppCompatActivity implements PostDetailF
             layoutParams.height = 200;
             headerImageView.setLayoutParams(layoutParams);
         }
+        */
+
+
     }
 
     @Override

@@ -1,95 +1,58 @@
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".activities.PostDetailActivity"
-    tools:ignore="MergeRootFrame"
-    android:background="@color/blueGrey100">
+<RelativeLayout
+    android:background="@color/colorPrimary"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <android.support.design.widget.AppBarLayout
-        android:id="@+id/app_bar"
+    <TextView
+        android:id="@+id/header_textview"
+        android:textColor="@android:color/white"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/AppTheme">
+        android:layout_below="@+id/detail_toolbar"
+        android:textSize="17sp"
+        android:text="title of post"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"/>
 
-        <android.support.design.widget.CollapsingToolbarLayout
-            android:id="@+id/collapsing_toolbar_layout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed">
+    <TextView
+        android:id="@+id/subreddit_textview"
+        android:textColor="@android:color/white"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/header_textview"
+        android:text="subreddit"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="5dp"/>
 
-        <RelativeLayout
-            android:background="@color/colorPrimary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="?attr/actionBarSize">
+    <TextView
+        android:id="@+id/author_textview"
+        android:textColor="@android:color/white"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@+id/subreddit_textview"
+        android:layout_below="@+id/header_textview"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="5dp"
+        android:text="author"/>
 
-            <TextView
-                android:id="@+id/header_textview"
-                android:textColor="@android:color/white"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="title of post"
-                android:layout_marginStart="10dp"
-                android:layout_marginEnd="10dp"/>
-
-            <TextView
-                android:id="@+id/subreddit_textview"
-                android:textColor="@android:color/white"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/header_textview"
-                android:text="subreddit"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="5dp"/>
-
-            <TextView
-                android:id="@+id/author_textview"
-                android:textColor="@android:color/white"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_toEndOf="@+id/subreddit_textview"
-                android:layout_below="@+id/header_textview"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="5dp"
-                android:text="author"/>
-
-            <TextView
-                android:id="@+id/source_textview"
-                android:textColor="@android:color/white"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_below="@+id/subreddit_textview"
-                android:text="source"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="5dp"/>
-
-            <ImageView
-                android:id="@+id/header_imageview"
-                android:layout_width="match_parent"
-                android:layout_height="600dp"
-                android:layout_below="@+id/source_textview"
-                android:contentDescription="@string/post_header_imageview"/>
-
-        </RelativeLayout>
-
-        <android.support.v7.widget.Toolbar
-            android:id="@+id/detail_toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            app:layout_collapseMode="pin"
-            android:background="@color/colorPrimary"/>
-
-        </android.support.design.widget.CollapsingToolbarLayout>
-
-    </android.support.design.widget.AppBarLayout>
+    <TextView
+        android:id="@+id/source_textview"
+        android:textColor="@android:color/white"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/subreddit_textview"
+        android:paddingBottom="5dp"
+        android:text="source"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="5dp"/>
 
     <FrameLayout
         android:id="@+id/post_detail_container"
+        android:layout_below="@+id/source_textview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+        />
 
     <RelativeLayout
         android:id="@+id/loadingPanel"
@@ -105,6 +68,12 @@
 
     </RelativeLayout>
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/detail_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/colorPrimary"/>
+
     <!--
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab"
@@ -117,4 +86,4 @@
         app:layout_anchorGravity="top|end" />
         -->
 
-</android.support.design.widget.CoordinatorLayout>
+</RelativeLayout>
